@@ -154,8 +154,7 @@ contract LiquidationProtection {
         );
 
         bytes memory callbackData = abi.encode(
-            marketParams.collateralToken,
-            marketParams.loanToken,
+            marketParams,
             seizedAssets,
             repaidAssets,
             borrower,
