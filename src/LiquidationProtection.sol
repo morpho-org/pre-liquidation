@@ -98,7 +98,6 @@ contract LiquidationProtection {
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
         require(
             !_isHealthy(
-                marketParams,
                 marketParams.id(),
                 borrower,
                 collateralPrice,
@@ -206,7 +205,6 @@ contract LiquidationProtection {
     }
 
     function _isHealthy(
-        MarketParams calldata marketParams,
         Id id,
         address borrower,
         uint256 collateralPrice,
