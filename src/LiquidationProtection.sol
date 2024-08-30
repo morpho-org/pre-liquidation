@@ -186,17 +186,16 @@ contract LiquidationProtection {
         IMorpho morpho = IMorpho(MORPHO);
         morpho.withdrawCollateral(
             marketParams,
-            assets,
+            seizedAssets,
             borrower,
-            address(this)
+            liquidator
         );
 
-        IERC20(marketParams.collateralToken).safeTransfer(
-            liquidator,
-            seizedAssets
-        );
-
-        IMorphoLiquidateCallback(msg.sender).onMorphoLiquidate(assets, data);
+        if (data.length > 0)
+            IMorphoLiquidateCallback(msg.sender).onMorphoLiquidate(
+                assets,
+                data
+            );
 
         IERC20(marketParams.loanToken).safeTransferFrom(
             liquidator,
