@@ -32,7 +32,7 @@ contract LiquidationProtection {
 
     mapping(uint256 => SubscriptionParams) subscriptions;
     mapping(uint256 => bool) isValidSubscriptionId;
-    uint256 public nbSubscriptions;
+    uint256 public nbSubscription;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
@@ -46,12 +46,12 @@ contract LiquidationProtection {
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
-        isValidSubscriptionId[nbSubscriptions] = true;
-        subscriptions[nbSubscriptions] = subscriptionParams;
+        isValidSubscriptionId[nbSubscription] = true;
+        subscriptions[nbSubscription] = subscriptionParams;
 
-        nbSubscriptions++;
+        nbSubscription++;
 
-        return nbSubscriptions - 1;
+        return nbSubscription - 1;
     }
 
     function unsubscribe(uint256 subscriptionId) public {
@@ -80,7 +80,6 @@ contract LiquidationProtection {
         );
 
         // Compute seizedAssets or repaidShares and repaidAssets
-
         Market memory marketState = morpho.market(marketParams.id());
 
         {
