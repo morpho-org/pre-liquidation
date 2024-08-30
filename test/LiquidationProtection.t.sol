@@ -28,9 +28,7 @@ contract BaseTest is Test {
         address MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
         morpho = IMorpho(MORPHO);
 
-        marketId = Id.wrap(
-            0xb8fc70e82bc5bb53e773626fcc6a23f7eefa036918d7ef216ecfb1950a94a85e
-        ); // wstETH/WETH (96.5%)
+        marketId = Id.wrap(0xb8fc70e82bc5bb53e773626fcc6a23f7eefa036918d7ef216ecfb1950a94a85e); // wstETH/WETH (96.5%)
         market = morpho.idToMarketParams(marketId);
         loanToken = IERC20(market.loanToken);
         collateralToken = IERC20(market.collateralToken);
@@ -52,10 +50,7 @@ contract BaseTest is Test {
         vm.startPrank(LIQUIDATOR);
         deal(address(loanToken), LIQUIDATOR, 2 * borrowAmount);
         loanToken.approve(address(liquidationProtection), type(uint256).max);
-        collateralToken.approve(
-            address(liquidationProtection),
-            type(uint256).max
-        );
+        collateralToken.approve(address(liquidationProtection), type(uint256).max);
     }
 
     function test_set_subscription() public virtual {
@@ -90,14 +85,7 @@ contract BaseTest is Test {
         vm.startPrank(LIQUIDATOR);
 
         vm.expectRevert(bytes("Non-valid subscription"));
-        liquidationProtection.liquidate(
-            subscriptionId,
-            market,
-            BORROWER,
-            0,
-            0,
-            hex""
-        );
+        liquidationProtection.liquidate(subscriptionId, market, BORROWER, 0, 0, hex"");
     }
 
     function test_soft_liquidation() public virtual {
@@ -114,13 +102,6 @@ contract BaseTest is Test {
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = morpho.position(marketId, BORROWER);
-        liquidationProtection.liquidate(
-            subscriptionId,
-            market,
-            BORROWER,
-            0,
-            position.borrowShares,
-            hex""
-        );
+        liquidationProtection.liquidate(subscriptionId, market, BORROWER, 0, position.borrowShares, hex"");
     }
 }

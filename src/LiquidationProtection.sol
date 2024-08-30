@@ -37,22 +37,12 @@ contract LiquidationProtection {
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
 
-    function subscribe(
-        SubscriptionParams calldata subscriptionParams
-    ) public returns (uint256) {
+    function subscribe(SubscriptionParams calldata subscriptionParams) public returns (uint256) {
         IMorpho morpho = IMorpho(MORPHO);
-        MarketParams memory marketParams = morpho.idToMarketParams(
-            subscriptionParams.marketId
-        );
+        MarketParams memory marketParams = morpho.idToMarketParams(subscriptionParams.marketId);
 
-        require(
-            msg.sender == subscriptionParams.borrower,
-            "Unauthorized account"
-        );
-        require(
-            subscriptionParams.slltv < marketParams.lltv,
-            "Liquidation threshold higher than market LLTV"
-        );
+        require(msg.sender == subscriptionParams.borrower, "Unauthorized account");
+        require(subscriptionParams.slltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
@@ -65,10 +55,7 @@ contract LiquidationProtection {
     }
 
     function unsubscribe(uint256 subscriptionId) public {
-        require(
-            msg.sender == subscriptions[subscriptionId].borrower,
-            "Unauthorized account"
-        );
+        require(msg.sender == subscriptions[subscriptionId].borrower, "Unauthorized account");
 
         isValidSubscriptionId[subscriptionId] = false;
     }
@@ -82,27 +69,13 @@ contract LiquidationProtection {
         bytes calldata data
     ) public {
         IMorpho morpho = IMorpho(MORPHO);
-        require(
-            isValidSubscriptionId[subscriptionId],
-            "Non-valid subscription"
-        );
+        require(isValidSubscriptionId[subscriptionId], "Non-valid subscription");
         require(subscriptions[subscriptionId].borrower == borrower);
-        require(
-            Id.unwrap(subscriptions[subscriptionId].marketId) ==
-                Id.unwrap(marketParams.id())
-        );
-        require(
-            UtilsLib.exactlyOneZero(seizedAssets, repaidShares),
-            "Inconsistent input"
-        );
+        require(Id.unwrap(subscriptions[subscriptionId].marketId) == Id.unwrap(marketParams.id()));
+        require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
         require(
-            !_isHealthy(
-                marketParams.id(),
-                borrower,
-                collateralPrice,
-                subscriptions[subscriptionId].slltv
-            ),
+            !_isHealthy(marketParams.id(), borrower, collateralPrice, subscriptions[subscriptionId].slltv),
             "Position is healthy"
         );
 
@@ -111,64 +84,37 @@ contract LiquidationProtection {
         Market memory marketState = morpho.market(marketParams.id());
 
         {
-            uint256 liquidationIncentive = subscriptions[subscriptionId]
-                .liquidationIncentive;
+            uint256 liquidationIncentive = subscriptions[subscriptionId].liquidationIncentive;
             if (seizedAssets > 0) {
-                uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(
-                    collateralPrice,
-                    ORACLE_PRICE_SCALE
-                );
+                uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
-                repaidShares = seizedAssetsQuoted
-                    .wDivUp(liquidationIncentive)
-                    .toSharesUp(
-                        marketState.totalBorrowAssets,
-                        marketState.totalBorrowShares
-                    );
+                repaidShares = seizedAssetsQuoted.wDivUp(liquidationIncentive).toSharesUp(
+                    marketState.totalBorrowAssets,
+                    marketState.totalBorrowShares
+                );
             } else {
                 seizedAssets = repaidShares
-                    .toAssetsDown(
-                        marketState.totalBorrowAssets,
-                        marketState.totalBorrowShares
-                    )
+                    .toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
                     .wMulDown(liquidationIncentive)
                     .mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
             }
         }
-        uint256 repaidAssets = repaidShares.toAssetsUp(
-            marketState.totalBorrowAssets,
-            marketState.totalBorrowShares
-        );
+        uint256 repaidAssets = repaidShares.toAssetsUp(marketState.totalBorrowAssets, marketState.totalBorrowShares);
 
         // Check if liquidation is ok with close factor
-        Position memory borrowerPosition = morpho.position(
-            marketParams.id(),
-            borrower
-        );
+        Position memory borrowerPosition = morpho.position(marketParams.id(), borrower);
         require(
-            borrowerPosition.collateral.wMulDown(
-                subscriptions[subscriptionId].closeFactor
-            ) > seizedAssets,
+            borrowerPosition.collateral.wMulDown(subscriptions[subscriptionId].closeFactor) > seizedAssets,
             "Cannot liquidate more than close factor"
         );
 
-        bytes memory callbackData = abi.encode(
-            marketParams,
-            seizedAssets,
-            repaidAssets,
-            borrower,
-            msg.sender,
-            data
-        );
+        bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
         morpho.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
         isValidSubscriptionId[subscriptionId] = false;
     }
 
-    function onMorphoRepay(
-        uint256 assets,
-        bytes calldata callbackData
-    ) external {
+    function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
         (
             MarketParams memory marketParams,
             uint256 seizedAssets,
@@ -176,30 +122,14 @@ contract LiquidationProtection {
             address borrower,
             address liquidator,
             bytes memory data
-        ) = abi.decode(
-                callbackData,
-                (MarketParams, uint256, uint256, address, address, bytes)
-            );
+        ) = abi.decode(callbackData, (MarketParams, uint256, uint256, address, address, bytes));
 
         IMorpho morpho = IMorpho(MORPHO);
-        morpho.withdrawCollateral(
-            marketParams,
-            seizedAssets,
-            borrower,
-            liquidator
-        );
+        morpho.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
-        if (data.length > 0)
-            IMorphoLiquidateCallback(msg.sender).onMorphoLiquidate(
-                assets,
-                data
-            );
+        if (data.length > 0) IMorphoLiquidateCallback(msg.sender).onMorphoLiquidate(assets, data);
 
-        ERC20(marketParams.loanToken).safeTransferFrom(
-            liquidator,
-            address(this),
-            repaidAssets
-        );
+        ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
 
         ERC20(marketParams.loanToken).safeApprove(MORPHO, repaidAssets);
     }
