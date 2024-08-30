@@ -20,6 +20,10 @@ struct SubscriptionParams {
     uint256 liquidationIncentive;
 }
 
+/// @title Morpho
+/// @author Morpho Labs
+/// @custom:contact security@morpho.org
+/// @notice The Liquidation Protection Contract for Morpho
 contract LiquidationProtection {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
@@ -28,14 +32,17 @@ contract LiquidationProtection {
     using MathLib for uint128;
     using SafeTransferLib for ERC20;
 
+    /* IMMUTABLE */
     address immutable MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
 
+    /* STORAGE */
     mapping(uint256 => SubscriptionParams) subscriptions;
     mapping(uint256 => bool) isValidSubscriptionId;
     uint256 public nbSubscription;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
+    // TODO potential gas opti (keeping marketparams in SubscriptionParams instead of Id?)
 
     function subscribe(SubscriptionParams calldata subscriptionParams) public returns (uint256) {
         IMorpho morpho = IMorpho(MORPHO);
@@ -68,7 +75,6 @@ contract LiquidationProtection {
         uint256 repaidShares,
         bytes calldata data
     ) public {
-        IMorpho morpho = IMorpho(MORPHO);
         require(isValidSubscriptionId[subscriptionId], "Non-valid subscription");
         require(subscriptions[subscriptionId].borrower == borrower);
         require(Id.unwrap(subscriptions[subscriptionId].marketId) == Id.unwrap(marketParams.id()));
@@ -79,6 +85,7 @@ contract LiquidationProtection {
             "Position is healthy"
         );
 
+        IMorpho morpho = IMorpho(MORPHO);
         // Compute seizedAssets or repaidShares and repaidAssets
         Market memory marketState = morpho.market(marketParams.id());
 
