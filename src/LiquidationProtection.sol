@@ -32,7 +32,7 @@ contract LiquidationProtection {
 
     mapping(uint256 => SubscriptionParams) subscriptions;
     mapping(uint256 => bool) isValidSubscriptionId;
-    uint256 nbSubscriptions;
+    uint256 public nbSubscriptions;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
@@ -110,26 +110,31 @@ contract LiquidationProtection {
         // Compute seizedAssets or repaidShares and repaidAssets
 
         Market memory marketState = morpho.market(marketParams.id());
-        if (seizedAssets > 0) {
-            uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(
-                collateralPrice,
-                ORACLE_PRICE_SCALE
-            );
 
-            repaidShares = seizedAssetsQuoted
-                .wDivUp(subscriptions[subscriptionId].liquidationIncentive)
-                .toSharesUp(
-                    marketState.totalBorrowAssets,
-                    marketState.totalBorrowShares
+        {
+            uint256 liquidationIncentive = subscriptions[subscriptionId]
+                .liquidationIncentive;
+            if (seizedAssets > 0) {
+                uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(
+                    collateralPrice,
+                    ORACLE_PRICE_SCALE
                 );
-        } else {
-            seizedAssets = repaidShares
-                .toAssetsDown(
-                    marketState.totalBorrowAssets,
-                    marketState.totalBorrowShares
-                )
-                .wMulDown(subscriptions[subscriptionId].liquidationIncentive)
-                .mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+
+                repaidShares = seizedAssetsQuoted
+                    .wDivUp(liquidationIncentive)
+                    .toSharesUp(
+                        marketState.totalBorrowAssets,
+                        marketState.totalBorrowShares
+                    );
+            } else {
+                seizedAssets = repaidShares
+                    .toAssetsDown(
+                        marketState.totalBorrowAssets,
+                        marketState.totalBorrowShares
+                    )
+                    .wMulDown(liquidationIncentive)
+                    .mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+            }
         }
         uint256 repaidAssets = repaidShares.toAssetsUp(
             marketState.totalBorrowAssets,
