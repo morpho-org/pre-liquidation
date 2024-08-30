@@ -65,7 +65,7 @@ contract BaseTest is Test {
 
         liquidationProtection.subscribe(params);
 
-        assertEq(liquidationProtection.nbSubscriptions(), 1);
+        assertEq(liquidationProtection.nbSubscription(), 1);
     }
 
     function test_remove_subscription() public virtual {
