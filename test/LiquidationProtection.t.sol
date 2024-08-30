@@ -56,10 +56,6 @@ contract BaseTest is Test {
             address(liquidationProtection),
             type(uint256).max
         );
-
-        // TODO implement in contract
-        vm.startPrank(address(liquidationProtection));
-        loanToken.approve(address(morpho), type(uint256).max);
     }
 
     function test_set_subscription() public virtual {

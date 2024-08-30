@@ -5,12 +5,12 @@ import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/sr
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
-import {IERC20} from "../lib/morpho-blue/src/interfaces/IERC20.sol";
-import {SafeTransferLib} from "../lib/morpho-blue/src/libraries/SafeTransferLib.sol";
 import {IMorphoLiquidateCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 import "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
+import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 
 struct SubscriptionParams {
     Id marketId;
@@ -23,10 +23,10 @@ struct SubscriptionParams {
 contract LiquidationProtection {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
-    using SafeTransferLib for IERC20;
     using SharesMathLib for uint256;
     using MathLib for uint256;
     using MathLib for uint128;
+    using SafeTransferLib for ERC20;
 
     address immutable MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
 
@@ -196,12 +196,13 @@ contract LiquidationProtection {
                 data
             );
 
-        IERC20(marketParams.loanToken).safeTransferFrom(
+        ERC20(marketParams.loanToken).safeTransferFrom(
             liquidator,
             address(this),
             repaidAssets
         );
-        // TODO IERC20(marketParams.loanToken).safeApprove(MORPHO, repaidAssets);
+
+        ERC20(marketParams.loanToken).safeApprove(MORPHO, repaidAssets);
     }
 
     function _isHealthy(
