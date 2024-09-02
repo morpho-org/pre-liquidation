@@ -121,7 +121,7 @@ contract LiquidationProtection {
 
         MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
-        if (data.length > 0) IMorphoLiquidateCallback(msg.sender).onMorphoLiquidate(assets, data);
+        if (data.length > 0) IMorphoLiquidateCallback(liquidator).onMorphoLiquidate(assets, data);
 
         ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
 
