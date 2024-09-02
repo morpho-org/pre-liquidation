@@ -18,6 +18,7 @@ struct SubscriptionParams {
     uint256 slltv;
     uint256 closeFactor;
     uint256 liquidationIncentive;
+    bool isValid;
 }
 
 /// @title Morpho
@@ -37,7 +38,6 @@ contract LiquidationProtection {
 
     /* STORAGE */
     mapping(uint256 => SubscriptionParams) subscriptions;
-    mapping(uint256 => bool) isValidSubscriptionId;
     uint256 public nbSubscription;
 
     // TODO EIP-712 signature
@@ -53,7 +53,6 @@ contract LiquidationProtection {
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
-        isValidSubscriptionId[nbSubscription] = true;
         subscriptions[nbSubscription] = subscriptionParams;
 
         nbSubscription++;
@@ -64,10 +63,10 @@ contract LiquidationProtection {
     function unsubscribe(uint256 subscriptionId) public {
         require(msg.sender == subscriptions[subscriptionId].borrower, "Unauthorized account");
 
-        isValidSubscriptionId[subscriptionId] = false;
+        subscriptions[subscriptionId].isValid = false;
     }
 
-    // @dev this function does not _accrueInterest() on Morpho
+    // @dev this function does not _accrueInterest() on Morpho when computing health
     function liquidate(
         uint256 subscriptionId,
         MarketParams calldata marketParams,
@@ -76,7 +75,7 @@ contract LiquidationProtection {
         uint256 repaidShares,
         bytes calldata data
     ) public {
-        require(isValidSubscriptionId[subscriptionId], "Non-valid subscription");
+        require(subscriptions[subscriptionId].isValid, "Non-valid subscription");
         require(subscriptions[subscriptionId].borrower == borrower);
         require(Id.unwrap(subscriptions[subscriptionId].marketId) == Id.unwrap(marketParams.id()));
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
@@ -118,7 +117,7 @@ contract LiquidationProtection {
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
         morpho.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        isValidSubscriptionId[subscriptionId] = false;
+        subscriptions[subscriptionId].isValid = false;
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {

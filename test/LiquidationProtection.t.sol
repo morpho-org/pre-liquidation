@@ -97,6 +97,7 @@ contract BaseTest is Test {
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
         params.slltv = 10 * 10 ** 16; // 10%
+        params.isValid = true;
 
         uint256 subscriptionId = liquidationProtection.subscribe(params);
 
