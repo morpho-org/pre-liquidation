@@ -116,8 +116,6 @@ contract LiquidationProtection {
 
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
         morpho.repay(marketParams, 0, repaidShares, borrower, callbackData);
-
-        subscriptions[subscriptionId].isValid = false;
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
