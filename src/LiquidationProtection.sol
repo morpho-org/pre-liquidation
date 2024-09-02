@@ -67,6 +67,7 @@ contract LiquidationProtection {
         isValidSubscriptionId[subscriptionId] = false;
     }
 
+    // @dev this function does not _accrueInterest() on Morpho
     function liquidate(
         uint256 subscriptionId,
         MarketParams calldata marketParams,
