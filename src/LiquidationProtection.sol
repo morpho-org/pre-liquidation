@@ -86,11 +86,14 @@ contract LiquidationProtection {
                 uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
                 repaidShares = seizedAssetsQuoted.wDivUp(liquidationIncentive).toSharesUp(
-                    marketState.totalBorrowAssets, marketState.totalBorrowShares
+                    marketState.totalBorrowAssets,
+                    marketState.totalBorrowShares
                 );
             } else {
-                seizedAssets = repaidShares.toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
-                    .wMulDown(liquidationIncentive).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+                seizedAssets = repaidShares
+                    .toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
+                    .wMulDown(liquidationIncentive)
+                    .mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
             }
         }
         uint256 repaidAssets = repaidShares.toAssetsUp(marketState.totalBorrowAssets, marketState.totalBorrowShares);
@@ -103,9 +106,7 @@ contract LiquidationProtection {
         );
 
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
-        MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
-
-        subscriptions[subscriptionId].isValid = false;
+        morpho.repay(marketParams, 0, repaidShares, borrower, callbackData);
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
@@ -131,19 +132,22 @@ contract LiquidationProtection {
         return keccak256(abi.encode(borrower, marketId));
     }
 
-    function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)
-        internal
-        view
-        returns (bool)
-    {
+    function _isHealthy(
+        Id id,
+        address borrower,
+        uint256 collateralPrice,
+        uint256 ltvThreshold
+    ) internal view returns (bool) {
         Position memory borrowerPosition = MORPHO.position(id, borrower);
         Market memory marketState = MORPHO.market(id);
 
         uint256 borrowed = uint256(borrowerPosition.borrowShares).toAssetsUp(
-            marketState.totalBorrowAssets, marketState.totalBorrowShares
+            marketState.totalBorrowAssets,
+            marketState.totalBorrowShares
         );
-        uint256 maxBorrow =
-            uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(ltvThreshold);
+        uint256 maxBorrow = uint256(borrowerPosition.collateral)
+            .mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
+            .wMulDown(ltvThreshold);
 
         return maxBorrow >= borrowed;
     }
