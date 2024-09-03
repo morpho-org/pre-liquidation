@@ -38,7 +38,8 @@ contract LiquidationProtection {
     IMorpho immutable MORPHO = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
 
     /* STORAGE */
-    mapping(bytes32 => SubscriptionParams) public subscriptions;
+    mapping(uint256 => SubscriptionParams) public subscriptions;
+    uint256 public nbSubscription;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
