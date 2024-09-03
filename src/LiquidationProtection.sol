@@ -34,7 +34,7 @@ contract LiquidationProtection {
     using SafeTransferLib for ERC20;
 
     /* IMMUTABLE */
-    address immutable MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
+    IMorpho immutable MORPHO = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
 
     /* STORAGE */
     mapping(uint256 => SubscriptionParams) subscriptions;
@@ -45,8 +45,7 @@ contract LiquidationProtection {
     // TODO potential gas opti (keeping marketparams in SubscriptionParams instead of Id?)
 
     function subscribe(SubscriptionParams calldata subscriptionParams) public returns (uint256) {
-        IMorpho morpho = IMorpho(MORPHO);
-        MarketParams memory marketParams = morpho.idToMarketParams(subscriptionParams.marketId);
+        MarketParams memory marketParams = MORPHO.idToMarketParams(subscriptionParams.marketId);
 
         require(msg.sender == subscriptionParams.borrower, "Unauthorized account");
         require(subscriptionParams.slltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
@@ -127,14 +126,13 @@ contract LiquidationProtection {
             bytes memory data
         ) = abi.decode(callbackData, (MarketParams, uint256, uint256, address, address, bytes));
 
-        IMorpho morpho = IMorpho(MORPHO);
-        morpho.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
+        MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
         if (data.length > 0) IMorphoLiquidateCallback(msg.sender).onMorphoLiquidate(assets, data);
 
         ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
 
-        ERC20(marketParams.loanToken).safeApprove(MORPHO, repaidAssets);
+        ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
     }
 
     function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)
@@ -142,9 +140,8 @@ contract LiquidationProtection {
         view
         returns (bool)
     {
-        IMorpho morpho = IMorpho(MORPHO);
-        Position memory borrowerPosition = morpho.position(id, borrower);
-        Market memory marketState = morpho.market(id);
+        Position memory borrowerPosition = MORPHO.position(id, borrower);
+        Market memory marketState = MORPHO.market(id);
 
         uint256 borrowed = uint256(borrowerPosition.borrowShares).toAssetsUp(
             marketState.totalBorrowAssets, marketState.totalBorrowShares
