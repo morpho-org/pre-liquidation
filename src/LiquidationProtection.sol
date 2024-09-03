@@ -11,6 +11,7 @@ import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
+import {EventsLib} from "./libraries/EventsLib.sol";
 
 struct SubscriptionParams {
     Id marketId;
@@ -52,13 +53,28 @@ contract LiquidationProtection {
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
-        subscriptions[subscriptionId] = subscriptionParams;
+        subscriptions[nbSubscription] = subscriptionParams;
+
+        emit EventsLib.Subscribe(
+            subscriptionParams.marketId,
+            subscriptionParams.borrower,
+            nbSubscription,
+            subscriptionParams.slltv,
+            subscriptionParams.closeFactor,
+            subscriptionParams.liquidationIncentive
+        );
+
+        nbSubscription++;
+
+        return nbSubscription - 1;
     }
 
     function unsubscribe(Id marketId) public {
         bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId);
 
         subscriptions[subscriptionId].isValid = false;
+
+        emit EventsLib.Unsubscribe(subscriptionId);
     }
 
     // @dev this function does not _accrueInterest() on Morpho when computing health
@@ -90,8 +106,14 @@ contract LiquidationProtection {
                 repaidShares = seizedAssetsQuoted.wDivUp(liquidationIncentive).toSharesUp(
                     marketState.totalBorrowAssets,
                     marketState.totalBorrowShares
+                    marketState.totalBorrowAssets,
+                    marketState.totalBorrowShares
                 );
             } else {
+                seizedAssets = repaidShares
+                    .toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
+                    .wMulDown(liquidationIncentive)
+                    .mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
                 seizedAssets = repaidShares
                     .toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
                     .wMulDown(liquidationIncentive)
@@ -109,6 +131,17 @@ contract LiquidationProtection {
 
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
         morpho.repay(marketParams, 0, repaidShares, borrower, callbackData);
+
+        emit EventsLib.Liquidate(
+            marketParams.id(),
+            msg.sender,
+            borrower,
+            repaidAssets,
+            repaidShares,
+            seizedAssets,
+            0,
+            0
+        );
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
@@ -130,10 +163,6 @@ contract LiquidationProtection {
         ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
     }
 
-    function computeSubscriptionId(address borrower, Id marketId) public pure returns (bytes32) {
-        return keccak256(abi.encode(borrower, marketId));
-    }
-
     function _isHealthy(
         Id id,
         address borrower,
@@ -146,7 +175,12 @@ contract LiquidationProtection {
         uint256 borrowed = uint256(borrowerPosition.borrowShares).toAssetsUp(
             marketState.totalBorrowAssets,
             marketState.totalBorrowShares
+            marketState.totalBorrowAssets,
+            marketState.totalBorrowShares
         );
+        uint256 maxBorrow = uint256(borrowerPosition.collateral)
+            .mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
+            .wMulDown(ltvThreshold);
         uint256 maxBorrow = uint256(borrowerPosition.collateral)
             .mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
             .wMulDown(ltvThreshold);
