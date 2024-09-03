@@ -72,7 +72,7 @@ contract LiquidationProtection {
 
         delete subscriptions[subscriptionId];
 
-        emit EventsLib.Unsubscribe(subscriptionId);
+        emit EventsLib.Unsubscribe(msg.sender, marketId, subscriptionNumber);
     }
 
     function liquidate(

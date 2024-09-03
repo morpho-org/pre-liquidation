@@ -28,5 +28,5 @@ library EventsLib {
         uint256 liquidationIncentive
     );
 
-    event Unsubscribe(bytes32 indexed subscriptionId);
+    event Unsubscribe(address indexed borrower, Id indexed marketId, uint256 indexed subscriptionNumber);
 }
