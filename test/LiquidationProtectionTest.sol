@@ -62,17 +62,15 @@ contract LiquidationProtectionTest is Test {
         params.slltv = 90 * 10 ** 16; // 90%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
-        params.isValid = true;
 
         liquidationProtection.subscribe(marketId, params);
 
         bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId);
-        (uint256 slltv, uint256 closeFactor, uint256 liquidationIncentive, bool isValid) =
+        (uint256 slltv, uint256 closeFactor, uint256 liquidationIncentive) =
             liquidationProtection.subscriptions(subscriptionId);
         assertEq(params.slltv, slltv);
         assertEq(params.closeFactor, closeFactor);
         assertEq(params.liquidationIncentive, liquidationIncentive);
-        assertEq(params.isValid, isValid);
     }
 
     function testRemoveSubscription() public virtual {
@@ -100,7 +98,6 @@ contract LiquidationProtectionTest is Test {
         params.slltv = 10 * 10 ** 16; // 10%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
-        params.isValid = true;
 
         liquidationProtection.subscribe(marketId, params);
 
