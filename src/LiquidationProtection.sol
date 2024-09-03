@@ -13,8 +13,6 @@ import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 
 struct SubscriptionParams {
-    Id marketId;
-    address borrower;
     uint256 slltv;
     uint256 closeFactor;
     uint256 liquidationIncentive;
@@ -37,46 +35,41 @@ contract LiquidationProtection {
     IMorpho immutable MORPHO = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
 
     /* STORAGE */
-    mapping(uint256 => SubscriptionParams) subscriptions;
-    uint256 public nbSubscription;
+    mapping(bytes32 => SubscriptionParams) public subscriptions;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
     // TODO potential gas opti (keeping marketparams in SubscriptionParams instead of Id?)
 
-    function subscribe(SubscriptionParams calldata subscriptionParams) public returns (uint256) {
-        MarketParams memory marketParams = MORPHO.idToMarketParams(subscriptionParams.marketId);
+    function subscribe(Id marketId, SubscriptionParams calldata subscriptionParams) public {
+        MarketParams memory marketParams = MORPHO.idToMarketParams(marketId);
 
-        require(msg.sender == subscriptionParams.borrower, "Unauthorized account");
+        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId);
+
         require(subscriptionParams.slltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
-        subscriptions[nbSubscription] = subscriptionParams;
-
-        nbSubscription++;
-
-        return nbSubscription - 1;
+        subscriptions[subscriptionId] = subscriptionParams;
     }
 
-    function unsubscribe(uint256 subscriptionId) public {
-        require(msg.sender == subscriptions[subscriptionId].borrower, "Unauthorized account");
+    function unsubscribe(Id marketId) public {
+        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId);
 
         subscriptions[subscriptionId].isValid = false;
     }
 
     // @dev this function does not _accrueInterest() on Morpho when computing health
     function liquidate(
-        uint256 subscriptionId,
         MarketParams calldata marketParams,
         address borrower,
         uint256 seizedAssets,
         uint256 repaidShares,
         bytes calldata data
     ) public {
+        bytes32 subscriptionId = computeSubscriptionId(borrower, marketParams.id());
+
         require(subscriptions[subscriptionId].isValid, "Non-valid subscription");
-        require(subscriptions[subscriptionId].borrower == borrower);
-        require(Id.unwrap(subscriptions[subscriptionId].marketId) == Id.unwrap(marketParams.id()));
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
         require(
@@ -84,9 +77,8 @@ contract LiquidationProtection {
             "Position is healthy"
         );
 
-        IMorpho morpho = IMorpho(MORPHO);
         // Compute seizedAssets or repaidShares and repaidAssets
-        Market memory marketState = morpho.market(marketParams.id());
+        Market memory marketState = MORPHO.market(marketParams.id());
 
         {
             uint256 liquidationIncentive = subscriptions[subscriptionId].liquidationIncentive;
@@ -104,14 +96,14 @@ contract LiquidationProtection {
         uint256 repaidAssets = repaidShares.toAssetsUp(marketState.totalBorrowAssets, marketState.totalBorrowShares);
 
         // Check if liquidation is ok with close factor
-        Position memory borrowerPosition = morpho.position(marketParams.id(), borrower);
+        Position memory borrowerPosition = MORPHO.position(marketParams.id(), borrower);
         require(
             borrowerPosition.collateral.wMulDown(subscriptions[subscriptionId].closeFactor) > seizedAssets,
             "Cannot liquidate more than close factor"
         );
 
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
-        morpho.repay(marketParams, 0, repaidShares, borrower, callbackData);
+        MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
         subscriptions[subscriptionId].isValid = false;
     }
@@ -133,6 +125,10 @@ contract LiquidationProtection {
         ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
 
         ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
+    }
+
+    function computeSubscriptionId(address borrower, Id marketId) public pure returns (bytes32) {
+        return keccak256(abi.encode(borrower, marketId));
     }
 
     function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)

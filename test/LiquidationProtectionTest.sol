@@ -57,52 +57,53 @@ contract LiquidationProtectionTest is Test {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
-        params.borrower = BORROWER;
-        params.marketId = marketId;
+        params.slltv = 90 * 10 ** 16; // 90%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
-        params.slltv = 90 * 10 ** 16; // 90%
+        params.isValid = true;
 
-        liquidationProtection.subscribe(params);
+        liquidationProtection.subscribe(marketId, params);
 
-        assertEq(liquidationProtection.nbSubscription(), 1);
+        bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId);
+        (uint256 slltv, uint256 closeFactor, uint256 liquidationIncentive, bool isValid) =
+            liquidationProtection.subscriptions(subscriptionId);
+        assertEq(params.slltv, slltv);
+        assertEq(params.closeFactor, closeFactor);
+        assertEq(params.liquidationIncentive, liquidationIncentive);
+        assertEq(params.isValid, isValid);
     }
 
     function testRemoveSubscription() public virtual {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
-        params.borrower = BORROWER;
-        params.marketId = marketId;
+        params.slltv = 90 * 10 ** 16; // 90%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
-        params.slltv = 90 * 10 ** 16; // 90%
 
-        uint256 subscriptionId = liquidationProtection.subscribe(params);
+        liquidationProtection.subscribe(marketId, params);
 
-        liquidationProtection.unsubscribe(subscriptionId);
+        liquidationProtection.unsubscribe(marketId);
 
         vm.startPrank(LIQUIDATOR);
 
         vm.expectRevert(bytes("Non-valid subscription"));
-        liquidationProtection.liquidate(subscriptionId, market, BORROWER, 0, 0, hex"");
+        liquidationProtection.liquidate(market, BORROWER, 0, 0, hex"");
     }
 
     function testSoftLiquidation() public virtual {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
-        params.borrower = BORROWER;
-        params.marketId = marketId;
+        params.slltv = 10 * 10 ** 16; // 10%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
-        params.slltv = 10 * 10 ** 16; // 10%
         params.isValid = true;
 
-        uint256 subscriptionId = liquidationProtection.subscribe(params);
+        liquidationProtection.subscribe(marketId, params);
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = morpho.position(marketId, BORROWER);
-        liquidationProtection.liquidate(subscriptionId, market, BORROWER, 0, position.borrowShares, hex"");
+        liquidationProtection.liquidate(market, BORROWER, 0, position.borrowShares, hex"");
     }
 }
