@@ -15,10 +15,10 @@ import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 struct SubscriptionParams {
     Id marketId;
     address borrower;
+    bool isValid;
     uint256 slltv;
     uint256 closeFactor;
     uint256 liquidationIncentive;
-    bool isValid;
 }
 
 /// @title Morpho
