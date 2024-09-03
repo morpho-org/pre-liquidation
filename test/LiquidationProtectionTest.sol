@@ -8,7 +8,7 @@ import {LiquidationProtection, SubscriptionParams} from "../src/LiquidationProte
 import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IERC20} from "../src/interfaces/IERC20.sol";
 
-contract BaseTest is Test {
+contract LiquidationProtectionTest is Test {
     uint256 internal constant BLOCK_TIME = 12;
 
     address internal BORROWER;
@@ -53,7 +53,7 @@ contract BaseTest is Test {
         collateralToken.approve(address(liquidationProtection), type(uint256).max);
     }
 
-    function test_set_subscription() public virtual {
+    function testSetSubscription() public virtual {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
@@ -68,7 +68,7 @@ contract BaseTest is Test {
         assertEq(liquidationProtection.nbSubscription(), 1);
     }
 
-    function test_remove_subscription() public virtual {
+    function testRemoveSubscription() public virtual {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
@@ -88,7 +88,7 @@ contract BaseTest is Test {
         liquidationProtection.liquidate(subscriptionId, market, BORROWER, 0, 0, hex"");
     }
 
-    function test_soft_liquidation() public virtual {
+    function testSoftLiquidation() public virtual {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
