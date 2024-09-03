@@ -11,6 +11,7 @@ import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
+import {EventsLib} from "./libraries/EventsLib.sol";
 
 struct SubscriptionParams {
     uint256 slltv;
@@ -51,12 +52,22 @@ contract LiquidationProtection {
         // should there be a max liquidation incentive ?
 
         subscriptions[subscriptionId] = subscriptionParams;
+
+        emit EventsLib.Subscribe(
+            msg.sender,
+            marketId,
+            subscriptionParams.slltv,
+            subscriptionParams.closeFactor,
+            subscriptionParams.liquidationIncentive
+        );
     }
 
     function unsubscribe(Id marketId) public {
         bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId);
 
         subscriptions[subscriptionId].isValid = false;
+
+        emit EventsLib.Unsubscribe(msg.sender, marketId);
     }
 
     // @dev this function does not _accrueInterest() on Morpho when computing health
@@ -105,7 +116,9 @@ contract LiquidationProtection {
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
         MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        subscriptions[subscriptionId].isValid = false;
+        emit EventsLib.Liquidate(
+            marketParams.id(), msg.sender, borrower, repaidAssets, repaidShares, seizedAssets, 0, 0
+        );
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
@@ -120,7 +133,7 @@ contract LiquidationProtection {
 
         MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
-        if (data.length > 0) IMorphoLiquidateCallback(msg.sender).onMorphoLiquidate(assets, data);
+        if (data.length > 0) IMorphoLiquidateCallback(liquidator).onMorphoLiquidate(assets, data);
 
         ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
 
