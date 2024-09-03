@@ -17,7 +17,6 @@ struct SubscriptionParams {
     uint256 slltv;
     uint256 closeFactor;
     uint256 liquidationIncentive;
-    bool isValid;
 }
 
 /// @title Morpho
@@ -65,7 +64,7 @@ contract LiquidationProtection {
     function unsubscribe(Id marketId) public {
         bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId);
 
-        subscriptions[subscriptionId].isValid = false;
+        delete subscriptions[subscriptionId];
 
         emit EventsLib.Unsubscribe(msg.sender, marketId);
     }
@@ -80,7 +79,12 @@ contract LiquidationProtection {
     ) public {
         bytes32 subscriptionId = computeSubscriptionId(borrower, marketParams.id());
 
-        require(subscriptions[subscriptionId].isValid, "Non-valid subscription");
+        require(
+            subscriptions[subscriptionId].slltv != 0 && subscriptions[subscriptionId].closeFactor != 0
+                && subscriptions[subscriptionId].liquidationIncentive != 0,
+            "Non-valid subscription"
+        );
+
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
         require(
