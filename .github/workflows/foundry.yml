@@ -31,5 +31,3 @@ jobs:
         run: |
           echo "Alchemy key length" ${#ALCHEMY_KEY}
           forge test -vvv
-        env:
-          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
