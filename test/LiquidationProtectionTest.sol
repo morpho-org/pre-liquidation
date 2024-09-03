@@ -63,9 +63,9 @@ contract LiquidationProtectionTest is Test {
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection.subscribe(marketId, params);
+        uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
 
-        bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId);
+        bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionNumber);
         (uint256 slltv, uint256 closeFactor, uint256 liquidationIncentive) =
             liquidationProtection.subscriptions(subscriptionId);
         assertEq(params.slltv, slltv);
@@ -81,14 +81,14 @@ contract LiquidationProtectionTest is Test {
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection.subscribe(marketId, params);
+        uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
 
-        liquidationProtection.unsubscribe(marketId);
+        liquidationProtection.unsubscribe(marketId, subscriptionNumber);
 
         vm.startPrank(LIQUIDATOR);
 
         vm.expectRevert(bytes("Non-valid subscription"));
-        liquidationProtection.liquidate(market, BORROWER, 0, 0, hex"");
+        liquidationProtection.liquidate(subscriptionNumber, market, BORROWER, 0, 0, hex"");
     }
 
     function testSoftLiquidation() public virtual {
@@ -99,10 +99,10 @@ contract LiquidationProtectionTest is Test {
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection.subscribe(marketId, params);
+        uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = morpho.position(marketId, BORROWER);
-        liquidationProtection.liquidate(market, BORROWER, 0, position.borrowShares, hex"");
+        liquidationProtection.liquidate(subscriptionNumber, market, BORROWER, 0, position.borrowShares, hex"");
     }
 }
