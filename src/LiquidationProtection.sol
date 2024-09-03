@@ -68,7 +68,7 @@ contract LiquidationProtection {
     }
 
     function unsubscribe(Id marketId, uint256 subscriptionNumber) public {
-        bytes32 subscriptionId = keccak256(abi.encode(msg.sender, marketId, subscriptionNumber));
+        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionNumber);
 
         delete subscriptions[subscriptionId];
 
@@ -83,7 +83,7 @@ contract LiquidationProtection {
         uint256 repaidShares,
         bytes calldata data
     ) public {
-        bytes32 subscriptionId = keccak256(abi.encode(borrower, marketParams.id(), subscriptionNumber));
+        bytes32 subscriptionId = computeSubscriptionId(borrower, marketParams.id(), subscriptionNumber);
 
         require(subscriptions[subscriptionId].closeFactor != 0, "Non-valid subscription");
 
