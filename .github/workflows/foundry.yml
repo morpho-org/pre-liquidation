@@ -29,3 +29,5 @@ jobs:
 
       - name: Run forge tests
         run: forge test -vvv
+        env:
+          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}

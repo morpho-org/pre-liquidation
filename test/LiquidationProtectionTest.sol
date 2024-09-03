@@ -22,6 +22,8 @@ contract LiquidationProtectionTest is Test {
     IERC20 collateralToken;
 
     function setUp() public virtual {
+        vm.createSelectFork(vm.rpcUrl("mainnet"));
+
         BORROWER = makeAddr("Borrower");
         LIQUIDATOR = makeAddr("Liquidator");
 
