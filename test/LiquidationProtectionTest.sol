@@ -8,7 +8,7 @@ import {LiquidationProtection, SubscriptionParams} from "../src/LiquidationProte
 import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IERC20} from "../src/interfaces/IERC20.sol";
 
-contract BaseTest is Test {
+contract LiquidationProtectionTest is Test {
     uint256 internal constant BLOCK_TIME = 12;
 
     address internal BORROWER;
