@@ -20,13 +20,13 @@ library EventsLib {
     );
 
     event Subscribe(
-        Id indexed id,
         address indexed borrower,
-        uint256 indexed subscriptionId,
+        Id indexed marketId,
+        uint256 indexed subscriptionNumber,
         uint256 slltv,
         uint256 closeFactor,
         uint256 liquidationIncentive
     );
 
-    event Unsubscribe(uint256 indexed subscriptionId);
+    event Unsubscribe(bytes32 indexed subscriptionId);
 }

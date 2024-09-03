@@ -38,54 +38,55 @@ contract LiquidationProtection {
     IMorpho immutable MORPHO = IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
 
     /* STORAGE */
-    mapping(uint256 => SubscriptionParams) public subscriptions;
+    mapping(bytes32 => SubscriptionParams) public subscriptions;
     uint256 public nbSubscription;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
     // TODO potential gas opti (keeping marketparams in SubscriptionParams instead of Id?)
 
-    function subscribe(Id marketId, SubscriptionParams calldata subscriptionParams) public {
+    function subscribe(Id marketId, SubscriptionParams calldata subscriptionParams) public returns (uint256) {
         MarketParams memory marketParams = MORPHO.idToMarketParams(marketId);
-
-        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId);
 
         require(subscriptionParams.slltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
-        subscriptions[nbSubscription] = subscriptionParams;
+        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, nbSubscription);
+
+        subscriptions[subscriptionId] = subscriptionParams;
 
         emit EventsLib.Subscribe(
-            subscriptionParams.marketId,
-            subscriptionParams.borrower,
+            msg.sender,
+            marketId,
             nbSubscription,
             subscriptionParams.slltv,
             subscriptionParams.closeFactor,
             subscriptionParams.liquidationIncentive
         );
-
         nbSubscription++;
 
         return nbSubscription - 1;
     }
 
-    function unsubscribe(Id marketId) public {
-        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId);
+    function unsubscribe(Id marketId, uint256 subscriptionNumber) public {
+        bytes32 subscriptionId = keccak256(abi.encode(msg.sender, marketId, subscriptionNumber));
 
         delete subscriptions[subscriptionId];
 
         emit EventsLib.Unsubscribe(subscriptionId);
+        emit EventsLib.Unsubscribe(subscriptionId);
     }
 
     function liquidate(
+        uint256 subscriptionNumber,
         MarketParams calldata marketParams,
         address borrower,
         uint256 seizedAssets,
         uint256 repaidShares,
         bytes calldata data
     ) public {
-        bytes32 subscriptionId = computeSubscriptionId(borrower, marketParams.id());
+        bytes32 subscriptionId = keccak256(abi.encode(borrower, marketParams.id(), subscriptionNumber));
 
         require(
             subscriptions[subscriptionId].slltv != 0 && subscriptions[subscriptionId].closeFactor != 0
@@ -113,8 +114,6 @@ contract LiquidationProtection {
                 repaidShares = seizedAssetsQuoted.wDivUp(liquidationIncentive).toSharesUp(
                     marketState.totalBorrowAssets,
                     marketState.totalBorrowShares
-                    marketState.totalBorrowAssets,
-                    marketState.totalBorrowShares
                 );
             } else {
                 seizedAssets = repaidShares
@@ -137,7 +136,7 @@ contract LiquidationProtection {
         );
 
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, repaidAssets, borrower, msg.sender, data);
-        morpho.repay(marketParams, 0, repaidShares, borrower, callbackData);
+        MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
         emit EventsLib.Liquidate(
             marketParams.id(),
@@ -170,24 +169,26 @@ contract LiquidationProtection {
         ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
     }
 
-    function _isHealthy(
-        Id id,
-        address borrower,
-        uint256 collateralPrice,
-        uint256 ltvThreshold
-    ) internal view returns (bool) {
+    function computeSubscriptionId(address borrower, Id marketId, uint256 subscriptionNumber)
+        public
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(borrower, marketId, subscriptionNumber));
+    }
+
+    function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)
+        internal
+        view
+        returns (bool)
+    {
         Position memory borrowerPosition = MORPHO.position(id, borrower);
         Market memory marketState = MORPHO.market(id);
 
         uint256 borrowed = uint256(borrowerPosition.borrowShares).toAssetsUp(
             marketState.totalBorrowAssets,
             marketState.totalBorrowShares
-            marketState.totalBorrowAssets,
-            marketState.totalBorrowShares
         );
-        uint256 maxBorrow = uint256(borrowerPosition.collateral)
-            .mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
-            .wMulDown(ltvThreshold);
         uint256 maxBorrow = uint256(borrowerPosition.collateral)
             .mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
             .wMulDown(ltvThreshold);
