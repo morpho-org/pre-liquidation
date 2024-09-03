@@ -74,8 +74,7 @@ contract LiquidationProtection {
 
         delete subscriptions[subscriptionId];
 
-        emit EventsLib.Unsubscribe(subscriptionId);
-        emit EventsLib.Unsubscribe(subscriptionId);
+        emit EventsLib.Unsubscribe(msg.sender, marketId, subscriptionNumber);
     }
 
     function liquidate(
@@ -165,19 +164,20 @@ contract LiquidationProtection {
         ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
     }
 
-    function computeSubscriptionId(address borrower, Id marketId, uint256 subscriptionNumber)
-        public
-        pure
-        returns (bytes32)
-    {
+    function computeSubscriptionId(
+        address borrower,
+        Id marketId,
+        uint256 subscriptionNumber
+    ) public pure returns (bytes32) {
         return keccak256(abi.encode(borrower, marketId, subscriptionNumber));
     }
 
-    function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)
-        internal
-        view
-        returns (bool)
-    {
+    function _isHealthy(
+        Id id,
+        address borrower,
+        uint256 collateralPrice,
+        uint256 ltvThreshold
+    ) internal view returns (bool) {
         Position memory borrowerPosition = MORPHO.position(id, borrower);
         Market memory marketState = MORPHO.market(id);
 
