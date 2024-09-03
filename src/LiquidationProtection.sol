@@ -88,11 +88,7 @@ contract LiquidationProtection {
     ) public {
         bytes32 subscriptionId = keccak256(abi.encode(borrower, marketParams.id(), subscriptionNumber));
 
-        require(
-            subscriptions[subscriptionId].slltv != 0 && subscriptions[subscriptionId].closeFactor != 0
-                && subscriptions[subscriptionId].liquidationIncentive != 0,
-            "Non-valid subscription"
-        );
+        require(subscriptions[subscriptionId].closeFactor != 0, "Non-valid subscription");
 
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
