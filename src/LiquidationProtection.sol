@@ -69,7 +69,6 @@ contract LiquidationProtection {
         emit EventsLib.Unsubscribe(msg.sender, marketId);
     }
 
-    // @dev this function does not _accrueInterest() on Morpho when computing health
     function liquidate(
         MarketParams calldata marketParams,
         address borrower,
@@ -87,6 +86,8 @@ contract LiquidationProtection {
 
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
+
+        MORPHO.accrueInterest(marketParams);
         require(
             !_isHealthy(marketParams.id(), borrower, collateralPrice, subscriptions[subscriptionId].slltv),
             "Position is healthy"
