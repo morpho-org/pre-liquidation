@@ -146,6 +146,7 @@ contract LiquidationProtection {
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
+        require(msg.sender == address(MORPHO), "Not Morpho");
         (
             MarketParams memory marketParams,
             uint256 seizedAssets,
