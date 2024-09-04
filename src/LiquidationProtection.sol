@@ -35,8 +35,7 @@ contract LiquidationProtection {
     using SafeTransferLib for ERC20;
 
     /* IMMUTABLE */
-    IMorpho immutable MORPHO =
-        IMorpho(0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb);
+    IMorpho immutable MORPHO;
 
     /* STORAGE */
     mapping(bytes32 => SubscriptionParams) public subscriptions;
@@ -46,6 +45,9 @@ contract LiquidationProtection {
     // TODO authorize this contract on morpho
     // TODO potential gas opti (keeping marketparams in SubscriptionParams instead of Id?)
 
+    constructor(address morpho) {
+        MORPHO = IMorpho(morpho);
+    }
     function subscribe(
         Id marketId,
         SubscriptionParams calldata subscriptionParams

@@ -34,8 +34,8 @@ contract LiquidationProtectionTest is Test {
         market = morpho.idToMarketParams(marketId);
         loanToken = IERC20(market.loanToken);
         collateralToken = IERC20(market.collateralToken);
-
-        liquidationProtection = new LiquidationProtection();
+        
+        liquidationProtection = new LiquidationProtection(MORPHO);
 
         vm.startPrank(BORROWER);
         loanToken.approve(address(morpho), type(uint256).max);
