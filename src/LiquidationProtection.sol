@@ -165,10 +165,6 @@ contract LiquidationProtection {
                     .mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
             }
         }
-        uint256 repaidAssets = repaidShares.toAssetsUp(
-            marketState.totalBorrowAssets,
-            marketState.totalBorrowShares
-        );
 
         // Check if liquidation is ok with close factor
         Position memory borrowerPosition = MORPHO.position(
@@ -185,16 +181,21 @@ contract LiquidationProtection {
         bytes memory callbackData = abi.encode(
             marketParams,
             seizedAssets,
-            repaidAssets,
             borrower,
             msg.sender,
             data
         );
-        MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
+        (uint256 assets, ) = MORPHO.repay(
+            marketParams,
+            0,
+            repaidShares,
+            borrower,
+            callbackData
+        );
 
         emit EventsLib.Liquidate(
             subscriptionNumber,
-            repaidAssets,
+            assets,
             repaidShares,
             seizedAssets
         );
@@ -208,13 +209,12 @@ contract LiquidationProtection {
         (
             MarketParams memory marketParams,
             uint256 seizedAssets,
-            uint256 repaidAssets,
             address borrower,
             address liquidator,
             bytes memory data
         ) = abi.decode(
                 callbackData,
-                (MarketParams, uint256, uint256, address, address, bytes)
+                (MarketParams, uint256, address, address, bytes)
             );
 
         MORPHO.withdrawCollateral(
@@ -233,13 +233,10 @@ contract LiquidationProtection {
         ERC20(marketParams.loanToken).safeTransferFrom(
             liquidator,
             address(this),
-            repaidAssets
+            assets
         );
 
-        ERC20(marketParams.loanToken).safeApprove(
-            address(MORPHO),
-            repaidAssets
-        );
+        ERC20(marketParams.loanToken).safeApprove(address(MORPHO), assets);
     }
 
     function computeSubscriptionId(
