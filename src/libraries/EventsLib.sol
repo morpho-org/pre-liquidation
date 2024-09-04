@@ -12,9 +12,7 @@ library EventsLib {
         uint256 indexed subscriptionNumber,
         uint256 repaidAssets,
         uint256 repaidShares,
-        uint256 seizedAssets,
-        uint256 badDebtAssets,
-        uint256 badDebtShares
+        uint256 seizedAssets
     );
 
     event Subscribe(

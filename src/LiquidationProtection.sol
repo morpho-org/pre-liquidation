@@ -194,9 +194,7 @@ contract LiquidationProtection {
             subscriptionNumber,
             repaidAssets,
             repaidShares,
-            seizedAssets,
-            0,
-            0
+            seizedAssets
         );
     }
 
