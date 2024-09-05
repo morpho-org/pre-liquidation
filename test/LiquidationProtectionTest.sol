@@ -66,7 +66,7 @@ contract LiquidationProtectionTest is Test {
         uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
 
         bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionNumber);
-        (,,, uint256 slltv, uint256 closeFactor, uint256 liquidationIncentive) =
+        (uint256 slltv, uint256 closeFactor, uint256 liquidationIncentive) =
             liquidationProtection.subscriptions(subscriptionId);
         assertEq(params.slltv, slltv);
         assertEq(params.closeFactor, closeFactor);
