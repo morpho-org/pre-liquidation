@@ -121,7 +121,7 @@ contract LiquidationProtection {
         // Check if liquidation is ok with close factor
         Position memory borrowerPosition = MORPHO.position(marketParams.id(), borrower);
         require(
-            borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) > repaidShares,
+            borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) >= repaidShares,
             "Cannot liquidate more than close factor"
         );
 
