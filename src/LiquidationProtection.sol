@@ -32,7 +32,7 @@ contract LiquidationProtection {
     using SafeTransferLib for ERC20;
 
     /* IMMUTABLE */
-    IMorpho immutable MORPHO;
+    IMorpho public immutable MORPHO;
 
     /* STORAGE */
     mapping(bytes32 => SubscriptionParams) public subscriptions;
@@ -124,12 +124,14 @@ contract LiquidationProtection {
             borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) >= repaidShares,
             "Cannot liquidate more than close factor"
         );
-
-        bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
-        (uint256 assets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
+        uint256 assets;
+        {
+            bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
+            (assets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
+        }
 
         emit EventsLib.Liquidate(
-            borrower, msg.sender, marketParams.id(), subscriptionNumber, repaidAssets, repaidShares, seizedAssets
+            borrower, msg.sender, marketParams.id(), subscriptionNumber, assets, repaidShares, seizedAssets
         );
     }
 
