@@ -65,9 +65,8 @@ contract LiquidationProtection {
             subscriptionParams.closeFactor,
             subscriptionParams.liquidationIncentive
         );
-        nbSubscription++;
 
-        return nbSubscription - 1;
+        return nbSubscription++;
     }
 
     function unsubscribe(Id marketId, uint256 subscriptionNumber) public {
