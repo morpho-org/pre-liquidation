@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.19;
+pragma solidity 0.8.27;
 
 import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
@@ -12,6 +12,7 @@ import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol"
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
+import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 
 struct SubscriptionParams {
     uint256 prelltv;
@@ -50,7 +51,10 @@ contract LiquidationProtection {
         returns (uint256)
     {
         Id marketId = marketParams.id();
-        require(subscriptionParams.prelltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
+        require(
+            subscriptionParams.prelltv < marketParams.lltv,
+            ErrorsLib.LowPreLltvError(subscriptionParams.prelltv, marketParams.lltv)
+        );
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
@@ -88,15 +92,17 @@ contract LiquidationProtection {
     ) public {
         bytes32 subscriptionId = computeSubscriptionId(borrower, marketParams.id(), subscriptionNumber);
         Id marketId = marketParams.id();
-        require(subscriptions[subscriptionId].closeFactor != 0, "Non-valid subscription");
+        require(subscriptions[subscriptionId].closeFactor != 0, ErrorsLib.NonValidSubscription(subscriptionNumber));
 
-        require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
+        require(
+            UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
+        );
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
 
         MORPHO.accrueInterest(marketParams);
         require(
             !_isHealthy(marketId, borrower, collateralPrice, subscriptions[subscriptionId].prelltv),
-            "Position is healthy"
+            ErrorsLib.HealthyPosition()
         );
 
         // Compute seizedAssets or repaidShares and repaidAssets
@@ -122,7 +128,9 @@ contract LiquidationProtection {
             Position memory borrowerPosition = MORPHO.position(marketId, borrower);
             require(
                 borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) >= repaidShares,
-                "Cannot liquidate more than close factor"
+                ErrorsLib.CloseFactorError(
+                    borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor), repaidShares
+                )
             );
         }
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
@@ -132,7 +140,7 @@ contract LiquidationProtection {
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
-        require(msg.sender == address(MORPHO), "Not Morpho");
+        require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho(msg.sender));
         (
             MarketParams memory marketParams,
             uint256 seizedAssets,

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity 0.8.27;
 
 import "../lib/forge-std/src/Test.sol";
 import "../lib/forge-std/src/console.sol";
@@ -7,6 +7,7 @@ import "../lib/forge-std/src/console.sol";
 import {LiquidationProtection, SubscriptionParams} from "../src/LiquidationProtection.sol";
 import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
+import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 
 contract LiquidationProtectionTest is Test {
     uint256 internal constant BLOCK_TIME = 12;
@@ -87,7 +88,7 @@ contract LiquidationProtectionTest is Test {
 
         vm.startPrank(LIQUIDATOR);
 
-        vm.expectRevert(bytes("Non-valid subscription"));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonValidSubscription.selector, subscriptionNumber));
         liquidationProtection.liquidate(subscriptionNumber, market, BORROWER, 0, 0, hex"");
     }
 
