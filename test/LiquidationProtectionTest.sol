@@ -63,7 +63,7 @@ contract LiquidationProtectionTest is Test {
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
-        uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
+        uint256 subscriptionNumber = liquidationProtection.subscribe(market, params);
 
         bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionNumber);
         (uint256 prelltv, uint256 closeFactor, uint256 liquidationIncentive) =
@@ -81,7 +81,7 @@ contract LiquidationProtectionTest is Test {
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
-        uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
+        uint256 subscriptionNumber = liquidationProtection.subscribe(market, params);
 
         liquidationProtection.unsubscribe(marketId, subscriptionNumber);
 
@@ -99,7 +99,7 @@ contract LiquidationProtectionTest is Test {
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
-        uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
+        uint256 subscriptionNumber = liquidationProtection.subscribe(market, params);
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = morpho.position(marketId, BORROWER);

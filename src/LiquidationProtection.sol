@@ -46,9 +46,11 @@ contract LiquidationProtection {
         MORPHO = IMorpho(morpho);
     }
 
-    function subscribe(Id marketId, SubscriptionParams calldata subscriptionParams) public returns (uint256) {
-        MarketParams memory marketParams = MORPHO.idToMarketParams(marketId);
-
+    function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
+        public
+        returns (uint256)
+    {
+        Id marketId = marketParams.id();
         require(subscriptionParams.prelltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
