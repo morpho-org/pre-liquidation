@@ -6,7 +6,7 @@ import "../lib/forge-std/src/console.sol";
 
 import {LiquidationProtection, SubscriptionParams} from "../src/LiquidationProtection.sol";
 import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {IERC20} from "../src/interfaces/IERC20.sol";
+import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 
 contract LiquidationProtectionTest is Test {
     uint256 internal constant BLOCK_TIME = 12;
@@ -18,8 +18,8 @@ contract LiquidationProtectionTest is Test {
     Id internal marketId;
     MarketParams internal market;
     IMorpho morpho;
-    IERC20 loanToken;
-    IERC20 collateralToken;
+    ERC20 loanToken;
+    ERC20 collateralToken;
 
     function setUp() public virtual {
         vm.createSelectFork(vm.rpcUrl("mainnet"));
@@ -32,8 +32,8 @@ contract LiquidationProtectionTest is Test {
 
         marketId = Id.wrap(0xb8fc70e82bc5bb53e773626fcc6a23f7eefa036918d7ef216ecfb1950a94a85e); // wstETH/WETH (96.5%)
         market = morpho.idToMarketParams(marketId);
-        loanToken = IERC20(market.loanToken);
-        collateralToken = IERC20(market.collateralToken);
+        loanToken = ERC20(market.loanToken);
+        collateralToken = ERC20(market.collateralToken);
 
         liquidationProtection = new LiquidationProtection(MORPHO);
 
