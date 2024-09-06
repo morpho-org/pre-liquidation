@@ -128,7 +128,9 @@ contract LiquidationProtection {
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
         (uint256 assets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        emit EventsLib.Liquidate(subscriptionNumber, assets, repaidShares, seizedAssets);
+        emit EventsLib.Liquidate(
+            borrower, msg.sender, marketParams.id(), subscriptionNumber, repaidAssets, repaidShares, seizedAssets
+        );
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {

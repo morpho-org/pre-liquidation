@@ -9,7 +9,13 @@ import {Id, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol
 /// @notice Library exposing events.
 library EventsLib {
     event Liquidate(
-        uint256 indexed subscriptionNumber, uint256 repaidAssets, uint256 repaidShares, uint256 seizedAssets
+        address indexed borrower,
+        address indexed liquidator,
+        Id indexed marketId,
+        uint256 subscriptionNumber,
+        uint256 repaidAssets,
+        uint256 repaidShares,
+        uint256 seizedAssets
     );
 
     event Subscribe(
