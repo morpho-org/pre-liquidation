@@ -40,7 +40,6 @@ contract LiquidationProtection {
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
-    // TODO potential gas opti (keeping marketparams in SubscriptionParams instead of Id?)
 
     constructor(address morpho) {
         MORPHO = IMorpho(morpho);
@@ -88,7 +87,7 @@ contract LiquidationProtection {
         bytes calldata data
     ) public {
         bytes32 subscriptionId = computeSubscriptionId(borrower, marketParams.id(), subscriptionNumber);
-
+        Id marketId = marketParams.id();
         require(subscriptions[subscriptionId].closeFactor != 0, "Non-valid subscription");
 
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), "Inconsistent input");
@@ -96,14 +95,13 @@ contract LiquidationProtection {
 
         MORPHO.accrueInterest(marketParams);
         require(
-            !_isHealthy(marketParams.id(), borrower, collateralPrice, subscriptions[subscriptionId].prelltv),
+            !_isHealthy(marketId, borrower, collateralPrice, subscriptions[subscriptionId].prelltv),
             "Position is healthy"
         );
 
         // Compute seizedAssets or repaidShares and repaidAssets
-        Market memory marketState = MORPHO.market(marketParams.id());
-
         {
+            Market memory marketState = MORPHO.market(marketId);
             uint256 liquidationIncentive = subscriptions[subscriptionId].liquidationIncentive;
             if (seizedAssets > 0) {
                 uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
@@ -120,20 +118,17 @@ contract LiquidationProtection {
         }
 
         // Check if liquidation is ok with close factor
-        Position memory borrowerPosition = MORPHO.position(marketParams.id(), borrower);
-        require(
-            borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) >= repaidShares,
-            "Cannot liquidate more than close factor"
-        );
-        uint256 assets;
         {
-            bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
-            (assets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
+            Position memory borrowerPosition = MORPHO.position(marketId, borrower);
+            require(
+                borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) >= repaidShares,
+                "Cannot liquidate more than close factor"
+            );
         }
+        bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
+        (uint256 assets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        emit EventsLib.Liquidate(
-            borrower, msg.sender, marketParams.id(), subscriptionNumber, assets, repaidShares, seizedAssets
-        );
+        emit EventsLib.Liquidate(borrower, msg.sender, marketId, subscriptionNumber, assets, repaidShares, seizedAssets);
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
