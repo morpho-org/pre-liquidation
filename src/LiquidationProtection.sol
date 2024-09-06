@@ -90,8 +90,8 @@ contract LiquidationProtection {
         uint256 repaidShares,
         bytes calldata data
     ) public {
-        bytes32 subscriptionId = computeSubscriptionId(borrower, marketParams.id(), subscriptionNumber);
         Id marketId = marketParams.id();
+        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionNumber);
         require(subscriptions[subscriptionId].closeFactor != 0, ErrorsLib.NonValidSubscription(subscriptionNumber));
 
         require(
