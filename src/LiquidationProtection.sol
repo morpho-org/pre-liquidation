@@ -14,7 +14,7 @@ import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 
 struct SubscriptionParams {
-    uint256 slltv;
+    uint256 prelltv;
     uint256 closeFactor;
     uint256 liquidationIncentive;
 }
@@ -49,7 +49,7 @@ contract LiquidationProtection {
     function subscribe(Id marketId, SubscriptionParams calldata subscriptionParams) public returns (uint256) {
         MarketParams memory marketParams = MORPHO.idToMarketParams(marketId);
 
-        require(subscriptionParams.slltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
+        require(subscriptionParams.prelltv < marketParams.lltv, "Liquidation threshold higher than market LLTV");
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
@@ -61,7 +61,7 @@ contract LiquidationProtection {
             msg.sender,
             marketId,
             nbSubscription,
-            subscriptionParams.slltv,
+            subscriptionParams.prelltv,
             subscriptionParams.closeFactor,
             subscriptionParams.liquidationIncentive
         );
@@ -95,7 +95,7 @@ contract LiquidationProtection {
 
         MORPHO.accrueInterest(marketParams);
         require(
-            !_isHealthy(marketParams.id(), borrower, collateralPrice, subscriptions[subscriptionId].slltv),
+            !_isHealthy(marketParams.id(), borrower, collateralPrice, subscriptions[subscriptionId].prelltv),
             "Position is healthy"
         );
 

@@ -59,16 +59,16 @@ contract LiquidationProtectionTest is Test {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
-        params.slltv = 90 * 10 ** 16; // 90%
+        params.prelltv = 90 * 10 ** 16; // 90%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
         uint256 subscriptionNumber = liquidationProtection.subscribe(marketId, params);
 
         bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionNumber);
-        (uint256 slltv, uint256 closeFactor, uint256 liquidationIncentive) =
+        (uint256 prelltv, uint256 closeFactor, uint256 liquidationIncentive) =
             liquidationProtection.subscriptions(subscriptionId);
-        assertEq(params.slltv, slltv);
+        assertEq(params.prelltv, prelltv);
         assertEq(params.closeFactor, closeFactor);
         assertEq(params.liquidationIncentive, liquidationIncentive);
     }
@@ -77,7 +77,7 @@ contract LiquidationProtectionTest is Test {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
-        params.slltv = 90 * 10 ** 16; // 90%
+        params.prelltv = 90 * 10 ** 16; // 90%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
@@ -95,7 +95,7 @@ contract LiquidationProtectionTest is Test {
         vm.startPrank(BORROWER);
 
         SubscriptionParams memory params;
-        params.slltv = 10 * 10 ** 16; // 10%
+        params.prelltv = 10 * 10 ** 16; // 10%
         params.closeFactor = 10 ** 18; // 100%
         params.liquidationIncentive = 10 ** 16; // 1%
 
