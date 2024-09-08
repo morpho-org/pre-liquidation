@@ -39,7 +39,7 @@ contract LiquidationProtection {
         MORPHO = IMorpho(morpho);
     }
 
-    function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) public {
+    function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external {
         require(
             subscriptionParams.prelltv < marketParams.lltv,
             ErrorsLib.LowPreLltvError(subscriptionParams.prelltv, marketParams.lltv)
@@ -55,7 +55,7 @@ contract LiquidationProtection {
         emit EventsLib.Subscribe(msg.sender, marketId, subscriptionParams);
     }
 
-    function unsubscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) public {
+    function unsubscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external {
         Id marketId = marketParams.id();
         bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionParams);
 
@@ -71,7 +71,7 @@ contract LiquidationProtection {
         uint256 seizedAssets,
         uint256 repaidShares,
         bytes calldata data
-    ) public {
+    ) external {
         Id marketId = marketParams.id();
         bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionParams);
         require(subscriptions[subscriptionId], ErrorsLib.NonValidSubscription(subscriptionId));
