@@ -59,7 +59,7 @@ contract LiquidationProtection {
         Id marketId = marketParams.id();
         bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionParams);
 
-        delete subscriptions[subscriptionId];
+        subscriptions[subscriptionId] = false;
 
         emit EventsLib.Unsubscribe(msg.sender, marketId, subscriptionParams);
     }
