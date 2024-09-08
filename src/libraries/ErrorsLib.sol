@@ -14,7 +14,7 @@ library ErrorsLib {
 
     error HealthyPosition();
 
-    error CloseFactorError(uint256 repayableShares, uint256 repaidShares);
+    error CloseFactorError(uint256 repaidShares, uint256 repayableShares);
 
     error NotMorpho(address caller);
 }

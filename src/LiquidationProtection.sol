@@ -86,31 +86,29 @@ contract LiquidationProtection {
             !_isHealthy(marketId, borrower, collateralPrice, subscriptionParams.prelltv), ErrorsLib.HealthyPosition()
         );
 
-        // Compute seizedAssets or repaidShares and repaidAssets
         {
-            Market memory marketState = MORPHO.market(marketId);
+            // Compute seizedAssets or repaidShares and repaidAssets
+            Market memory market = MORPHO.market(marketId);
             uint256 liquidationIncentive = subscriptionParams.liquidationIncentive;
             if (seizedAssets > 0) {
                 uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
                 repaidShares = seizedAssetsQuoted.wDivUp(liquidationIncentive).toSharesUp(
-                    marketState.totalBorrowAssets, marketState.totalBorrowShares
+                    market.totalBorrowAssets, market.totalBorrowShares
                 );
             } else {
-                seizedAssets = repaidShares.toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
-                    .wMulDown(liquidationIncentive).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
-                seizedAssets = repaidShares.toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
-                    .wMulDown(liquidationIncentive).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+                seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
+                    liquidationIncentive
+                ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+                seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
+                    liquidationIncentive
+                ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
             }
 
             // Check if liquidation is ok with close factor
             Position memory borrowerPosition = MORPHO.position(marketId, borrower);
-            require(
-                borrowerPosition.borrowShares.wMulDown(subscriptionParams.closeFactor) >= repaidShares,
-                ErrorsLib.CloseFactorError(
-                    borrowerPosition.borrowShares.wMulDown(subscriptionParams.closeFactor), repaidShares
-                )
-            );
+            uint256 repayableShares = borrowerPosition.borrowShares.wMulDown(subscriptionParams.closeFactor);
+            require(repaidShares <= repayableShares, ErrorsLib.CloseFactorError(repaidShares, repayableShares));
         }
 
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
@@ -156,11 +154,10 @@ contract LiquidationProtection {
         returns (bool)
     {
         Position memory borrowerPosition = MORPHO.position(id, borrower);
-        Market memory marketState = MORPHO.market(id);
+        Market memory market = MORPHO.market(id);
 
-        uint256 borrowed = uint256(borrowerPosition.borrowShares).toAssetsUp(
-            marketState.totalBorrowAssets, marketState.totalBorrowShares
-        );
+        uint256 borrowed =
+            uint256(borrowerPosition.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 maxBorrow =
             uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(ltvThreshold);
 
