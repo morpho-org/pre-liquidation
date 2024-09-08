@@ -11,14 +11,8 @@ import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
-import {EventsLib} from "./libraries/EventsLib.sol";
+import {EventsLib, SubscriptionParams} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-
-struct SubscriptionParams {
-    uint256 prelltv;
-    uint256 closeFactor;
-    uint256 liquidationIncentive;
-}
 
 /// @title Morpho
 /// @author Morpho Labs
@@ -36,8 +30,7 @@ contract LiquidationProtection {
     IMorpho public immutable MORPHO;
 
     /* STORAGE */
-    mapping(bytes32 => SubscriptionParams) public subscriptions;
-    uint256 public nbSubscription;
+    mapping(bytes32 => bool) public subscriptions;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
@@ -46,11 +39,7 @@ contract LiquidationProtection {
         MORPHO = IMorpho(morpho);
     }
 
-    function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
-        public
-        returns (uint256)
-    {
-        Id marketId = marketParams.id();
+    function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) public {
         require(
             subscriptionParams.prelltv < marketParams.lltv,
             ErrorsLib.LowPreLltvError(subscriptionParams.prelltv, marketParams.lltv)
@@ -58,41 +47,34 @@ contract LiquidationProtection {
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
 
-        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, nbSubscription);
+        Id marketId = marketParams.id();
+        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionParams);
 
-        subscriptions[subscriptionId] = subscriptionParams;
+        subscriptions[subscriptionId] = true;
 
-        emit EventsLib.Subscribe(
-            msg.sender,
-            marketId,
-            nbSubscription,
-            subscriptionParams.prelltv,
-            subscriptionParams.closeFactor,
-            subscriptionParams.liquidationIncentive
-        );
-
-        return nbSubscription++;
+        emit EventsLib.Subscribe(msg.sender, marketId, subscriptionParams);
     }
 
-    function unsubscribe(Id marketId, uint256 subscriptionNumber) public {
-        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionNumber);
+    function unsubscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) public {
+        Id marketId = marketParams.id();
+        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionParams);
 
         delete subscriptions[subscriptionId];
 
-        emit EventsLib.Unsubscribe(msg.sender, marketId, subscriptionNumber);
+        emit EventsLib.Unsubscribe(msg.sender, marketId, subscriptionParams);
     }
 
     function liquidate(
-        uint256 subscriptionNumber,
         MarketParams calldata marketParams,
+        SubscriptionParams calldata subscriptionParams,
         address borrower,
         uint256 seizedAssets,
         uint256 repaidShares,
         bytes calldata data
     ) public {
         Id marketId = marketParams.id();
-        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionNumber);
-        require(subscriptions[subscriptionId].closeFactor != 0, ErrorsLib.NonValidSubscription(subscriptionNumber));
+        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionParams);
+        require(subscriptions[subscriptionId], ErrorsLib.NonValidSubscription(subscriptionId));
 
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
@@ -101,14 +83,13 @@ contract LiquidationProtection {
 
         MORPHO.accrueInterest(marketParams);
         require(
-            !_isHealthy(marketId, borrower, collateralPrice, subscriptions[subscriptionId].prelltv),
-            ErrorsLib.HealthyPosition()
+            !_isHealthy(marketId, borrower, collateralPrice, subscriptionParams.prelltv), ErrorsLib.HealthyPosition()
         );
 
         // Compute seizedAssets or repaidShares and repaidAssets
         {
             Market memory marketState = MORPHO.market(marketId);
-            uint256 liquidationIncentive = subscriptions[subscriptionId].liquidationIncentive;
+            uint256 liquidationIncentive = subscriptionParams.liquidationIncentive;
             if (seizedAssets > 0) {
                 uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
@@ -121,23 +102,22 @@ contract LiquidationProtection {
                 seizedAssets = repaidShares.toAssetsDown(marketState.totalBorrowAssets, marketState.totalBorrowShares)
                     .wMulDown(liquidationIncentive).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
             }
-        }
 
-        // Check if liquidation is ok with close factor
-        {
+            // Check if liquidation is ok with close factor
             Position memory borrowerPosition = MORPHO.position(marketId, borrower);
             require(
-                borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) >= repaidShares,
+                borrowerPosition.borrowShares.wMulDown(subscriptionParams.closeFactor) >= repaidShares,
                 ErrorsLib.CloseFactorError(
-                    borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor), repaidShares
+                    borrowerPosition.borrowShares.wMulDown(subscriptionParams.closeFactor), repaidShares
                 )
             );
         }
+
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
         (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
         emit EventsLib.Liquidate(
-            borrower, msg.sender, marketId, subscriptionNumber, repaidAssets, repaidShares, seizedAssets
+            borrower, msg.sender, marketId, subscriptionParams, repaidAssets, repaidShares, seizedAssets
         );
     }
 
@@ -162,12 +142,12 @@ contract LiquidationProtection {
         ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
     }
 
-    function computeSubscriptionId(address borrower, Id marketId, uint256 subscriptionNumber)
+    function computeSubscriptionId(address borrower, Id marketId, SubscriptionParams memory subscriptionParams)
         public
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encode(borrower, marketId, subscriptionNumber));
+        return keccak256(abi.encode(borrower, marketId, subscriptionParams));
     }
 
     function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)

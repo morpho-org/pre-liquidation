@@ -17,7 +17,7 @@ contract LiquidationProtectionTest is Test {
 
     LiquidationProtection internal liquidationProtection;
     Id internal marketId;
-    MarketParams internal market;
+    MarketParams internal marketParams;
     IMorpho morpho;
     ERC20 loanToken;
     ERC20 collateralToken;
@@ -32,9 +32,9 @@ contract LiquidationProtectionTest is Test {
         morpho = IMorpho(MORPHO);
 
         marketId = Id.wrap(0xb8fc70e82bc5bb53e773626fcc6a23f7eefa036918d7ef216ecfb1950a94a85e); // wstETH/WETH (96.5%)
-        market = morpho.idToMarketParams(marketId);
-        loanToken = ERC20(market.loanToken);
-        collateralToken = ERC20(market.collateralToken);
+        marketParams = morpho.idToMarketParams(marketId);
+        loanToken = ERC20(marketParams.loanToken);
+        collateralToken = ERC20(marketParams.collateralToken);
 
         liquidationProtection = new LiquidationProtection(MORPHO);
 
@@ -44,9 +44,9 @@ contract LiquidationProtectionTest is Test {
 
         uint256 collateralAmount = 1 * 10 ** 18;
         deal(address(collateralToken), BORROWER, collateralAmount);
-        morpho.supplyCollateral(market, collateralAmount, BORROWER, hex"");
+        morpho.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
         uint256 borrowAmount = 5 * 10 ** 17;
-        morpho.borrow(market, borrowAmount, 0, BORROWER, BORROWER);
+        morpho.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
 
         morpho.setAuthorization(address(liquidationProtection), true);
 
@@ -59,51 +59,48 @@ contract LiquidationProtectionTest is Test {
     function testSetSubscription() public virtual {
         vm.startPrank(BORROWER);
 
-        SubscriptionParams memory params;
-        params.prelltv = 90 * 10 ** 16; // 90%
-        params.closeFactor = 10 ** 18; // 100%
-        params.liquidationIncentive = 10 ** 16; // 1%
+        SubscriptionParams memory subscriptionParams;
+        subscriptionParams.prelltv = 90 * 10 ** 16; // 90%
+        subscriptionParams.closeFactor = 10 ** 18; // 100%
+        subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        uint256 subscriptionNumber = liquidationProtection.subscribe(market, params);
+        liquidationProtection.subscribe(marketParams, subscriptionParams);
 
-        bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionNumber);
-        (uint256 prelltv, uint256 closeFactor, uint256 liquidationIncentive) =
-            liquidationProtection.subscriptions(subscriptionId);
-        assertEq(params.prelltv, prelltv);
-        assertEq(params.closeFactor, closeFactor);
-        assertEq(params.liquidationIncentive, liquidationIncentive);
+        bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionParams);
+        assertTrue(liquidationProtection.subscriptions(subscriptionId));
     }
 
     function testRemoveSubscription() public virtual {
         vm.startPrank(BORROWER);
 
-        SubscriptionParams memory params;
-        params.prelltv = 90 * 10 ** 16; // 90%
-        params.closeFactor = 10 ** 18; // 100%
-        params.liquidationIncentive = 10 ** 16; // 1%
+        SubscriptionParams memory subscriptionParams;
+        subscriptionParams.prelltv = 90 * 10 ** 16; // 90%
+        subscriptionParams.closeFactor = 10 ** 18; // 100%
+        subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        uint256 subscriptionNumber = liquidationProtection.subscribe(market, params);
+        liquidationProtection.subscribe(marketParams, subscriptionParams);
 
-        liquidationProtection.unsubscribe(marketId, subscriptionNumber);
+        liquidationProtection.unsubscribe(marketParams, subscriptionParams);
 
         vm.startPrank(LIQUIDATOR);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonValidSubscription.selector, subscriptionNumber));
-        liquidationProtection.liquidate(subscriptionNumber, market, BORROWER, 0, 0, hex"");
+        bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionParams);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonValidSubscription.selector, subscriptionId));
+        liquidationProtection.liquidate(marketParams, subscriptionParams, BORROWER, 0, 0, hex"");
     }
 
     function testSoftLiquidation() public virtual {
         vm.startPrank(BORROWER);
 
-        SubscriptionParams memory params;
-        params.prelltv = 10 * 10 ** 16; // 10%
-        params.closeFactor = 10 ** 18; // 100%
-        params.liquidationIncentive = 10 ** 16; // 1%
+        SubscriptionParams memory subscriptionParams;
+        subscriptionParams.prelltv = 10 * 10 ** 16; // 10%
+        subscriptionParams.closeFactor = 10 ** 18; // 100%
+        subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        uint256 subscriptionNumber = liquidationProtection.subscribe(market, params);
+        liquidationProtection.subscribe(marketParams, subscriptionParams);
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = morpho.position(marketId, BORROWER);
-        liquidationProtection.liquidate(subscriptionNumber, market, BORROWER, 0, position.borrowShares, hex"");
+        liquidationProtection.liquidate(marketParams, subscriptionParams, BORROWER, 0, position.borrowShares, hex"");
     }
 }
