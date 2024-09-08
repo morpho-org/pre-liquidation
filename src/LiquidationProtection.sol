@@ -134,12 +134,14 @@ contract LiquidationProtection {
             );
         }
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
-        (uint256 assets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
+        (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        emit EventsLib.Liquidate(borrower, msg.sender, marketId, subscriptionNumber, assets, repaidShares, seizedAssets);
+        emit EventsLib.Liquidate(
+            borrower, msg.sender, marketId, subscriptionNumber, repaidAssets, repaidShares, seizedAssets
+        );
     }
 
-    function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
+    function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho(msg.sender));
         (
             MarketParams memory marketParams,
@@ -152,12 +154,12 @@ contract LiquidationProtection {
         MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
         if (data.length > 0) {
-            IMorphoLiquidateCallback(liquidator).onMorphoLiquidate(assets, data);
+            IMorphoLiquidateCallback(liquidator).onMorphoLiquidate(repaidAssets, data);
         }
 
-        ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), assets);
+        ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
 
-        ERC20(marketParams.loanToken).safeApprove(address(MORPHO), assets);
+        ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
     }
 
     function computeSubscriptionId(address borrower, Id marketId, uint256 subscriptionNumber)
