@@ -11,9 +11,9 @@ import {SubscriptionParams} from "../interfaces/ILiquidationProtection.sol";
 library EventsLib {
     event Liquidate(
         address indexed borrower,
-        address indexed liquidator,
         Id indexed marketId,
         SubscriptionParams subscriptionParams,
+        address indexed liquidator,
         uint256 repaidAssets,
         uint256 repaidShares,
         uint256 seizedAssets

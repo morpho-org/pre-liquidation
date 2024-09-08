@@ -117,7 +117,7 @@ contract LiquidationProtection {
         (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
         emit EventsLib.Liquidate(
-            borrower, msg.sender, marketId, subscriptionParams, repaidAssets, repaidShares, seizedAssets
+            borrower, marketId, subscriptionParams, msg.sender, repaidAssets, repaidShares, seizedAssets
         );
     }
 
