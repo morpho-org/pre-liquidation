@@ -22,7 +22,7 @@ library EventsLib {
         address indexed borrower,
         Id indexed marketId,
         uint256 indexed subscriptionNumber,
-        uint256 slltv,
+        uint256 preLltv,
         uint256 closeFactor,
         uint256 liquidationIncentive
     );
