@@ -5,7 +5,7 @@ import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/sr
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
-import {IMorphoLiquidateCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
+import {IMorphoLiquidateCallback, IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 import "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
@@ -13,12 +13,13 @@ import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib, SubscriptionParams} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import {ILiquidationProtection} from "./interfaces/ILiquidationProtection.sol";
 
 /// @title Morpho
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Liquidation Protection Contract for Morpho
-contract LiquidationProtection {
+contract LiquidationProtection is ILiquidationProtection, IMorphoRepayCallback {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
     using SharesMathLib for uint256;
