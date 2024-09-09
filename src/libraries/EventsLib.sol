@@ -2,6 +2,7 @@
 pragma solidity 0.8.27;
 
 import {Id, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {SubscriptionParams} from "../interfaces/ILiquidationProtection.sol";
 
 /// @title EventsLib
 /// @author Morpho Labs
@@ -10,22 +11,15 @@ import {Id, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol
 library EventsLib {
     event Liquidate(
         address indexed borrower,
-        address indexed liquidator,
         Id indexed marketId,
-        uint256 subscriptionNumber,
+        SubscriptionParams subscriptionParams,
+        address indexed liquidator,
         uint256 repaidAssets,
         uint256 repaidShares,
         uint256 seizedAssets
     );
 
-    event Subscribe(
-        address indexed borrower,
-        Id indexed marketId,
-        uint256 indexed subscriptionNumber,
-        uint256 slltv,
-        uint256 closeFactor,
-        uint256 liquidationIncentive
-    );
+    event Subscribe(address indexed borrower, Id indexed marketId, SubscriptionParams subscriptionParams);
 
-    event Unsubscribe(address indexed borrower, Id indexed marketId, uint256 indexed subscriptionNumber);
+    event Unsubscribe(address indexed borrower, Id indexed marketId, SubscriptionParams subscriptionParams);
 }

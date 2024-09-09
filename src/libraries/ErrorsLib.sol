@@ -6,15 +6,15 @@ pragma solidity 0.8.27;
 /// @custom:contact security@morpho.org
 /// @notice Library exposing errors.
 library ErrorsLib {
-    error PreLltvTooHigh(uint256, uint256);
+    error PreLltvTooHigh(uint256 prelltv, uint256 lltv);
 
-    error InvalidSubscription(uint256);
+    error InvalidSubscription();
 
-    error InconsistentInput(uint256, uint256);
+    error InconsistentInput(uint256 seizedAssets, uint256 repaidShares);
 
     error HealthyPosition();
 
-    error LiquidationTooLarge(uint256, uint256);
+    error LiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
     error NotMorpho();
 }
