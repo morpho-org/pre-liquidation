@@ -88,7 +88,7 @@ contract LiquidationProtectionTest is Test {
 
         vm.startPrank(LIQUIDATOR);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonValidSubscription.selector, subscriptionNumber));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.InvalidSubscription.selector, subscriptionNumber));
         liquidationProtection.liquidate(subscriptionNumber, market, BORROWER, 0, 0, hex"");
     }
 

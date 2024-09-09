@@ -53,7 +53,7 @@ contract LiquidationProtection {
         Id marketId = marketParams.id();
         require(
             subscriptionParams.prelltv < marketParams.lltv,
-            ErrorsLib.LowPreLltvError(subscriptionParams.prelltv, marketParams.lltv)
+            ErrorsLib.PreLltvTooHigh(subscriptionParams.prelltv, marketParams.lltv)
         );
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
@@ -92,7 +92,7 @@ contract LiquidationProtection {
     ) public {
         Id marketId = marketParams.id();
         bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionNumber);
-        require(subscriptions[subscriptionId].closeFactor != 0, ErrorsLib.NonValidSubscription(subscriptionNumber));
+        require(subscriptions[subscriptionId].closeFactor != 0, ErrorsLib.InvalidSubscription(subscriptionNumber));
 
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
@@ -128,7 +128,7 @@ contract LiquidationProtection {
             Position memory borrowerPosition = MORPHO.position(marketId, borrower);
             require(
                 borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor) >= repaidShares,
-                ErrorsLib.CloseFactorError(
+                ErrorsLib.LiquidationTooLarge(
                     borrowerPosition.borrowShares.wMulDown(subscriptions[subscriptionId].closeFactor), repaidShares
                 )
             );
@@ -140,7 +140,7 @@ contract LiquidationProtection {
     }
 
     function onMorphoRepay(uint256 assets, bytes calldata callbackData) external {
-        require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho(msg.sender));
+        require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (
             MarketParams memory marketParams,
             uint256 seizedAssets,
