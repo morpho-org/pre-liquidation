@@ -42,7 +42,7 @@ contract LiquidationProtection {
     function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external {
         require(
             subscriptionParams.prelltv < marketParams.lltv,
-            ErrorsLib.LowPreLltvError(subscriptionParams.prelltv, marketParams.lltv)
+            ErrorsLib.PreLltvTooHigh(subscriptionParams.prelltv, marketParams.lltv)
         );
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
@@ -73,8 +73,8 @@ contract LiquidationProtection {
         bytes calldata data
     ) external {
         Id marketId = marketParams.id();
-        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionParams);
-        require(subscriptions[subscriptionId], ErrorsLib.NonValidSubscription());
+        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionNumber);
+        require(subscriptions[subscriptionId].closeFactor != 0, ErrorsLib.InvalidSubscription());
 
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
@@ -108,7 +108,7 @@ contract LiquidationProtection {
             // Check if liquidation is ok with close factor
             Position memory borrowerPosition = MORPHO.position(marketId, borrower);
             uint256 repayableShares = borrowerPosition.borrowShares.wMulDown(subscriptionParams.closeFactor);
-            require(repaidShares <= repayableShares, ErrorsLib.CloseFactorError(repaidShares, repayableShares));
+            require(repaidShares <= repayableShares, ErrorsLib.LiquidationTooLarge(repaidShares, repayableShares));
         }
 
         bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
@@ -119,8 +119,9 @@ contract LiquidationProtection {
         );
     }
 
+
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
-        require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho(msg.sender));
+        require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (
             MarketParams memory marketParams,
             uint256 seizedAssets,
