@@ -73,8 +73,8 @@ contract LiquidationProtection {
         bytes calldata data
     ) external {
         Id marketId = marketParams.id();
-        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionNumber);
-        require(subscriptions[subscriptionId].closeFactor != 0, ErrorsLib.InvalidSubscription());
+        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionParams);
+        require(subscriptions[subscriptionId], ErrorsLib.InvalidSubscription());
 
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
