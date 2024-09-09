@@ -8,7 +8,7 @@ pragma solidity 0.8.27;
 library ErrorsLib {
     error LowPreLltvError(uint256 prelltv, uint256 lltv);
 
-    error NonValidSubscription(bytes32 subscriptionId);
+    error NonValidSubscription();
 
     error InconsistentInput(uint256 seizedAssets, uint256 repaidShares);
 

@@ -74,7 +74,7 @@ contract LiquidationProtection {
     ) external {
         Id marketId = marketParams.id();
         bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionParams);
-        require(subscriptions[subscriptionId], ErrorsLib.NonValidSubscription(subscriptionId));
+        require(subscriptions[subscriptionId], ErrorsLib.NonValidSubscription());
 
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
