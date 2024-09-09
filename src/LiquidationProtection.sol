@@ -119,7 +119,6 @@ contract LiquidationProtection {
         );
     }
 
-
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (
