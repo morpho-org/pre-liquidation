@@ -49,6 +49,8 @@ contract LiquidationProtection is ILiquidationProtection {
             subscriptionParams.prelltv < marketParams.lltv,
             ErrorsLib.PreLltvTooHigh(subscriptionParams.prelltv, marketParams.lltv)
         );
+
+        ERC20(marketParams.loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
 
     function subscribe() external {
@@ -134,8 +136,6 @@ contract LiquidationProtection is ILiquidationProtection {
         }
 
         ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
-
-        ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
     }
 
     function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)
