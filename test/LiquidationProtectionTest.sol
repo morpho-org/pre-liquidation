@@ -21,7 +21,7 @@ contract LiquidationProtectionTest is Test {
     ILiquidationProtection internal liquidationProtection;
     Id internal marketId;
     MarketParams internal marketParams;
-    IMorpho morpho;
+    IMorpho MORPHO;
     ERC20 loanToken;
     ERC20 collateralToken;
 
@@ -31,25 +31,25 @@ contract LiquidationProtectionTest is Test {
         BORROWER = makeAddr("Borrower");
         LIQUIDATOR = makeAddr("Liquidator");
 
-        address MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
-        morpho = IMorpho(MORPHO);
+        address morpho = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
+        MORPHO = IMorpho(morpho);
 
         marketId = Id.wrap(0xb8fc70e82bc5bb53e773626fcc6a23f7eefa036918d7ef216ecfb1950a94a85e); // wstETH/WETH (96.5%)
-        marketParams = morpho.idToMarketParams(marketId);
+        marketParams = MORPHO.idToMarketParams(marketId);
         loanToken = ERC20(marketParams.loanToken);
         collateralToken = ERC20(marketParams.collateralToken);
 
-        factory = new LiquidationProtectionFactory(MORPHO);
+        factory = new LiquidationProtectionFactory(address(MORPHO));
 
         vm.startPrank(BORROWER);
-        loanToken.approve(address(morpho), type(uint256).max);
-        collateralToken.approve(address(morpho), type(uint256).max);
+        loanToken.approve(address(MORPHO), type(uint256).max);
+        collateralToken.approve(address(MORPHO), type(uint256).max);
 
         uint256 collateralAmount = 1 * 10 ** 18;
         deal(address(collateralToken), BORROWER, collateralAmount);
-        morpho.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
+        MORPHO.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
         uint256 borrowAmount = 5 * 10 ** 17;
-        morpho.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
+        MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
     }
 
     function testSetSubscription() public virtual {
@@ -93,7 +93,7 @@ contract LiquidationProtectionTest is Test {
         subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
         liquidationProtection = factory.createSubscription(marketParams, subscriptionParams);
-        morpho.setAuthorization(address(liquidationProtection), true);
+        MORPHO.setAuthorization(address(liquidationProtection), true);
         liquidationProtection.subscribe();
 
         vm.startPrank(LIQUIDATOR);
@@ -103,7 +103,7 @@ contract LiquidationProtectionTest is Test {
         loanToken.approve(address(liquidationProtection), type(uint256).max);
         collateralToken.approve(address(liquidationProtection), type(uint256).max);
 
-        Position memory position = morpho.position(marketId, BORROWER);
+        Position memory position = MORPHO.position(marketId, BORROWER);
         liquidationProtection.liquidate(marketParams, BORROWER, 0, position.borrowShares, hex"");
     }
 }
