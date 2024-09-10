@@ -6,12 +6,14 @@ import {LiquidationProtection} from "./LiquidationProtection.sol";
 import {ILiquidationProtection} from "./interfaces/ILiquidationProtection.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib, SubscriptionParams} from "./libraries/EventsLib.sol";
+import {ILiquidationProtectionFactory} from "./interfaces/ILiquidationProtectionFactory.sol";
+
 /// @title Morpho
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Liquidation Protection Factory Contract for Morpho
 
-contract LiquidationProtectionFactory {
+contract LiquidationProtectionFactory is ILiquidationProtectionFactory {
     /* IMMUTABLE */
     IMorpho public immutable MORPHO;
 
