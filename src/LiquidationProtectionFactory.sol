@@ -31,6 +31,6 @@ contract LiquidationProtectionFactory {
             address(new LiquidationProtection(marketParams, subscriptionParams, address(MORPHO)))
         );
 
-        // TODO event
+        emit EventsLib.CreateSubscription(address(liquidationProtection), marketParams, subscriptionParams);
     }
 }

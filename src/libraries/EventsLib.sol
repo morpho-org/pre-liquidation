@@ -22,4 +22,8 @@ library EventsLib {
     event Subscribe(address indexed borrower);
 
     event Unsubscribe(address indexed borrower);
+
+    event CreateSubscription(
+        address indexed subscription, MarketParams marketParams, SubscriptionParams subscriptionParams
+    );
 }
