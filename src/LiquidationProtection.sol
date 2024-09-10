@@ -111,7 +111,7 @@ contract LiquidationProtection is ILiquidationProtection {
             require(repaidShares <= repayableShares, ErrorsLib.LiquidationTooLarge(repaidShares, repayableShares));
         }
 
-        bytes memory callbackData = abi.encode(marketParams, seizedAssets, borrower, msg.sender, data);
+        bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
         (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
         emit EventsLib.Liquidate(
@@ -121,13 +121,8 @@ contract LiquidationProtection is ILiquidationProtection {
 
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
-        (
-            MarketParams memory _marketParams,
-            uint256 seizedAssets,
-            address borrower,
-            address liquidator,
-            bytes memory data
-        ) = abi.decode(callbackData, (MarketParams, uint256, address, address, bytes));
+        (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =
+            abi.decode(callbackData, (uint256, address, address, bytes));
 
         MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
