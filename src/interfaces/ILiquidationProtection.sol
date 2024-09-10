@@ -9,8 +9,6 @@ struct SubscriptionParams {
     uint256 liquidationIncentive;
 }
 
-// TODO: add ILiquidationProtection interface
-
 interface ILiquidationProtection {
     function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external;
 
