@@ -2,8 +2,7 @@
 pragma solidity >= 0.5.0;
 
 import {MarketParams, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {SubscriptionParams} from "../libraries/EventsLib.sol";
-import {ILiquidationProtection} from "./ILiquidationProtection.sol";
+import {ILiquidationProtection, SubscriptionParams} from "./ILiquidationProtection.sol";
 
 interface ILiquidationProtectionFactory {
     function MORPHO() external view returns (IMorpho);

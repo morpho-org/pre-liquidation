@@ -11,9 +11,9 @@ import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
-import {EventsLib, SubscriptionParams} from "./libraries/EventsLib.sol";
+import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {ILiquidationProtection} from "./interfaces/ILiquidationProtection.sol";
+import {ILiquidationProtection, SubscriptionParams} from "./interfaces/ILiquidationProtection.sol";
 
 /// @title Morpho
 /// @author Morpho Labs

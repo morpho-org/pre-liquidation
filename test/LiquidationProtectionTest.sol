@@ -4,8 +4,8 @@ pragma solidity 0.8.27;
 import "../lib/forge-std/src/Test.sol";
 import "../lib/forge-std/src/console.sol";
 
-import {ILiquidationProtection} from "../src/interfaces/ILiquidationProtection.sol";
-import {LiquidationProtection, SubscriptionParams} from "../src/LiquidationProtection.sol";
+import {ILiquidationProtection, SubscriptionParams} from "../src/interfaces/ILiquidationProtection.sol";
+import {LiquidationProtection} from "../src/LiquidationProtection.sol";
 import {LiquidationProtectionFactory} from "../src/LiquidationProtectionFactory.sol";
 import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";

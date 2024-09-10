@@ -3,9 +3,9 @@ pragma solidity 0.8.27;
 
 import {IMorpho, MarketParams} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {LiquidationProtection} from "./LiquidationProtection.sol";
-import {ILiquidationProtection} from "./interfaces/ILiquidationProtection.sol";
+import {ILiquidationProtection, SubscriptionParams} from "./interfaces/ILiquidationProtection.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {EventsLib, SubscriptionParams} from "./libraries/EventsLib.sol";
+import {EventsLib} from "./libraries/EventsLib.sol";
 import {ILiquidationProtectionFactory} from "./interfaces/ILiquidationProtectionFactory.sol";
 
 /// @title Morpho
