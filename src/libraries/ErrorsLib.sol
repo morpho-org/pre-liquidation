@@ -17,4 +17,6 @@ library ErrorsLib {
     error LiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
     error NotMorpho();
+
+    error ZeroAddress();
 }

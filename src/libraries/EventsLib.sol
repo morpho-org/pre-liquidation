@@ -19,7 +19,7 @@ library EventsLib {
         uint256 seizedAssets
     );
 
-    event Subscribe(address indexed borrower, Id indexed marketId, SubscriptionParams subscriptionParams);
+    event Subscribe(address indexed borrower);
 
-    event Unsubscribe(address indexed borrower, Id indexed marketId, SubscriptionParams subscriptionParams);
+    event Unsubscribe(address indexed borrower);
 }

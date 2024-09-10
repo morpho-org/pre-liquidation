@@ -12,15 +12,14 @@ struct SubscriptionParams {
 interface ILiquidationProtection {
     function MORPHO() external view returns (IMorpho);
 
-    function subscriptions(bytes32 subscriptionId) external view returns (bool);
+    function subscriptions(address) external view returns (bool);
 
-    function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external;
+    function subscribe() external;
 
-    function unsubscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external;
+    function unsubscribe() external;
 
     function liquidate(
         MarketParams calldata marketParams,
-        SubscriptionParams calldata subscriptionParams,
         address borrower,
         uint256 seizedAssets,
         uint256 repaidShares,

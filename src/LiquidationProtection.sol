@@ -31,51 +31,48 @@ contract LiquidationProtection is ILiquidationProtection {
     IMorpho public immutable MORPHO;
 
     /* STORAGE */
-    mapping(bytes32 => bool) public subscriptions;
+    mapping(address => bool) public subscriptions;
+    MarketParams public marketParams;
+    SubscriptionParams public subscriptionParams;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
 
-    constructor(address morpho) {
+    constructor(MarketParams memory _marketParams, SubscriptionParams memory _subscriptionParams, address morpho) {
         MORPHO = IMorpho(morpho);
-    }
+        marketParams = _marketParams;
+        subscriptionParams = _subscriptionParams;
 
-    function subscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external {
+        // should close factor be lower than 100% ?
+        // should there be a max liquidation incentive ?
         require(
             subscriptionParams.prelltv < marketParams.lltv,
             ErrorsLib.PreLltvTooHigh(subscriptionParams.prelltv, marketParams.lltv)
         );
-        // should close factor be lower than 100% ?
-        // should there be a max liquidation incentive ?
-
-        Id marketId = marketParams.id();
-        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionParams);
-
-        subscriptions[subscriptionId] = true;
-
-        emit EventsLib.Subscribe(msg.sender, marketId, subscriptionParams);
     }
 
-    function unsubscribe(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams) external {
-        Id marketId = marketParams.id();
-        bytes32 subscriptionId = computeSubscriptionId(msg.sender, marketId, subscriptionParams);
+    function subscribe() external {
+        subscriptions[msg.sender] = true;
 
-        subscriptions[subscriptionId] = false;
+        emit EventsLib.Subscribe(msg.sender);
+    }
 
-        emit EventsLib.Unsubscribe(msg.sender, marketId, subscriptionParams);
+    function unsubscribe() external {
+        subscriptions[msg.sender] = false;
+
+        emit EventsLib.Unsubscribe(msg.sender);
     }
 
     function liquidate(
-        MarketParams calldata marketParams,
-        SubscriptionParams calldata subscriptionParams,
+        MarketParams calldata _marketParams,
         address borrower,
         uint256 seizedAssets,
         uint256 repaidShares,
         bytes calldata data
     ) external {
+        // TODO require(_marketParams == marketParams) ?
         Id marketId = marketParams.id();
-        bytes32 subscriptionId = computeSubscriptionId(borrower, marketId, subscriptionParams);
-        require(subscriptions[subscriptionId], ErrorsLib.InvalidSubscription());
+        require(subscriptions[borrower], ErrorsLib.InvalidSubscription());
 
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
@@ -123,7 +120,7 @@ contract LiquidationProtection is ILiquidationProtection {
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (
-            MarketParams memory marketParams,
+            MarketParams memory _marketParams,
             uint256 seizedAssets,
             address borrower,
             address liquidator,
@@ -139,14 +136,6 @@ contract LiquidationProtection is ILiquidationProtection {
         ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
 
         ERC20(marketParams.loanToken).safeApprove(address(MORPHO), repaidAssets);
-    }
-
-    function computeSubscriptionId(address borrower, Id marketId, SubscriptionParams memory subscriptionParams)
-        public
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(borrower, marketId, subscriptionParams));
     }
 
     function _isHealthy(Id id, address borrower, uint256 collateralPrice, uint256 ltvThreshold)

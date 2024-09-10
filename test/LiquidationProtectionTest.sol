@@ -4,7 +4,9 @@ pragma solidity 0.8.27;
 import "../lib/forge-std/src/Test.sol";
 import "../lib/forge-std/src/console.sol";
 
+import {ILiquidationProtection} from "../src/interfaces/ILiquidationProtection.sol";
 import {LiquidationProtection, SubscriptionParams} from "../src/LiquidationProtection.sol";
+import {LiquidationProtectionFactory} from "../src/LiquidationProtectionFactory.sol";
 import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
@@ -15,7 +17,8 @@ contract LiquidationProtectionTest is Test {
     address internal BORROWER;
     address internal LIQUIDATOR;
 
-    LiquidationProtection internal liquidationProtection;
+    LiquidationProtectionFactory internal factory;
+    ILiquidationProtection internal liquidationProtection;
     Id internal marketId;
     MarketParams internal marketParams;
     IMorpho morpho;
@@ -36,7 +39,7 @@ contract LiquidationProtectionTest is Test {
         loanToken = ERC20(marketParams.loanToken);
         collateralToken = ERC20(marketParams.collateralToken);
 
-        liquidationProtection = new LiquidationProtection(MORPHO);
+        factory = new LiquidationProtectionFactory(MORPHO);
 
         vm.startPrank(BORROWER);
         loanToken.approve(address(morpho), type(uint256).max);
@@ -47,13 +50,6 @@ contract LiquidationProtectionTest is Test {
         morpho.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
         uint256 borrowAmount = 5 * 10 ** 17;
         morpho.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
-
-        morpho.setAuthorization(address(liquidationProtection), true);
-
-        vm.startPrank(LIQUIDATOR);
-        deal(address(loanToken), LIQUIDATOR, 2 * borrowAmount);
-        loanToken.approve(address(liquidationProtection), type(uint256).max);
-        collateralToken.approve(address(liquidationProtection), type(uint256).max);
     }
 
     function testSetSubscription() public virtual {
@@ -64,10 +60,10 @@ contract LiquidationProtectionTest is Test {
         subscriptionParams.closeFactor = 10 ** 18; // 100%
         subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection.subscribe(marketParams, subscriptionParams);
+        liquidationProtection = factory.createSubscription(marketParams, subscriptionParams);
 
-        bytes32 subscriptionId = liquidationProtection.computeSubscriptionId(BORROWER, marketId, subscriptionParams);
-        assertTrue(liquidationProtection.subscriptions(subscriptionId));
+        liquidationProtection.subscribe();
+        assertTrue(liquidationProtection.subscriptions(BORROWER));
     }
 
     function testRemoveSubscription() public virtual {
@@ -78,14 +74,14 @@ contract LiquidationProtectionTest is Test {
         subscriptionParams.closeFactor = 10 ** 18; // 100%
         subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection.subscribe(marketParams, subscriptionParams);
-
-        liquidationProtection.unsubscribe(marketParams, subscriptionParams);
+        liquidationProtection = factory.createSubscription(marketParams, subscriptionParams);
+        liquidationProtection.subscribe();
+        liquidationProtection.unsubscribe();
 
         vm.startPrank(LIQUIDATOR);
 
         vm.expectRevert(ErrorsLib.InvalidSubscription.selector);
-        liquidationProtection.liquidate(marketParams, subscriptionParams, BORROWER, 0, 0, hex"");
+        liquidationProtection.liquidate(marketParams, BORROWER, 0, 0, hex"");
     }
 
     function testSoftLiquidation() public virtual {
@@ -96,10 +92,18 @@ contract LiquidationProtectionTest is Test {
         subscriptionParams.closeFactor = 10 ** 18; // 100%
         subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection.subscribe(marketParams, subscriptionParams);
+        liquidationProtection = factory.createSubscription(marketParams, subscriptionParams);
+        morpho.setAuthorization(address(liquidationProtection), true);
+        liquidationProtection.subscribe();
 
         vm.startPrank(LIQUIDATOR);
+
+        uint256 borrowAmount = 5 * 10 ** 17;
+        deal(address(loanToken), LIQUIDATOR, 2 * borrowAmount);
+        loanToken.approve(address(liquidationProtection), type(uint256).max);
+        collateralToken.approve(address(liquidationProtection), type(uint256).max);
+
         Position memory position = morpho.position(marketId, BORROWER);
-        liquidationProtection.liquidate(marketParams, subscriptionParams, BORROWER, 0, position.borrowShares, hex"");
+        liquidationProtection.liquidate(marketParams, BORROWER, 0, position.borrowShares, hex"");
     }
 }
