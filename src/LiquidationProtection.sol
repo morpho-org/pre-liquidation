@@ -13,12 +13,13 @@ import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib, SubscriptionParams} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import {ILiquidationProtection} from "./interfaces/ILiquidationProtection.sol";
 
 /// @title Morpho
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Liquidation Protection Contract for Morpho
-contract LiquidationProtection {
+contract LiquidationProtection is ILiquidationProtection {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
     using SharesMathLib for uint256;
