@@ -29,7 +29,7 @@ contract LiquidationProtection is ILiquidationProtection {
 
     /* IMMUTABLE */
     IMorpho public immutable MORPHO;
-
+    Id public immutable marketId;
     /* STORAGE */
     mapping(address => bool) public subscriptions;
     MarketParams public marketParams;
@@ -42,7 +42,7 @@ contract LiquidationProtection is ILiquidationProtection {
         MORPHO = IMorpho(morpho);
         marketParams = _marketParams;
         subscriptionParams = _subscriptionParams;
-
+        marketId = _marketParams.id();
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
         require(
@@ -73,7 +73,6 @@ contract LiquidationProtection is ILiquidationProtection {
         bytes calldata data
     ) external {
         // TODO require(_marketParams == marketParams) ?
-        Id marketId = marketParams.id();
         require(subscriptions[borrower], ErrorsLib.InvalidSubscription());
 
         require(
@@ -136,9 +135,8 @@ contract LiquidationProtection is ILiquidationProtection {
         view
         returns (bool)
     {
-        Id id = marketParams.id();
-        Position memory borrowerPosition = MORPHO.position(id, borrower);
-        Market memory market = MORPHO.market(id);
+        Position memory borrowerPosition = MORPHO.position(marketId, borrower);
+        Market memory market = MORPHO.market(marketId);
 
         uint256 borrowed =
             uint256(borrowerPosition.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
