@@ -17,7 +17,7 @@ contract LiquidationProtectionFactory is ILiquidationProtectionFactory {
     /* IMMUTABLE */
     IMorpho public immutable MORPHO;
 
-    mapping(address => SubscriptionParams) subscriptions;
+    mapping(bytes32 => ILiquidationProtection) subscriptions;
 
     constructor(address morpho) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
@@ -29,10 +29,21 @@ contract LiquidationProtectionFactory is ILiquidationProtectionFactory {
         external
         returns (ILiquidationProtection liquidationProtection)
     {
+        bytes32 preLiquidationId = getPreLiquidationId(marketParams, subscriptionParams);
+        require(address(subscriptions[preLiquidationId]) == address(0), ErrorsLib.RedundantMarket());
+
         liquidationProtection = ILiquidationProtection(
             address(new LiquidationProtection(marketParams, subscriptionParams, address(MORPHO)))
         );
+        subscriptions[preLiquidationId] = liquidationProtection;
 
         emit EventsLib.CreatePreLiquidation(address(liquidationProtection), marketParams, subscriptionParams);
+    }
+
+    function getPreLiquidationId(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
+        internal
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(marketParams, subscriptionParams));
     }
 }

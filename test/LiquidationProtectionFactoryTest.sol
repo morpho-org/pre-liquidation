@@ -10,13 +10,12 @@ contract LiquidationProtectionFactoryTest is BaseTest {
 
     function setUp() public override {
         super.setUp();
-
-        factory = new LiquidationProtectionFactory(address(MORPHO));
     }
 
     function testCreatePreLiquidation(SubscriptionParams calldata subscription) public {
         vm.assume(subscription.prelltv < lltv);
 
+        factory = new LiquidationProtectionFactory(address(MORPHO));
         ILiquidationProtection liquidationProtection = factory.createPreLiquidation(market, subscription);
     }
 }

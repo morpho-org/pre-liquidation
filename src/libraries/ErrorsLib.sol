@@ -19,4 +19,6 @@ library ErrorsLib {
     error NotMorpho();
 
     error ZeroAddress();
+
+    error RedundantMarket();
 }
