@@ -12,7 +12,6 @@ library EventsLib {
     event Liquidate(
         address indexed borrower,
         Id indexed marketId,
-        SubscriptionParams subscriptionParams,
         address indexed liquidator,
         uint256 repaidAssets,
         uint256 repaidShares,

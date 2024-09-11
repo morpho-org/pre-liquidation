@@ -30,10 +30,13 @@ contract LiquidationProtection is ILiquidationProtection {
     /* IMMUTABLE */
     IMorpho public immutable MORPHO;
     Id public immutable marketId;
+    uint256 public immutable prelltv;
+    uint256 public immutable closeFactor;
+    uint256 public immutable liquidationIncentive;
+
     /* STORAGE */
     mapping(address => bool) public subscriptions;
     MarketParams public marketParams;
-    SubscriptionParams public subscriptionParams;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
@@ -41,14 +44,15 @@ contract LiquidationProtection is ILiquidationProtection {
     constructor(MarketParams memory _marketParams, SubscriptionParams memory _subscriptionParams, address morpho) {
         MORPHO = IMorpho(morpho);
         marketParams = _marketParams;
-        subscriptionParams = _subscriptionParams;
+
+        prelltv = _subscriptionParams.prelltv;
+        closeFactor = _subscriptionParams.closeFactor;
+        liquidationIncentive = _subscriptionParams.liquidationIncentive;
+
         marketId = _marketParams.id();
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
-        require(
-            subscriptionParams.prelltv < marketParams.lltv,
-            ErrorsLib.PreLltvTooHigh(subscriptionParams.prelltv, marketParams.lltv)
-        );
+        require(prelltv < marketParams.lltv, ErrorsLib.PreLltvTooHigh(prelltv, marketParams.lltv));
 
         ERC20(marketParams.loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
@@ -86,7 +90,7 @@ contract LiquidationProtection is ILiquidationProtection {
         {
             // Compute seizedAssets or repaidShares and repaidAssets
             Market memory market = MORPHO.market(marketId);
-            uint256 liquidationIncentive = subscriptionParams.liquidationIncentive;
+            uint256 liquidationIncentive = liquidationIncentive;
             if (seizedAssets > 0) {
                 uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
@@ -104,16 +108,14 @@ contract LiquidationProtection is ILiquidationProtection {
 
             // Check if liquidation is ok with close factor
             Position memory borrowerPosition = MORPHO.position(marketId, borrower);
-            uint256 repayableShares = borrowerPosition.borrowShares.wMulDown(subscriptionParams.closeFactor);
+            uint256 repayableShares = borrowerPosition.borrowShares.wMulDown(closeFactor);
             require(repaidShares <= repayableShares, ErrorsLib.LiquidationTooLarge(repaidShares, repayableShares));
         }
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
         (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        emit EventsLib.Liquidate(
-            borrower, marketId, subscriptionParams, msg.sender, repaidAssets, repaidShares, seizedAssets
-        );
+        emit EventsLib.Liquidate(borrower, marketId, msg.sender, repaidAssets, repaidShares, seizedAssets);
     }
 
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
@@ -136,8 +138,8 @@ contract LiquidationProtection is ILiquidationProtection {
 
         uint256 borrowed =
             uint256(borrowerPosition.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
-        uint256 maxBorrow = uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
-            .wMulDown(subscriptionParams.prelltv);
+        uint256 maxBorrow =
+            uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(prelltv);
 
         return maxBorrow < borrowed;
     }
