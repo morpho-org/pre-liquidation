@@ -60,7 +60,7 @@ contract LiquidationProtectionTest is Test {
         subscriptionParams.closeFactor = 10 ** 18; // 100%
         subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection = factory.createSubscription(marketParams, subscriptionParams);
+        liquidationProtection = factory.createPreLiquidation(marketParams, subscriptionParams);
 
         liquidationProtection.subscribe();
         assertTrue(liquidationProtection.subscriptions(BORROWER));
@@ -74,7 +74,7 @@ contract LiquidationProtectionTest is Test {
         subscriptionParams.closeFactor = 10 ** 18; // 100%
         subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection = factory.createSubscription(marketParams, subscriptionParams);
+        liquidationProtection = factory.createPreLiquidation(marketParams, subscriptionParams);
         liquidationProtection.subscribe();
         liquidationProtection.unsubscribe();
 
@@ -92,7 +92,7 @@ contract LiquidationProtectionTest is Test {
         subscriptionParams.closeFactor = 10 ** 18; // 100%
         subscriptionParams.liquidationIncentive = 10 ** 16; // 1%
 
-        liquidationProtection = factory.createSubscription(marketParams, subscriptionParams);
+        liquidationProtection = factory.createPreLiquidation(marketParams, subscriptionParams);
         MORPHO.setAuthorization(address(liquidationProtection), true);
         liquidationProtection.subscribe();
 

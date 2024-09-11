@@ -23,7 +23,7 @@ library EventsLib {
 
     event Unsubscribe(address indexed borrower);
 
-    event CreateSubscription(
+    event CreatePreLiquidation(
         address indexed subscription, MarketParams marketParams, SubscriptionParams subscriptionParams
     );
 }

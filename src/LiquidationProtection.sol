@@ -82,7 +82,7 @@ contract LiquidationProtection is ILiquidationProtection {
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
 
         MORPHO.accrueInterest(marketParams);
-        require(_isPreliquidable(borrower, collateralPrice, subscriptionParams.prelltv), ErrorsLib.HealthyPosition());
+        require(_isPreLiquidatable(borrower, collateralPrice, subscriptionParams.prelltv), ErrorsLib.HealthyPosition());
 
         {
             // Compute seizedAssets or repaidShares and repaidAssets
@@ -131,7 +131,7 @@ contract LiquidationProtection is ILiquidationProtection {
         ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
     }
 
-    function _isPreliquidable(address borrower, uint256 collateralPrice, uint256 ltvThreshold)
+    function _isPreLiquidatable(address borrower, uint256 collateralPrice, uint256 ltvThreshold)
         internal
         view
         returns (bool)

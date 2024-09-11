@@ -25,7 +25,7 @@ contract LiquidationProtectionFactory is ILiquidationProtectionFactory {
         MORPHO = IMorpho(morpho);
     }
 
-    function createSubscription(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
+    function createPreLiquidation(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
         external
         returns (ILiquidationProtection liquidationProtection)
     {
@@ -33,6 +33,6 @@ contract LiquidationProtectionFactory is ILiquidationProtectionFactory {
             address(new LiquidationProtection(marketParams, subscriptionParams, address(MORPHO)))
         );
 
-        emit EventsLib.CreateSubscription(address(liquidationProtection), marketParams, subscriptionParams);
+        emit EventsLib.CreatePreLiquidation(address(liquidationProtection), marketParams, subscriptionParams);
     }
 }

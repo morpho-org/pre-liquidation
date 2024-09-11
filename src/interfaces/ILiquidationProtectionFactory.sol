@@ -7,7 +7,7 @@ import {ILiquidationProtection, SubscriptionParams} from "./ILiquidationProtecti
 interface ILiquidationProtectionFactory {
     function MORPHO() external view returns (IMorpho);
 
-    function createSubscription(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
+    function createPreLiquidation(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
         external
         returns (ILiquidationProtection liquidationProtection);
 }
