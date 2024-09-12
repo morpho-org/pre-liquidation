@@ -14,7 +14,7 @@ library ErrorsLib {
 
     error HealthyPosition();
 
-    error LiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
+    error PreLiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
     error NotMorpho();
 

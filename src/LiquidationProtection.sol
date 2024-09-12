@@ -121,7 +121,7 @@ contract LiquidationProtection is ILiquidationProtection {
             // Check if liquidation is ok with close factor
             Position memory borrowerPosition = MORPHO.position(marketId, borrower);
             uint256 repayableShares = borrowerPosition.borrowShares.wMulDown(closeFactor);
-            require(repaidShares <= repayableShares, ErrorsLib.LiquidationTooLarge(repaidShares, repayableShares));
+            require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
         }
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
