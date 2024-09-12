@@ -42,6 +42,7 @@ contract LiquidationProtectionFactory is ILiquidationProtectionFactory {
 
     function getPreLiquidationId(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
         internal
+        pure
         returns (bytes32)
     {
         return keccak256(abi.encode(marketParams, subscriptionParams));
