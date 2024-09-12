@@ -18,11 +18,5 @@ interface ILiquidationProtection {
 
     function unsubscribe() external;
 
-    function liquidate(
-        MarketParams calldata marketParams,
-        address borrower,
-        uint256 seizedAssets,
-        uint256 repaidShares,
-        bytes calldata data
-    ) external;
+    function liquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
 }
