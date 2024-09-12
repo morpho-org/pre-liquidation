@@ -33,7 +33,7 @@ contract LiquidationProtection is ILiquidationProtection {
 
     uint256 public immutable prelltv;
     uint256 public immutable closeFactor;
-    uint256 public immutable liquidationIncentive;
+    uint256 public immutable preLiquidationIncentive;
     uint256 public immutable lltv;
 
     address immutable collateralToken;
@@ -52,7 +52,7 @@ contract LiquidationProtection is ILiquidationProtection {
 
         prelltv = _subscriptionParams.prelltv;
         closeFactor = _subscriptionParams.closeFactor;
-        liquidationIncentive = _subscriptionParams.liquidationIncentive;
+        preLiquidationIncentive = _subscriptionParams.preLiquidationIncentive;
 
         lltv = _marketParams.lltv;
         collateralToken = _marketParams.collateralToken;
@@ -102,19 +102,18 @@ contract LiquidationProtection is ILiquidationProtection {
         {
             // Compute seizedAssets or repaidShares and repaidAssets
             Market memory market = MORPHO.market(marketId);
-            uint256 liquidationIncentive = liquidationIncentive;
             if (seizedAssets > 0) {
                 uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
-                repaidShares = seizedAssetsQuoted.wDivUp(liquidationIncentive).toSharesUp(
+                repaidShares = seizedAssetsQuoted.wDivUp(preLiquidationIncentive).toSharesUp(
                     market.totalBorrowAssets, market.totalBorrowShares
                 );
             } else {
                 seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
-                    liquidationIncentive
+                    preLiquidationIncentive
                 ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
                 seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
-                    liquidationIncentive
+                    preLiquidationIncentive
                 ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
             }
 
