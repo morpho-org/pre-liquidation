@@ -30,31 +30,42 @@ contract LiquidationProtection is ILiquidationProtection {
     /* IMMUTABLE */
     IMorpho public immutable MORPHO;
     Id public immutable marketId;
+
     uint256 public immutable prelltv;
     uint256 public immutable closeFactor;
     uint256 public immutable liquidationIncentive;
+    uint256 public immutable lltv;
+
+    address immutable collateralToken;
+    address immutable loanToken;
+    address immutable irm;
+    address immutable oracle;
 
     /* STORAGE */
     mapping(address => bool) public subscriptions;
-    MarketParams public marketParams;
 
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
 
     constructor(MarketParams memory _marketParams, SubscriptionParams memory _subscriptionParams, address morpho) {
         MORPHO = IMorpho(morpho);
-        marketParams = _marketParams;
 
         prelltv = _subscriptionParams.prelltv;
         closeFactor = _subscriptionParams.closeFactor;
         liquidationIncentive = _subscriptionParams.liquidationIncentive;
 
+        lltv = _marketParams.lltv;
+        collateralToken = _marketParams.collateralToken;
+        loanToken = _marketParams.loanToken;
+        irm = _marketParams.irm;
+        oracle = _marketParams.oracle;
+
         marketId = _marketParams.id();
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
-        require(prelltv < marketParams.lltv, ErrorsLib.PreLltvTooHigh(prelltv, marketParams.lltv));
+        require(prelltv < lltv, ErrorsLib.PreLltvTooHigh(prelltv, lltv));
 
-        ERC20(marketParams.loanToken).safeApprove(address(MORPHO), type(uint256).max);
+        ERC20(loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
 
     function subscribe() external {
@@ -82,8 +93,9 @@ contract LiquidationProtection is ILiquidationProtection {
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
         );
-        uint256 collateralPrice = IOracle(marketParams.oracle).price();
+        uint256 collateralPrice = IOracle(oracle).price();
 
+        MarketParams memory marketParams = MarketParams(loanToken, collateralToken, oracle, irm, lltv);
         MORPHO.accrueInterest(marketParams);
         require(_isPreLiquidatable(borrower, collateralPrice), ErrorsLib.HealthyPosition());
 
@@ -123,13 +135,14 @@ contract LiquidationProtection is ILiquidationProtection {
         (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =
             abi.decode(callbackData, (uint256, address, address, bytes));
 
+        MarketParams memory marketParams = MarketParams(loanToken, collateralToken, oracle, irm, lltv);
         MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
         if (data.length > 0) {
             IMorphoLiquidateCallback(liquidator).onMorphoLiquidate(repaidAssets, data);
         }
 
-        ERC20(marketParams.loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
+        ERC20(loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
     }
 
     function _isPreLiquidatable(address borrower, uint256 collateralPrice) internal view returns (bool) {
