@@ -97,7 +97,7 @@ contract LiquidationProtection is ILiquidationProtection {
 
         MarketParams memory marketParams = MarketParams(loanToken, collateralToken, oracle, irm, lltv);
         MORPHO.accrueInterest(marketParams);
-        require(_isPreLiquidatable(borrower, collateralPrice), ErrorsLib.HealthyPosition());
+        require(_isPreLiquidatable(borrower, collateralPrice), ErrorsLib.NotPreLiquidatablePosition());
 
         {
             // Compute seizedAssets or repaidShares and repaidAssets

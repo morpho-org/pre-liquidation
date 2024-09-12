@@ -12,7 +12,7 @@ library ErrorsLib {
 
     error InconsistentInput(uint256 seizedAssets, uint256 repaidShares);
 
-    error HealthyPosition();
+    error NotPreLiquidatablePosition();
 
     error PreLiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
