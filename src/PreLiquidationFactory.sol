@@ -12,19 +12,30 @@ import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Pre Liquidation Factory Contract for Morpho
-
 contract PreLiquidationFactory is IPreLiquidationFactory {
     /* IMMUTABLE */
+
+    /// @inheritdoc IPreLiquidationFactory
     IMorpho public immutable MORPHO;
 
+    /* STORAGE */
+
+    /// @inheritdoc IPreLiquidationFactory
     mapping(bytes32 => IPreLiquidation) public preliquidations;
 
+    /* CONSTRUCTOR */
+
+    /// @dev Initializes the contract.
+    /// @param morpho The address of the Morpho contract.
     constructor(address morpho) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
 
         MORPHO = IMorpho(morpho);
     }
 
+    /* EXTERNAL */
+
+    /// @inheritdoc IPreLiquidationFactory
     function createPreLiquidation(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
         external
         returns (IPreLiquidation preLiquidation)
@@ -37,6 +48,8 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), marketParams, subscriptionParams);
     }
+
+    /* INTERNAL */
 
     function getPreLiquidationId(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
         internal
