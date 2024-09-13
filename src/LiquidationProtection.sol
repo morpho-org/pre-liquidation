@@ -36,10 +36,10 @@ contract LiquidationProtection is ILiquidationProtection {
     uint256 public immutable preLiquidationIncentive;
     uint256 public immutable lltv;
 
-    address immutable collateralToken;
-    address immutable loanToken;
-    address immutable irm;
-    address immutable oracle;
+    address public immutable collateralToken;
+    address public immutable loanToken;
+    address public immutable irm;
+    address public immutable oracle;
 
     /* STORAGE */
     mapping(address => bool) public subscriptions;
