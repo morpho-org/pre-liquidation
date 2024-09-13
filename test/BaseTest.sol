@@ -51,7 +51,7 @@ contract BaseTest is Test {
             collateralToken: address(collateralToken),
             oracle: address(oracle),
             irm: address(irm),
-            lltv: lltv // 80 %
+            lltv: lltv
         });
 
         MORPHO.createMarket(market);
