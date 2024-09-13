@@ -56,7 +56,7 @@ contract PreLiquidationTest is BaseTest {
         preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
     }
 
-    function testSoftLiquidation(SubscriptionParams memory subscription, uint256 collateralAmount, uint256 borrowAmount)
+    function testPreLiquidation(SubscriptionParams memory subscription, uint256 collateralAmount, uint256 borrowAmount)
         public
         virtual
     {
