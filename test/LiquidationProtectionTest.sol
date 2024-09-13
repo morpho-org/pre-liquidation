@@ -53,7 +53,7 @@ contract LiquidationProtectionTest is BaseTest {
         vm.startPrank(LIQUIDATOR);
 
         vm.expectRevert(ErrorsLib.InvalidSubscription.selector);
-        liquidationProtection.preliquidate(BORROWER, 0, 0, hex"");
+        liquidationProtection.preLiquidate(BORROWER, 0, 0, hex"");
     }
 
     function testSoftLiquidation(SubscriptionParams memory subscription, uint256 collateralAmount, uint256 borrowAmount)
@@ -100,6 +100,6 @@ contract LiquidationProtectionTest is BaseTest {
         ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
 
-        liquidationProtection.preliquidate(BORROWER, 0, repayableShares, hex"");
+        liquidationProtection.preLiquidate(BORROWER, 0, repayableShares, hex"");
     }
 }

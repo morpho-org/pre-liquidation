@@ -18,5 +18,5 @@ interface ILiquidationProtection {
 
     function unsubscribe() external;
 
-    function preliquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
+    function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
 }
