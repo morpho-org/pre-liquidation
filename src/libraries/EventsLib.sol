@@ -9,7 +9,7 @@ import {SubscriptionParams} from "../interfaces/ILiquidationProtection.sol";
 /// @custom:contact security@morpho.org
 /// @notice Library exposing events.
 library EventsLib {
-    event Liquidate(
+    event PreLiquidate(
         address indexed borrower,
         Id indexed marketId,
         address indexed liquidator,

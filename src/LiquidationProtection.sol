@@ -112,7 +112,7 @@ contract LiquidationProtection is ILiquidationProtection {
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
         (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        emit EventsLib.Liquidate(borrower, marketId, msg.sender, repaidAssets, repaidShares, seizedAssets);
+        emit EventsLib.PreLiquidate(borrower, marketId, msg.sender, repaidAssets, repaidShares, seizedAssets);
     }
 
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
