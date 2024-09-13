@@ -6,7 +6,7 @@ import {MarketParams, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorph
 struct SubscriptionParams {
     uint256 prelltv;
     uint256 closeFactor;
-    uint256 liquidationIncentive;
+    uint256 preLiquidationIncentive;
 }
 
 interface ILiquidationProtection {

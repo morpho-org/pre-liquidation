@@ -33,7 +33,7 @@ contract LiquidationProtection is ILiquidationProtection {
 
     uint256 public immutable prelltv;
     uint256 public immutable closeFactor;
-    uint256 public immutable liquidationIncentive;
+    uint256 public immutable preLiquidationIncentive;
     uint256 public immutable lltv;
 
     address immutable collateralToken;
@@ -52,7 +52,7 @@ contract LiquidationProtection is ILiquidationProtection {
 
         prelltv = _subscriptionParams.prelltv;
         closeFactor = _subscriptionParams.closeFactor;
-        liquidationIncentive = _subscriptionParams.liquidationIncentive;
+        preLiquidationIncentive = _subscriptionParams.preLiquidationIncentive;
 
         lltv = _marketParams.lltv;
         collateralToken = _marketParams.collateralToken;
