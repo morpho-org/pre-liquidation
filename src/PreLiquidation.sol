@@ -13,7 +13,7 @@ import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
-import {IPreLiquidation, SubscriptionParams} from "./interfaces/IPreLiquidation.sol";
+import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
 
 /// @title Morpho
 /// @author Morpho Labs
@@ -49,7 +49,7 @@ contract PreLiquidation is IPreLiquidation {
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
 
-    constructor(MarketParams memory _marketParams, SubscriptionParams memory _subscriptionParams, address morpho) {
+    constructor(MarketParams memory _marketParams, PreLiquidationParams memory _preLiquidationParams, address morpho) {
         MORPHO = IMorpho(morpho);
 
         loanToken = _marketParams.loanToken;
@@ -59,9 +59,9 @@ contract PreLiquidation is IPreLiquidation {
         lltv = _marketParams.lltv;
         marketId = _marketParams.id();
 
-        prelltv = _subscriptionParams.prelltv;
-        closeFactor = _subscriptionParams.closeFactor;
-        preLiquidationIncentive = _subscriptionParams.preLiquidationIncentive;
+        prelltv = _preLiquidationParams.prelltv;
+        closeFactor = _preLiquidationParams.closeFactor;
+        preLiquidationIncentive = _preLiquidationParams.preLiquidationIncentive;
 
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?

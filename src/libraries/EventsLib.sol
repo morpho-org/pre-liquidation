@@ -2,7 +2,7 @@
 pragma solidity 0.8.27;
 
 import {Id, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {SubscriptionParams} from "../interfaces/IPreLiquidation.sol";
+import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
 
 /// @title EventsLib
 /// @author Morpho Labs
@@ -21,6 +21,6 @@ library EventsLib {
     event SetIsSubscribed(address indexed borrower, bool status);
 
     event CreatePreLiquidation(
-        address indexed subscription, MarketParams marketParams, SubscriptionParams subscriptionParams
+        address indexed preLiquidationContract, MarketParams marketParams, PreLiquidationParams preLiquidationParams
     );
 }

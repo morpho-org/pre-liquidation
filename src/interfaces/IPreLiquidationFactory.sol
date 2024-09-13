@@ -2,7 +2,7 @@
 pragma solidity >= 0.5.0;
 
 import {MarketParams, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {IPreLiquidation, SubscriptionParams} from "./IPreLiquidation.sol";
+import {IPreLiquidation, PreLiquidationParams} from "./IPreLiquidation.sol";
 
 /// @title IPreLiquidationFactory
 /// @author Morpho Labs
@@ -17,8 +17,9 @@ interface IPreLiquidationFactory {
 
     /// @notice Creates a PreLiquidation contract.
     /// @param marketParams The Morpho market for PreLiquidations.
-    /// @param subscriptionParams The PreLiquidation params for the PreLiquidation contract.
-    function createPreLiquidation(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
-        external
-        returns (IPreLiquidation preLiquidation);
+    /// @param preLiquidationParams The PreLiquidation params for the PreLiquidation contract.
+    function createPreLiquidation(
+        MarketParams calldata marketParams,
+        PreLiquidationParams calldata preLiquidationParams
+    ) external returns (IPreLiquidation preLiquidation);
 }

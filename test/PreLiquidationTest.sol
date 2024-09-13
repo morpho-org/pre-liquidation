@@ -6,7 +6,7 @@ import "../lib/forge-std/src/console.sol";
 
 import "./BaseTest.sol";
 
-import {IPreLiquidation, SubscriptionParams} from "../src/interfaces/IPreLiquidation.sol";
+import {IPreLiquidation, PreLiquidationParams} from "../src/interfaces/IPreLiquidation.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {PreLiquidation} from "../src/PreLiquidation.sol";
 import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
@@ -32,18 +32,18 @@ contract PreLiquidationTest is BaseTest {
         factory = new PreLiquidationFactory(address(MORPHO));
     }
 
-    function testSetSubscription(SubscriptionParams calldata subscription) public virtual {
-        vm.assume(subscription.prelltv < market.lltv);
-        preLiquidation = factory.createPreLiquidation(market, subscription);
+    function testSetSubscription(PreLiquidationParams calldata preLiquidationParams) public virtual {
+        vm.assume(preLiquidationParams.prelltv < market.lltv);
+        preLiquidation = factory.createPreLiquidation(market, preLiquidationParams);
 
         vm.startPrank(BORROWER);
         preLiquidation.setSubscription(true);
         assertTrue(preLiquidation.subscriptions(BORROWER));
     }
 
-    function testRemoveSubscription(SubscriptionParams calldata subscription) public virtual {
-        vm.assume(subscription.prelltv < market.lltv);
-        preLiquidation = factory.createPreLiquidation(market, subscription);
+    function testRemoveSubscription(PreLiquidationParams calldata preLiquidationParams) public virtual {
+        vm.assume(preLiquidationParams.prelltv < market.lltv);
+        preLiquidation = factory.createPreLiquidation(market, preLiquidationParams);
 
         vm.startPrank(BORROWER);
 
@@ -56,22 +56,23 @@ contract PreLiquidationTest is BaseTest {
         preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
     }
 
-    function testPreLiquidation(SubscriptionParams memory subscription, uint256 collateralAmount, uint256 borrowAmount)
-        public
-        virtual
-    {
-        subscription.prelltv = bound(subscription.prelltv, WAD / 100, market.lltv - 1);
-        subscription.closeFactor = bound(subscription.closeFactor, WAD / 100, WAD - 1);
-        subscription.preLiquidationIncentive = bound(subscription.preLiquidationIncentive, 1, WAD / 10);
+    function testPreLiquidation(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 collateralAmount,
+        uint256 borrowAmount
+    ) public virtual {
+        preLiquidationParams.prelltv = bound(preLiquidationParams.prelltv, WAD / 100, market.lltv - 1);
+        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD - 1);
+        preLiquidationParams.preLiquidationIncentive = bound(preLiquidationParams.preLiquidationIncentive, 1, WAD / 10);
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
-        preLiquidation = factory.createPreLiquidation(market, subscription);
+        preLiquidation = factory.createPreLiquidation(market, preLiquidationParams);
 
         uint256 collateralPrice = IOracle(market.oracle).price();
         uint256 borrowLiquidationThreshold =
             collateralAmount.mulDivDown(IOracle(market.oracle).price(), ORACLE_PRICE_SCALE).wMulDown(market.lltv);
         uint256 borrowPreLiquidationThreshold =
-            collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(subscription.prelltv);
+            collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.prelltv);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
         deal(address(loanToken), SUPPLIER, borrowAmount);
@@ -94,9 +95,9 @@ contract PreLiquidationTest is BaseTest {
         Position memory position = MORPHO.position(market.id(), BORROWER);
         Market memory m = MORPHO.market(market.id());
 
-        uint256 repayableShares = position.borrowShares.wMulDown(subscription.closeFactor);
+        uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
-            subscription.preLiquidationIncentive
+            preLiquidationParams.preLiquidationIncentive
         ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
 

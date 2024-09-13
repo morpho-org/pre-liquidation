@@ -3,7 +3,7 @@ pragma solidity >= 0.5.0;
 
 import {Id, MarketParams, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-struct SubscriptionParams {
+struct PreLiquidationParams {
     uint256 prelltv;
     uint256 closeFactor;
     uint256 preLiquidationIncentive;
