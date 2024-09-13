@@ -17,7 +17,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
     /* IMMUTABLE */
     IMorpho public immutable MORPHO;
 
-    mapping(bytes32 => IPreLiquidation) public subscriptions;
+    mapping(bytes32 => IPreLiquidation) public preliquidations;
 
     constructor(address morpho) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());
@@ -30,10 +30,10 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         returns (IPreLiquidation preLiquidation)
     {
         bytes32 preLiquidationId = getPreLiquidationId(marketParams, subscriptionParams);
-        require(address(subscriptions[preLiquidationId]) == address(0), ErrorsLib.RedundantMarket());
+        require(address(preliquidations[preLiquidationId]) == address(0), ErrorsLib.RedundantMarket());
 
         preLiquidation = IPreLiquidation(address(new PreLiquidation(marketParams, subscriptionParams, address(MORPHO))));
-        subscriptions[preLiquidationId] = preLiquidation;
+        preliquidations[preLiquidationId] = preLiquidation;
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), marketParams, subscriptionParams);
     }

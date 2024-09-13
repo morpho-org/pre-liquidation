@@ -38,7 +38,7 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         MarketParams memory _market = market;
         bytes32 subscriptionId = getPreLiquidationId(_market, subscription);
-        assert(factory.subscriptions(subscriptionId) == preLiquidation);
+        assert(factory.preliquidations(subscriptionId) == preLiquidation);
     }
 
     function getPreLiquidationId(MarketParams memory marketParams, SubscriptionParams memory subscriptionParams)

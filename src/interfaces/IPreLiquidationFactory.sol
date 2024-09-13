@@ -7,7 +7,7 @@ import {IPreLiquidation, SubscriptionParams} from "./IPreLiquidation.sol";
 interface IPreLiquidationFactory {
     function MORPHO() external view returns (IMorpho);
 
-    function subscriptions(bytes32) external view returns (IPreLiquidation);
+    function preliquidations(bytes32) external view returns (IPreLiquidation);
 
     function createPreLiquidation(MarketParams calldata marketParams, SubscriptionParams calldata subscriptionParams)
         external
