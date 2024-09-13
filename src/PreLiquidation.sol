@@ -31,15 +31,17 @@ contract PreLiquidation is IPreLiquidation {
     IMorpho public immutable MORPHO;
     Id public immutable marketId;
 
-    uint256 public immutable prelltv;
-    uint256 public immutable closeFactor;
-    uint256 public immutable preLiquidationIncentive;
-    uint256 public immutable lltv;
-
+    // Market parameters
     address public immutable collateralToken;
     address public immutable loanToken;
     address public immutable irm;
     address public immutable oracle;
+    uint256 public immutable lltv;
+
+    // Subscription parameters
+    uint256 public immutable prelltv;
+    uint256 public immutable closeFactor;
+    uint256 public immutable preLiquidationIncentive;
 
     /* STORAGE */
     mapping(address => bool) public subscriptions;
