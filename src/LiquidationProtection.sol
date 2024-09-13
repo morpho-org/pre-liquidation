@@ -80,7 +80,7 @@ contract LiquidationProtection is ILiquidationProtection {
         emit EventsLib.Unsubscribe(msg.sender);
     }
 
-    function liquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
+    function preliquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(subscriptions[borrower], ErrorsLib.InvalidSubscription());
 
         require(
