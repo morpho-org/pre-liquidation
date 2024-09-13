@@ -17,7 +17,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
     /* IMMUTABLE */
     IMorpho public immutable MORPHO;
 
-    mapping(bytes32 => IPreLiquidation) subscriptions;
+    mapping(bytes32 => IPreLiquidation) public subscriptions;
 
     constructor(address morpho) {
         require(morpho != address(0), ErrorsLib.ZeroAddress());

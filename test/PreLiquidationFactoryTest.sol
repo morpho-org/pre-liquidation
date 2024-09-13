@@ -18,7 +18,7 @@ contract PreLiquidationFactoryTest is BaseTest {
         new PreLiquidationFactory(address(0));
     }
 
-    function testCreatePreLiquidation(SubscriptionParams calldata subscription) public {
+    function testCreatePreLiquidation(SubscriptionParams memory subscription) public {
         vm.assume(subscription.prelltv < lltv);
 
         factory = new PreLiquidationFactory(address(MORPHO));
@@ -35,5 +35,17 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiquidation.loanToken() == market.loanToken);
         assert(preLiquidation.irm() == market.irm);
         assert(preLiquidation.oracle() == market.oracle);
+
+        MarketParams memory _market = market;
+        bytes32 subscriptionId = getPreLiquidationId(_market, subscription);
+        assert(factory.subscriptions(subscriptionId) == preLiquidation);
+    }
+
+    function getPreLiquidationId(MarketParams memory marketParams, SubscriptionParams memory subscriptionParams)
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encode(marketParams, subscriptionParams));
     }
 }
