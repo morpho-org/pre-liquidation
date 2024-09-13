@@ -68,16 +68,10 @@ contract LiquidationProtection is ILiquidationProtection {
         ERC20(loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
 
-    function subscribe() external {
-        subscriptions[msg.sender] = true;
+    function setSubscription(bool status) external {
+        subscriptions[msg.sender] = status;
 
-        emit EventsLib.Subscribe(msg.sender);
-    }
-
-    function unsubscribe() external {
-        subscriptions[msg.sender] = false;
-
-        emit EventsLib.Unsubscribe(msg.sender);
+        emit EventsLib.SetSubscription(msg.sender, status);
     }
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {

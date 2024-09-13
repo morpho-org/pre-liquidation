@@ -14,9 +14,7 @@ interface ILiquidationProtection {
 
     function subscriptions(address) external view returns (bool);
 
-    function subscribe() external;
-
-    function unsubscribe() external;
+    function setSubscription(bool) external;
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
 }

@@ -37,7 +37,7 @@ contract LiquidationProtectionTest is BaseTest {
         liquidationProtection = factory.createPreLiquidation(market, subscription);
 
         vm.startPrank(BORROWER);
-        liquidationProtection.subscribe();
+        liquidationProtection.setSubscription(true);
         assertTrue(liquidationProtection.subscriptions(BORROWER));
     }
 
@@ -47,8 +47,8 @@ contract LiquidationProtectionTest is BaseTest {
 
         vm.startPrank(BORROWER);
 
-        liquidationProtection.subscribe();
-        liquidationProtection.unsubscribe();
+        liquidationProtection.setSubscription(true);
+        liquidationProtection.setSubscription(false);
 
         vm.startPrank(LIQUIDATOR);
 
@@ -84,7 +84,7 @@ contract LiquidationProtectionTest is BaseTest {
         MORPHO.borrow(market, borrowAmount, 0, BORROWER, BORROWER);
         MORPHO.setAuthorization(address(liquidationProtection), true);
 
-        liquidationProtection.subscribe();
+        liquidationProtection.setSubscription(true);
 
         vm.startPrank(LIQUIDATOR);
         deal(address(loanToken), LIQUIDATOR, type(uint256).max);
