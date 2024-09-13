@@ -96,12 +96,12 @@ contract LiquidationProtection is ILiquidationProtection {
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
-            repaidShares = seizedAssetsQuoted.wDivUp(liquidationIncentive).toSharesUp(
+            repaidShares = seizedAssetsQuoted.wDivUp(preLiquidationIncentive).toSharesUp(
                 market.totalBorrowAssets, market.totalBorrowShares
             );
         } else {
             seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
-                liquidationIncentive
+                preLiquidationIncentive
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
