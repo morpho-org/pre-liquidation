@@ -6,10 +6,10 @@ import "../lib/forge-std/src/console.sol";
 
 import "./BaseTest.sol";
 
-import {ILiquidationProtection, SubscriptionParams} from "../src/interfaces/ILiquidationProtection.sol";
+import {IPreLiquidation, SubscriptionParams} from "../src/interfaces/IPreLiquidation.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
-import {LiquidationProtection} from "../src/LiquidationProtection.sol";
-import {LiquidationProtectionFactory} from "../src/LiquidationProtectionFactory.sol";
+import {PreLiquidation} from "../src/PreLiquidation.sol";
+import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 import "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
@@ -17,43 +17,43 @@ import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.
 import {MathLib, WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 
-contract LiquidationProtectionTest is BaseTest {
+contract PreLiquidationTest is BaseTest {
     using MarketParamsLib for MarketParams;
     using SharesMathLib for uint256;
     using MathLib for uint256;
     using MathLib for uint128;
 
-    LiquidationProtectionFactory internal factory;
-    ILiquidationProtection internal liquidationProtection;
+    PreLiquidationFactory internal factory;
+    IPreLiquidation internal preLiquidation;
 
     function setUp() public override {
         super.setUp();
 
-        factory = new LiquidationProtectionFactory(address(MORPHO));
+        factory = new PreLiquidationFactory(address(MORPHO));
     }
 
     function testSetSubscription(SubscriptionParams calldata subscription) public virtual {
         vm.assume(subscription.prelltv < market.lltv);
-        liquidationProtection = factory.createPreLiquidation(market, subscription);
+        preLiquidation = factory.createPreLiquidation(market, subscription);
 
         vm.startPrank(BORROWER);
-        liquidationProtection.setSubscription(true);
-        assertTrue(liquidationProtection.subscriptions(BORROWER));
+        preLiquidation.setSubscription(true);
+        assertTrue(preLiquidation.subscriptions(BORROWER));
     }
 
     function testRemoveSubscription(SubscriptionParams calldata subscription) public virtual {
         vm.assume(subscription.prelltv < market.lltv);
-        liquidationProtection = factory.createPreLiquidation(market, subscription);
+        preLiquidation = factory.createPreLiquidation(market, subscription);
 
         vm.startPrank(BORROWER);
 
-        liquidationProtection.setSubscription(true);
-        liquidationProtection.setSubscription(false);
+        preLiquidation.setSubscription(true);
+        preLiquidation.setSubscription(false);
 
         vm.startPrank(LIQUIDATOR);
 
         vm.expectRevert(ErrorsLib.InvalidSubscription.selector);
-        liquidationProtection.preLiquidate(BORROWER, 0, 0, hex"");
+        preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
     }
 
     function testSoftLiquidation(SubscriptionParams memory subscription, uint256 collateralAmount, uint256 borrowAmount)
@@ -65,7 +65,7 @@ contract LiquidationProtectionTest is BaseTest {
         subscription.preLiquidationIncentive = bound(subscription.preLiquidationIncentive, 1, WAD / 10);
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
-        liquidationProtection = factory.createPreLiquidation(market, subscription);
+        preLiquidation = factory.createPreLiquidation(market, subscription);
 
         uint256 collateralPrice = IOracle(market.oracle).price();
         uint256 borrowLiquidationThreshold =
@@ -82,14 +82,14 @@ contract LiquidationProtectionTest is BaseTest {
         vm.startPrank(BORROWER);
         MORPHO.supplyCollateral(market, collateralAmount, BORROWER, hex"");
         MORPHO.borrow(market, borrowAmount, 0, BORROWER, BORROWER);
-        MORPHO.setAuthorization(address(liquidationProtection), true);
+        MORPHO.setAuthorization(address(preLiquidation), true);
 
-        liquidationProtection.setSubscription(true);
+        preLiquidation.setSubscription(true);
 
         vm.startPrank(LIQUIDATOR);
         deal(address(loanToken), LIQUIDATOR, type(uint256).max);
-        loanToken.approve(address(liquidationProtection), type(uint256).max);
-        collateralToken.approve(address(liquidationProtection), type(uint256).max);
+        loanToken.approve(address(preLiquidation), type(uint256).max);
+        collateralToken.approve(address(preLiquidation), type(uint256).max);
 
         Position memory position = MORPHO.position(market.id(), BORROWER);
         Market memory m = MORPHO.market(market.id());
@@ -100,6 +100,6 @@ contract LiquidationProtectionTest is BaseTest {
         ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
 
-        liquidationProtection.preLiquidate(BORROWER, 0, repayableShares, hex"");
+        preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
     }
 }

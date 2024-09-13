@@ -2,7 +2,7 @@
 pragma solidity 0.8.27;
 
 import {Id, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {SubscriptionParams} from "../interfaces/ILiquidationProtection.sol";
+import {SubscriptionParams} from "../interfaces/IPreLiquidation.sol";
 
 /// @title EventsLib
 /// @author Morpho Labs

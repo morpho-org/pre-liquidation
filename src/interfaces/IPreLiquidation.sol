@@ -9,7 +9,7 @@ struct SubscriptionParams {
     uint256 preLiquidationIncentive;
 }
 
-interface ILiquidationProtection {
+interface IPreLiquidation {
     function MORPHO() external view returns (IMorpho);
     function marketId() external view returns (Id);
     function prelltv() external view returns (uint256);

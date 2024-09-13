@@ -13,13 +13,13 @@ import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
-import {ILiquidationProtection, SubscriptionParams} from "./interfaces/ILiquidationProtection.sol";
+import {IPreLiquidation, SubscriptionParams} from "./interfaces/IPreLiquidation.sol";
 
 /// @title Morpho
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice The Liquidation Protection Contract for Morpho
-contract LiquidationProtection is ILiquidationProtection {
+/// @notice The Pre Liquidation Contract for Morpho
+contract PreLiquidation is IPreLiquidation {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
     using SharesMathLib for uint256;
