@@ -2,6 +2,7 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+via_ir = true
 
 [profile.default.rpc_endpoints]
 mainnet = "https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}"
