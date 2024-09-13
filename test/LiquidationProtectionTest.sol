@@ -57,7 +57,7 @@ contract LiquidationProtectionTest is BaseTest {
         vm.startPrank(LIQUIDATOR);
 
         vm.expectRevert(ErrorsLib.InvalidSubscription.selector);
-        liquidationProtection.liquidate(market, BORROWER, 0, 0, hex"");
+        liquidationProtection.liquidate(BORROWER, 0, 0, hex"");
     }
 
     function testSoftLiquidation() public virtual {
@@ -73,6 +73,6 @@ contract LiquidationProtectionTest is BaseTest {
         collateralToken.approve(address(liquidationProtection), type(uint256).max);
 
         Position memory position = MORPHO.position(market.id(), BORROWER);
-        liquidationProtection.liquidate(market, BORROWER, 0, position.borrowShares, hex"");
+        liquidationProtection.liquidate(BORROWER, 0, position.borrowShares, hex"");
     }
 }
