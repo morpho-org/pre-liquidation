@@ -32,10 +32,10 @@ contract PreLiquidation is IPreLiquidation {
     Id public immutable marketId;
 
     // Market parameters
-    address public immutable collateralToken;
     address public immutable loanToken;
-    address public immutable irm;
+    address public immutable collateralToken;
     address public immutable oracle;
+    address public immutable irm;
     uint256 public immutable lltv;
 
     // Subscription parameters
@@ -52,17 +52,17 @@ contract PreLiquidation is IPreLiquidation {
     constructor(MarketParams memory _marketParams, SubscriptionParams memory _subscriptionParams, address morpho) {
         MORPHO = IMorpho(morpho);
 
+        loanToken = _marketParams.loanToken;
+        collateralToken = _marketParams.collateralToken;
+        oracle = _marketParams.oracle;
+        irm = _marketParams.irm;
+        lltv = _marketParams.lltv;
+        marketId = _marketParams.id();
+
         prelltv = _subscriptionParams.prelltv;
         closeFactor = _subscriptionParams.closeFactor;
         preLiquidationIncentive = _subscriptionParams.preLiquidationIncentive;
 
-        lltv = _marketParams.lltv;
-        collateralToken = _marketParams.collateralToken;
-        loanToken = _marketParams.loanToken;
-        irm = _marketParams.irm;
-        oracle = _marketParams.oracle;
-
-        marketId = _marketParams.id();
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
         require(prelltv < lltv, ErrorsLib.PreLltvTooHigh(prelltv, lltv));
@@ -73,7 +73,7 @@ contract PreLiquidation is IPreLiquidation {
     function setSubscription(bool status) external {
         subscriptions[msg.sender] = status;
 
-        emit EventsLib.SetSubscription(msg.sender, status);
+        emit EventsLib.SetIsSubscribed(msg.sender, status);
     }
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
