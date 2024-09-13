@@ -136,9 +136,9 @@ contract LiquidationProtection is ILiquidationProtection {
 
         uint256 borrowed =
             uint256(borrowerPosition.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
-        uint256 preLiquidationBorrowThreshold =
+        uint256 borrowThreshold =
             uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(prelltv);
 
-        return preLiquidationBorrowThreshold < borrowed;
+        return borrowThreshold < borrowed;
     }
 }

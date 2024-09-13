@@ -68,11 +68,11 @@ contract LiquidationProtectionTest is BaseTest {
         liquidationProtection = factory.createPreLiquidation(market, subscription);
 
         uint256 collateralPrice = IOracle(market.oracle).price();
-        uint256 maxBorrow =
+        uint256 borrowLiquidationThreshold =
             collateralAmount.mulDivDown(IOracle(market.oracle).price(), ORACLE_PRICE_SCALE).wMulDown(market.lltv);
-        uint256 minBorrow =
+        uint256 borrowPreLiquidationThreshold =
             collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(subscription.prelltv);
-        borrowAmount = bound(borrowAmount, minBorrow + 1, maxBorrow);
+        borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
         deal(address(loanToken), SUPPLIER, borrowAmount);
         vm.prank(SUPPLIER);
