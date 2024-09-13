@@ -18,8 +18,6 @@ library EventsLib {
         uint256 seizedAssets
     );
 
-    event SetIsSubscribed(address indexed borrower, bool status);
-
     event CreatePreLiquidation(
         address indexed preLiquidationContract, MarketParams marketParams, PreLiquidationParams preLiquidationParams
     );
