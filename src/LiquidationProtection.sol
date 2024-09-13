@@ -5,7 +5,6 @@ import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/sr
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
-import {IMorphoLiquidateCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 import "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
@@ -13,6 +12,7 @@ import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
+import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
 import {ILiquidationProtection, SubscriptionParams} from "./interfaces/ILiquidationProtection.sol";
 
 /// @title Morpho
@@ -124,7 +124,7 @@ contract LiquidationProtection is ILiquidationProtection {
         MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
 
         if (data.length > 0) {
-            IMorphoLiquidateCallback(liquidator).onMorphoLiquidate(repaidAssets, data);
+            IPreLiquidationCallback(liquidator).onPreLiquidate(repaidAssets, data);
         }
 
         ERC20(loanToken).safeTransferFrom(liquidator, address(this), repaidAssets);
