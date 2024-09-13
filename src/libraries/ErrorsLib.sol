@@ -8,8 +8,6 @@ pragma solidity 0.8.27;
 library ErrorsLib {
     error PreLltvTooHigh(uint256 prelltv, uint256 lltv);
 
-    error InvalidSubscription();
-
     error InconsistentInput(uint256 seizedAssets, uint256 repaidShares);
 
     error NotPreLiquidatablePosition();

@@ -43,9 +43,6 @@ contract PreLiquidation is IPreLiquidation {
     uint256 public immutable closeFactor;
     uint256 public immutable preLiquidationIncentive;
 
-    /* STORAGE */
-    mapping(address => bool) public subscriptions;
-
     // TODO EIP-712 signature
     // TODO authorize this contract on morpho
 
@@ -70,15 +67,7 @@ contract PreLiquidation is IPreLiquidation {
         ERC20(loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
 
-    function setSubscription(bool status) external {
-        subscriptions[msg.sender] = status;
-
-        emit EventsLib.SetIsSubscribed(msg.sender, status);
-    }
-
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
-        require(subscriptions[borrower], ErrorsLib.InvalidSubscription());
-
         require(
             UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
         );

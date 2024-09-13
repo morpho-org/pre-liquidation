@@ -32,30 +32,6 @@ contract PreLiquidationTest is BaseTest {
         factory = new PreLiquidationFactory(address(MORPHO));
     }
 
-    function testSetSubscription(PreLiquidationParams calldata preLiquidationParams) public virtual {
-        vm.assume(preLiquidationParams.prelltv < market.lltv);
-        preLiquidation = factory.createPreLiquidation(market, preLiquidationParams);
-
-        vm.startPrank(BORROWER);
-        preLiquidation.setSubscription(true);
-        assertTrue(preLiquidation.subscriptions(BORROWER));
-    }
-
-    function testRemoveSubscription(PreLiquidationParams calldata preLiquidationParams) public virtual {
-        vm.assume(preLiquidationParams.prelltv < market.lltv);
-        preLiquidation = factory.createPreLiquidation(market, preLiquidationParams);
-
-        vm.startPrank(BORROWER);
-
-        preLiquidation.setSubscription(true);
-        preLiquidation.setSubscription(false);
-
-        vm.startPrank(LIQUIDATOR);
-
-        vm.expectRevert(ErrorsLib.InvalidSubscription.selector);
-        preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
-    }
-
     function testPreLiquidation(
         PreLiquidationParams memory preLiquidationParams,
         uint256 collateralAmount,
@@ -84,8 +60,6 @@ contract PreLiquidationTest is BaseTest {
         MORPHO.supplyCollateral(market, collateralAmount, BORROWER, hex"");
         MORPHO.borrow(market, borrowAmount, 0, BORROWER, BORROWER);
         MORPHO.setAuthorization(address(preLiquidation), true);
-
-        preLiquidation.setSubscription(true);
 
         vm.startPrank(LIQUIDATOR);
         deal(address(loanToken), LIQUIDATOR, type(uint256).max);

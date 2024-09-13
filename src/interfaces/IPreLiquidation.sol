@@ -21,9 +21,5 @@ interface IPreLiquidation {
     function irm() external view returns (address);
     function oracle() external view returns (address);
 
-    function subscriptions(address) external view returns (bool);
-
-    function setSubscription(bool) external;
-
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
 }
