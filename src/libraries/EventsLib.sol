@@ -19,6 +19,6 @@ library EventsLib {
     );
 
     event CreatePreLiquidation(
-        address indexed preLiquidationContract, MarketParams marketParams, PreLiquidationParams preLiquidationParams
+        address indexed preLiquidation, MarketParams marketParams, PreLiquidationParams preLiquidationParams
     );
 }

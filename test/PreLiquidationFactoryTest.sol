@@ -19,14 +19,14 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testCreatePreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        vm.assume(preLiquidationParams.prelltv < lltv);
+        vm.assume(preLiquidationParams.preLltv < lltv);
 
         factory = new PreLiquidationFactory(address(MORPHO));
         IPreLiquidation preLiquidation = factory.createPreLiquidation(market, preLiquidationParams);
 
         assert(preLiquidation.MORPHO() == MORPHO);
 
-        assert(preLiquidation.prelltv() == preLiquidationParams.prelltv);
+        assert(preLiquidation.preLltv() == preLiquidationParams.preLltv);
         assert(preLiquidation.closeFactor() == preLiquidationParams.closeFactor);
         assert(preLiquidation.preLiquidationIncentive() == preLiquidationParams.preLiquidationIncentive);
 
@@ -38,7 +38,7 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         MarketParams memory _market = market;
         bytes32 preLiquidationId = getPreLiquidationId(_market, preLiquidationParams);
-        assert(factory.preliquidations(preLiquidationId) == preLiquidation);
+        assert(factory.preLiquidations(preLiquidationId) == preLiquidation);
     }
 
     function getPreLiquidationId(MarketParams memory marketParams, PreLiquidationParams memory preLiquidationParams)

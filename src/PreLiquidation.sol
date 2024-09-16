@@ -38,8 +38,8 @@ contract PreLiquidation is IPreLiquidation {
     address public immutable irm;
     uint256 public immutable lltv;
 
-    // Subscription parameters
-    uint256 public immutable prelltv;
+    // Pre-liquidation parameters
+    uint256 public immutable preLltv;
     uint256 public immutable closeFactor;
     uint256 public immutable preLiquidationIncentive;
 
@@ -56,13 +56,13 @@ contract PreLiquidation is IPreLiquidation {
         lltv = _marketParams.lltv;
         marketId = _marketParams.id();
 
-        prelltv = _preLiquidationParams.prelltv;
+        preLltv = _preLiquidationParams.preLltv;
         closeFactor = _preLiquidationParams.closeFactor;
         preLiquidationIncentive = _preLiquidationParams.preLiquidationIncentive;
 
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
-        require(prelltv < lltv, ErrorsLib.PreLltvTooHigh(prelltv, lltv));
+        require(preLltv < lltv, ErrorsLib.PreLltvTooHigh(preLltv, lltv));
 
         ERC20(loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
@@ -122,7 +122,7 @@ contract PreLiquidation is IPreLiquidation {
         uint256 borrowed =
             uint256(borrowerPosition.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 borrowThreshold =
-            uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(prelltv);
+            uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLltv);
 
         return borrowThreshold < borrowed;
     }

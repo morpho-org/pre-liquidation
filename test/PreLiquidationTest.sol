@@ -37,7 +37,7 @@ contract PreLiquidationTest is BaseTest {
         uint256 collateralAmount,
         uint256 borrowAmount
     ) public virtual {
-        preLiquidationParams.prelltv = bound(preLiquidationParams.prelltv, WAD / 100, market.lltv - 1);
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, market.lltv - 1);
         preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD - 1);
         preLiquidationParams.preLiquidationIncentive = bound(preLiquidationParams.preLiquidationIncentive, 1, WAD / 10);
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
@@ -48,7 +48,7 @@ contract PreLiquidationTest is BaseTest {
         uint256 borrowLiquidationThreshold =
             collateralAmount.mulDivDown(IOracle(market.oracle).price(), ORACLE_PRICE_SCALE).wMulDown(market.lltv);
         uint256 borrowPreLiquidationThreshold =
-            collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.prelltv);
+            collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.preLltv);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
         deal(address(loanToken), SUPPLIER, borrowAmount);

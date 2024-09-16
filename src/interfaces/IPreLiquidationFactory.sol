@@ -13,7 +13,7 @@ interface IPreLiquidationFactory {
     function MORPHO() external view returns (IMorpho);
 
     /// @notice The contract address created for a specific preLiquidationId.
-    function preliquidations(bytes32) external view returns (IPreLiquidation);
+    function preLiquidations(bytes32) external view returns (IPreLiquidation);
 
     /// @notice Creates a PreLiquidation contract.
     /// @param marketParams The Morpho market for PreLiquidations.
