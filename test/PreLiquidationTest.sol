@@ -32,6 +32,15 @@ contract PreLiquidationTest is BaseTest {
         factory = new PreLiquidationFactory(address(MORPHO));
     }
 
+    function testHighLltv(PreLiquidationParams memory preLiquidationParams) public virtual {
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, market.lltv, type(uint256).max);
+
+        vm.expectRevert(
+            abi.encodeWithSelector(ErrorsLib.PreLltvTooHigh.selector, preLiquidationParams.preLltv, market.lltv)
+        );
+        factory.createPreLiquidation(market, preLiquidationParams);
+    }
+
     function testPreLiquidation(
         PreLiquidationParams memory preLiquidationParams,
         uint256 collateralAmount,
@@ -58,14 +67,20 @@ contract PreLiquidationTest is BaseTest {
         deal(address(collateralToken), BORROWER, collateralAmount);
         vm.startPrank(BORROWER);
         MORPHO.supplyCollateral(market, collateralAmount, BORROWER, hex"");
-        MORPHO.borrow(market, borrowAmount, 0, BORROWER, BORROWER);
-        MORPHO.setAuthorization(address(preLiquidation), true);
 
         vm.startPrank(LIQUIDATOR);
         deal(address(loanToken), LIQUIDATOR, type(uint256).max);
         loanToken.approve(address(preLiquidation), type(uint256).max);
         collateralToken.approve(address(preLiquidation), type(uint256).max);
 
+        vm.expectRevert(ErrorsLib.NotPreLiquidatablePosition.selector);
+        preLiquidation.preLiquidate(BORROWER, 0, 1, hex"");
+
+        vm.startPrank(BORROWER);
+        MORPHO.borrow(market, borrowAmount, 0, BORROWER, BORROWER);
+        MORPHO.setAuthorization(address(preLiquidation), true);
+
+        vm.startPrank(LIQUIDATOR);
         Position memory position = MORPHO.position(market.id(), BORROWER);
         Market memory m = MORPHO.market(market.id());
 
@@ -74,6 +89,12 @@ contract PreLiquidationTest is BaseTest {
             preLiquidationParams.preLiquidationIncentive
         ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
+
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.InconsistentInput.selector, 0, 0));
+        preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
+
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.InconsistentInput.selector, seizedAssets, repayableShares));
+        preLiquidation.preLiquidate(BORROWER, seizedAssets, repayableShares, hex"");
 
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
     }
