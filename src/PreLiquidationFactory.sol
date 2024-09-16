@@ -52,7 +52,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
     /* INTERNAL */
 
     function getPreLiquidationId(MarketParams calldata marketParams, PreLiquidationParams calldata preLiquidationParams)
-        internal
+        public
         pure
         returns (bytes32)
     {

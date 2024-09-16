@@ -37,15 +37,7 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiquidation.oracle() == market.oracle);
 
         MarketParams memory _market = market;
-        bytes32 preLiquidationId = getPreLiquidationId(_market, preLiquidationParams);
+        bytes32 preLiquidationId = factory.getPreLiquidationId(_market, preLiquidationParams);
         assert(factory.preLiquidations(preLiquidationId) == preLiquidation);
-    }
-
-    function getPreLiquidationId(MarketParams memory marketParams, PreLiquidationParams memory preLiquidationParams)
-        internal
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(marketParams, preLiquidationParams));
     }
 }
