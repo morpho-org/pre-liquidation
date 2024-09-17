@@ -43,9 +43,6 @@ contract PreLiquidation is IPreLiquidation {
     uint256 public immutable closeFactor;
     uint256 public immutable preLiquidationIncentive;
 
-    // TODO EIP-712 signature
-    // TODO authorize this contract on morpho
-
     constructor(MarketParams memory _marketParams, PreLiquidationParams memory _preLiquidationParams, address morpho) {
         require(preLltv < lltv, ErrorsLib.PreLltvTooHigh(preLltv, lltv));
 
