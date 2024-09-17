@@ -47,6 +47,8 @@ contract PreLiquidation is IPreLiquidation {
     // TODO authorize this contract on morpho
 
     constructor(MarketParams memory _marketParams, PreLiquidationParams memory _preLiquidationParams, address morpho) {
+        require(preLltv < lltv, ErrorsLib.PreLltvTooHigh(preLltv, lltv));
+
         MORPHO = IMorpho(morpho);
 
         loanToken = _marketParams.loanToken;
@@ -62,7 +64,6 @@ contract PreLiquidation is IPreLiquidation {
 
         // should close factor be lower than 100% ?
         // should there be a max liquidation incentive ?
-        require(preLltv < lltv, ErrorsLib.PreLltvTooHigh(preLltv, lltv));
 
         ERC20(loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
@@ -97,7 +98,7 @@ contract PreLiquidation is IPreLiquidation {
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
         (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
 
-        emit EventsLib.PreLiquidate(borrower, marketId, msg.sender, repaidAssets, repaidShares, seizedAssets);
+        emit EventsLib.PreLiquidate(marketId, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
     }
 
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
