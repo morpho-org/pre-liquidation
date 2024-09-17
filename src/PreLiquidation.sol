@@ -122,6 +122,6 @@ contract PreLiquidation is IPreLiquidation {
         uint256 borrowThreshold =
             uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLltv);
 
-        return borrowThreshold < borrowed;
+        return borrowed > borrowThreshold;
     }
 }
