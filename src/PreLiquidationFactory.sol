@@ -49,8 +49,6 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), marketParams, preLiquidationParams);
     }
 
-    /* INTERNAL */
-
     function getPreLiquidationId(MarketParams calldata marketParams, PreLiquidationParams calldata preLiquidationParams)
         public
         pure
