@@ -44,7 +44,10 @@ contract PreLiquidation is IPreLiquidation {
     uint256 public immutable preLiquidationIncentive;
 
     constructor(MarketParams memory _marketParams, PreLiquidationParams memory _preLiquidationParams, address morpho) {
-        require(preLltv < lltv, ErrorsLib.PreLltvTooHigh(preLltv, lltv));
+        require(
+            _preLiquidationParams.preLltv < _marketParams.lltv,
+            ErrorsLib.PreLltvTooHigh(_preLiquidationParams.preLltv, _marketParams.lltv)
+        );
 
         MORPHO = IMorpho(morpho);
 
