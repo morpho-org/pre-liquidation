@@ -10,9 +10,9 @@ import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
 /// @notice Library exposing events.
 library EventsLib {
     event PreLiquidate(
-        address indexed borrower,
         Id indexed marketId,
         address indexed liquidator,
+        address indexed borrower,
         uint256 repaidAssets,
         uint256 repaidShares,
         uint256 seizedAssets

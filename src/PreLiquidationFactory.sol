@@ -40,7 +40,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         PreLiquidationParams calldata preLiquidationParams
     ) external returns (IPreLiquidation preLiquidation) {
         bytes32 preLiquidationId = getPreLiquidationId(marketParams, preLiquidationParams);
-        require(address(preLiquidations[preLiquidationId]) == address(0), ErrorsLib.RedundantMarket());
+        require(address(preLiquidations[preLiquidationId]) == address(0), ErrorsLib.PreLiquidationAlreadyExists());
 
         preLiquidation =
             IPreLiquidation(address(new PreLiquidation(marketParams, preLiquidationParams, address(MORPHO))));

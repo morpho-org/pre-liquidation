@@ -18,5 +18,5 @@ library ErrorsLib {
 
     error ZeroAddress();
 
-    error RedundantMarket();
+    error PreLiquidationAlreadyExists();
 }
