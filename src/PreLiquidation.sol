@@ -69,9 +69,7 @@ contract PreLiquidation is IPreLiquidation {
     }
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
-        require(
-            UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput(seizedAssets, repaidShares)
-        );
+        require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
         uint256 collateralPrice = IOracle(oracle).price();
 
         MarketParams memory marketParams = MarketParams(loanToken, collateralToken, oracle, irm, lltv);

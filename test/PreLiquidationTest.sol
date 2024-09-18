@@ -90,10 +90,10 @@ contract PreLiquidationTest is BaseTest {
         ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.InconsistentInput.selector, 0, 0));
+        vm.expectRevert(ErrorsLib.InconsistentInput.selector);
         preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.InconsistentInput.selector, seizedAssets, repayableShares));
+        vm.expectRevert(ErrorsLib.InconsistentInput.selector);
         preLiquidation.preLiquidate(BORROWER, seizedAssets, repayableShares, hex"");
 
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
