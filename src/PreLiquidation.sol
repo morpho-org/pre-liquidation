@@ -14,12 +14,13 @@ import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 
 /// @title Morpho
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Pre Liquidation Contract for Morpho
-contract PreLiquidation is IPreLiquidation {
+contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
     using SharesMathLib for uint256;
@@ -63,9 +64,6 @@ contract PreLiquidation is IPreLiquidation {
         preLltv = _preLiquidationParams.preLltv;
         closeFactor = _preLiquidationParams.closeFactor;
         preLiquidationIncentive = _preLiquidationParams.preLiquidationIncentive;
-
-        // should close factor be lower than 100% ?
-        // should there be a max liquidation incentive ?
 
         ERC20(loanToken).safeApprove(address(MORPHO), type(uint256).max);
     }
