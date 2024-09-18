@@ -41,6 +41,14 @@ contract PreLiquidationTest is BaseTest {
         factory.createPreLiquidation(market, preLiquidationParams);
     }
 
+    function testNonexistentMarket(MarketParams memory marketParams, PreLiquidationParams memory preLiquidationParams)
+        public
+        virtual
+    {
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonexistentMarket.selector, marketParams.id()));
+        factory.createPreLiquidation(marketParams, preLiquidationParams);
+    }
+
     function testPreLiquidation(
         PreLiquidationParams memory preLiquidationParams,
         uint256 collateralAmount,

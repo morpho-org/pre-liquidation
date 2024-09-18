@@ -44,19 +44,21 @@ contract PreLiquidation is IPreLiquidation {
     uint256 public immutable preLiquidationIncentive;
 
     constructor(MarketParams memory _marketParams, PreLiquidationParams memory _preLiquidationParams, address morpho) {
+        MORPHO = IMorpho(morpho);
+        marketId = _marketParams.id();
+
+        require(MORPHO.market(marketId).lastUpdate != 0, ErrorsLib.NonexistentMarket(marketId));
+
         require(
             _preLiquidationParams.preLltv < _marketParams.lltv,
             ErrorsLib.PreLltvTooHigh(_preLiquidationParams.preLltv, _marketParams.lltv)
         );
-
-        MORPHO = IMorpho(morpho);
 
         loanToken = _marketParams.loanToken;
         collateralToken = _marketParams.collateralToken;
         oracle = _marketParams.oracle;
         irm = _marketParams.irm;
         lltv = _marketParams.lltv;
-        marketId = _marketParams.id();
 
         preLltv = _preLiquidationParams.preLltv;
         closeFactor = _preLiquidationParams.closeFactor;
