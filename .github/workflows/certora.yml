@@ -16,7 +16,7 @@ jobs:
 
       matrix:
         conf:
-          - Dummy
+          - Reentrancy
 
     steps:
       - uses: actions/checkout@v4
