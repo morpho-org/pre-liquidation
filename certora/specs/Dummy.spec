@@ -1,0 +1,2 @@
+invariant tt()
+    true;
