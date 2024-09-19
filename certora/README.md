@@ -45,6 +45,34 @@ The PreLiquidation contract enables Morpho Blue borrowers to set up a
 safer liquidation plan on a given position, thus preventing undesired
 liquidations.
 
+### Reentrancy
+
+PreLiquidation only interacts with Morpho Blue and with the loan token
+of the vault.  This is checked in
+[`Reentrancy.spec`](specs/Reentrancy.spec).  Informally, the loan
+token and the markets of Morpho Blue are trusted.
+
+
+## Verification architecture
+
+### Folders and file structure
+
+The [`certora/specs`](specs) folder contains the following files:
+
+- [`Reentrancy.spec`](specs/Reentrancy.spec) checks that
+  PreLiquidation is reentrancy safe by making sure that there are no
+  untrusted external calls.
+
+The [`certora/confs`](confs) folder contains a configuration file for
+each corresponding specification file.
+
+The [`certora/helpers`](helpers) folder contains helper contracts that
+enable the verification of PreLiquidation. Notably, this allows
+handling the fact that library functions should be called from a
+contract to be verified independently, and it allows defining needed
+getters.
+
 ## TODO
 
 - [ ] Provide an overview of the specification.
+- [ ] Update the verification architecture.
