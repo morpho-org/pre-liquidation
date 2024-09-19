@@ -14,3 +14,9 @@ docs/
 .env
 
 .prettierignore
+
+# Emacs
+*~
+
+# Certora
+.certora_internal
