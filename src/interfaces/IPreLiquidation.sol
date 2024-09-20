@@ -12,17 +12,17 @@ struct PreLiquidationParams {
 interface IPreLiquidation {
     function MORPHO() external view returns (IMorpho);
 
-    function marketId() external view returns (Id);
+    function ID() external view returns (Id);
 
-    function preLltv() external view returns (uint256);
-    function closeFactor() external view returns (uint256);
-    function preLiquidationIncentive() external view returns (uint256);
+    function PRE_LLTV() external view returns (uint256);
+    function CLOSE_FACTOR() external view returns (uint256);
+    function PRE_LIQUIDATION_INCENTIVE() external view returns (uint256);
 
-    function loanToken() external view returns (address);
-    function collateralToken() external view returns (address);
-    function oracle() external view returns (address);
-    function irm() external view returns (address);
-    function lltv() external view returns (uint256);
+    function LOAN_TOKEN() external view returns (address);
+    function COLLATERAL_TOKEN() external view returns (address);
+    function ORACLE() external view returns (address);
+    function IRM() external view returns (address);
+    function LLTV() external view returns (uint256);
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
 }

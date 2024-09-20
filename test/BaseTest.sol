@@ -8,11 +8,13 @@ import {ERC20Mock} from "../src/mocks/ERC20Mock.sol";
 import {IrmMock} from "../src/mocks/IrmMock.sol";
 import {OracleMock} from "../src/mocks/OracleMock.sol";
 
-import {MarketParams, IMorpho} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {MarketParams, IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 
 contract BaseTest is Test {
+    using MarketParamsLib for MarketParams;
+
     address internal SUPPLIER = makeAddr("Supplier");
     address internal BORROWER = makeAddr("Borrower");
     address internal LIQUIDATOR = makeAddr("Liquidator");
@@ -26,7 +28,8 @@ contract BaseTest is Test {
     IrmMock internal irm = new IrmMock();
     uint256 internal lltv = 0.8 ether; // 80%
 
-    MarketParams internal market;
+    MarketParams internal marketParams;
+    Id internal id;
 
     function setUp() public virtual {
         vm.label(address(MORPHO), "Morpho");
@@ -46,15 +49,16 @@ contract BaseTest is Test {
         MORPHO.enableLltv(lltv);
         vm.stopPrank();
 
-        market = MarketParams({
+        marketParams = MarketParams({
             loanToken: address(loanToken),
             collateralToken: address(collateralToken),
             oracle: address(oracle),
             irm: address(irm),
             lltv: lltv
         });
+        id = marketParams.id();
 
-        MORPHO.createMarket(market);
+        MORPHO.createMarket(marketParams);
 
         vm.startPrank(SUPPLIER);
         loanToken.approve(address(MORPHO), type(uint256).max);
