@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity >= 0.5.0;
 
-import {Id, MarketParams, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {Id, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 struct PreLiquidationParams {
     uint256 preLltv;
