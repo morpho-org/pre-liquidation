@@ -18,5 +18,11 @@ interface IPreLiquidation {
     function CLOSE_FACTOR() external view returns (uint256);
     function PRE_LIQUIDATION_INCENTIVE() external view returns (uint256);
 
-    function preLiquidate(MarketParams memory, address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
+    function preLiquidate(
+        MarketParams memory,
+        address borrower,
+        uint256 seizedAssets,
+        uint256 repaidShares,
+        bytes calldata data
+    ) external;
 }
