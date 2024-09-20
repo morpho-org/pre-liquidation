@@ -42,6 +42,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
         preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD - 1);
         preLiquidationParams.preLiquidationIncentive = bound(preLiquidationParams.preLiquidationIncentive, 1, WAD / 10);
+        preLiquidationParams.preLiquidationOracle = marketParams.oracle;
+
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
         preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);

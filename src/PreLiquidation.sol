@@ -43,6 +43,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     uint256 public immutable PRE_LLTV;
     uint256 public immutable CLOSE_FACTOR;
     uint256 public immutable PRE_LIQUIDATION_INCENTIVE;
+    address public immutable PRE_LIQUIDATION_ORACLE;
 
     constructor(Id id, PreLiquidationParams memory _preLiquidationParams, address morpho) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
@@ -62,13 +63,14 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         PRE_LLTV = _preLiquidationParams.preLltv;
         CLOSE_FACTOR = _preLiquidationParams.closeFactor;
         PRE_LIQUIDATION_INCENTIVE = _preLiquidationParams.preLiquidationIncentive;
+        PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
 
         ERC20(marketParams.loanToken).safeApprove(morpho, type(uint256).max);
     }
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
-        uint256 collateralPrice = IOracle(ORACLE).price();
+        uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
 
         MarketParams memory marketParams = MarketParams(LOAN_TOKEN, COLLATERAL_TOKEN, ORACLE, IRM, LLTV);
         MORPHO.accrueInterest(marketParams);

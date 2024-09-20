@@ -7,6 +7,7 @@ struct PreLiquidationParams {
     uint256 preLltv;
     uint256 closeFactor;
     uint256 preLiquidationIncentive;
+    address preLiquidationOracle;
 }
 
 interface IPreLiquidation {
@@ -17,6 +18,7 @@ interface IPreLiquidation {
     function PRE_LLTV() external view returns (uint256);
     function CLOSE_FACTOR() external view returns (uint256);
     function PRE_LIQUIDATION_INCENTIVE() external view returns (uint256);
+    function PRE_LIQUIDATION_ORACLE() external view returns (address);
 
     function LOAN_TOKEN() external view returns (address);
     function COLLATERAL_TOKEN() external view returns (address);
