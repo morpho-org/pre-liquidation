@@ -10,6 +10,10 @@ struct PreLiquidationParams {
     address preLiquidationOracle;
 }
 
+/// @title IPreLiquidation
+/// @author Morpho Labs
+/// @custom:contact security@morpho.org
+/// @notice Interface of PreLiquidation.
 interface IPreLiquidation {
     function MORPHO() external view returns (IMorpho);
 
@@ -26,5 +30,13 @@ interface IPreLiquidation {
     function IRM() external view returns (address);
     function LLTV() external view returns (uint256);
 
+    /// @notice Preliquidates the given `repaidShares of debt asset or seize the given `seizedAssets`of collateral on the
+    /// contract's Morpho market of the given `borrower`'s position, optionally calling back the caller's `onPreLiquidate`
+    /// function with the given `data`.
+    /// @dev Either `seizedAssets`or `repaidShares` should be zero.
+    /// @param borrower The owner of the position.
+    /// @param seizedAssets The amount of collateral to seize.
+    /// @param repaidShares The amount of shares to repay.
+    /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
 }
