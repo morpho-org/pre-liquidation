@@ -68,7 +68,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         collateralToken.approve(address(preLiquidation), type(uint256).max);
 
         vm.expectRevert(ErrorsLib.NotPreLiquidatablePosition.selector);
-        preLiquidation.preLiquidate(BORROWER, 0, 1, hex"");
+        preLiquidation.preLiquidate(marketParams, BORROWER, 0, 1, hex"");
 
         vm.startPrank(BORROWER);
         MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
@@ -109,12 +109,12 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         vm.assume(seizedAssets > 0);
 
         vm.expectRevert(ErrorsLib.InconsistentInput.selector);
-        preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
+        preLiquidation.preLiquidate(marketParams, BORROWER, 0, 0, hex"");
 
         vm.expectRevert(ErrorsLib.InconsistentInput.selector);
-        preLiquidation.preLiquidate(BORROWER, seizedAssets, repayableShares, hex"");
+        preLiquidation.preLiquidate(marketParams, BORROWER, seizedAssets, repayableShares, hex"");
 
-        preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
+        preLiquidation.preLiquidate(marketParams, BORROWER, 0, repayableShares, hex"");
     }
 
     function testPreLiquidationCallback(
@@ -135,7 +135,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
 
         bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, hex"");
 
-        preLiquidation.preLiquidate(BORROWER, 0, repayableShares, data);
+        preLiquidation.preLiquidate(marketParams, BORROWER, 0, repayableShares, data);
     }
 
     function onPreLiquidate(uint256, bytes memory data) external pure {

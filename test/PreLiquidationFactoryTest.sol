@@ -32,12 +32,6 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiquidation.CLOSE_FACTOR() == preLiquidationParams.closeFactor);
         assert(preLiquidation.PRE_LIQUIDATION_INCENTIVE() == preLiquidationParams.preLiquidationIncentive);
 
-        assert(preLiquidation.LLTV() == marketParams.lltv);
-        assert(preLiquidation.COLLATERAL_TOKEN() == marketParams.collateralToken);
-        assert(preLiquidation.LOAN_TOKEN() == marketParams.loanToken);
-        assert(preLiquidation.IRM() == marketParams.irm);
-        assert(preLiquidation.ORACLE() == marketParams.oracle);
-
         bytes32 preLiquidationId = factory.getPreLiquidationId(id, preLiquidationParams);
         assert(factory.preLiquidations(preLiquidationId) == preLiquidation);
     }
