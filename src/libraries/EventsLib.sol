@@ -18,7 +18,5 @@ library EventsLib {
         uint256 seizedAssets
     );
 
-    event CreatePreLiquidation(
-        address indexed preLiquidation, MarketParams marketParams, PreLiquidationParams preLiquidationParams
-    );
+    event CreatePreLiquidation(address indexed preLiquidation, Id id, PreLiquidationParams preLiquidationParams);
 }
