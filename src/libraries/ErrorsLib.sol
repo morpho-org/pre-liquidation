@@ -25,6 +25,4 @@ library ErrorsLib {
     /* PreLiquidation Factory errors */
 
     error ZeroAddress();
-
-    // Creating a redundant PreLiquidation contract will lead to "EvmError: Revert"
 }
