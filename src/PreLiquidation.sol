@@ -25,7 +25,6 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using UtilsLib for uint256;
     using SharesMathLib for uint256;
     using MathLib for uint256;
-    using MathLib for uint128;
     using SafeTransferLib for ERC20;
 
     /* IMMUTABLE */
@@ -90,7 +89,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         // Check if liquidation is ok with close factor
-        uint256 repayableShares = MORPHO.position(ID, borrower).borrowShares.wMulDown(CLOSE_FACTOR);
+        uint256 borrowerShares = MORPHO.position(ID, borrower).borrowShares;
+        uint256 repayableShares = borrowerShares.wMulDown(CLOSE_FACTOR);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
