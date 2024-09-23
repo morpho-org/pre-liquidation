@@ -56,8 +56,8 @@ The [`certora/specs`](specs) folder contains the following files:
   used.
 
 - [`Immutability.spec`](specs/Immutability.spec) checks that
-  PreLiquidation's storage is safe by checking that the storage is never
-  changed by a delegate call..
+  PreLiquidation contract is immutable because it doesn't perform any
+  delegate call.
 
 The [`certora/confs`](confs) folder contains a configuration file for
 each corresponding specification file.
