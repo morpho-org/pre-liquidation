@@ -72,10 +72,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
 
         MarketParams memory marketParams = MarketParams(LOAN_TOKEN, COLLATERAL_TOKEN, ORACLE, IRM, LLTV);
-        MORPHO.accrueInterest(marketParams);
-        require(_isPreLiquidatable(borrower, collateralPrice), ErrorsLib.NotPreLiquidatablePosition());
-
         Market memory market = MORPHO.market(ID);
+        Position memory position = MORPHO.position(ID, borrower);
+        MORPHO.accrueInterest(marketParams);
+        require(_isPreLiquidatable(collateralPrice, position, market), ErrorsLib.NotPreLiquidatablePosition());
+
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
@@ -89,7 +90,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         // Check if liquidation is ok with close factor
-        uint256 borrowerShares = MORPHO.position(ID, borrower).borrowShares;
+        uint256 borrowerShares = position.borrowShares;
         uint256 repayableShares = borrowerShares.wMulDown(CLOSE_FACTOR);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
@@ -114,14 +115,14 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         ERC20(LOAN_TOKEN).safeTransferFrom(liquidator, address(this), repaidAssets);
     }
 
-    function _isPreLiquidatable(address borrower, uint256 collateralPrice) internal view returns (bool) {
-        Position memory borrowerPosition = MORPHO.position(ID, borrower);
-        Market memory market = MORPHO.market(ID);
-
-        uint256 borrowed =
-            uint256(borrowerPosition.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
+    function _isPreLiquidatable(uint256 collateralPrice, Position memory position, Market memory market)
+        internal
+        view
+        returns (bool)
+    {
+        uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 borrowThreshold =
-            uint256(borrowerPosition.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(PRE_LLTV);
+            uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(PRE_LLTV);
 
         return borrowed > borrowThreshold;
     }
