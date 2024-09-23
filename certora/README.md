@@ -56,7 +56,7 @@ This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Reentrancy.spec`](specs/Reentrancy.spec) checks that
-  PreLiquidation is reentrant by checking that the storage is never
+  PreLiquidation is reentrancy safe by checking that the storage is never
   used.
 
 The [`certora/confs`](confs) folder contains a configuration file for
