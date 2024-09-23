@@ -17,6 +17,7 @@ jobs:
       matrix:
         conf:
           - Reentrancy
+          - Immutability
 
     steps:
       - uses: actions/checkout@v4
