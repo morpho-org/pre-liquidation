@@ -47,11 +47,8 @@ liquidations.
 
 ### Reentrancy
 
-PreLiquidation only interacts with Morpho Blue and with the loan token
-of the vault.  This is checked in
-[`Reentrancy.spec`](specs/Reentrancy.spec).  Informally, the loan
-token and the markets of Morpho Blue are trusted.
-
+This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
+Informally, the loan token and the markets of Morpho Blue are trusted.
 
 ## Verification architecture
 
