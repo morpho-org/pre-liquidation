@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-// True when storage has been accessed with either a SSTORE or a SLOAD.
+// True when storage has been accessed with either a SSTORE or a
+// SLOAD.
+
 persistent ghost bool hasAccessedStorage;
 
 hook ALL_SSTORE(uint loc, uint v) {
+    hasAccessedStorage = true;
+}
+
+hook ALL_SLOAD(uint loc) uint v {
     hasAccessedStorage = true;
 }
 
