@@ -41,6 +41,10 @@ liquidations.
 
 This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
 
+### Immutability
+
+This is checked in [`Immutability.spec`](specs/Immutability.spec).
+
 ## Verification architecture
 
 ### Folders and file structure
@@ -50,6 +54,10 @@ The [`certora/specs`](specs) folder contains the following files:
 - [`Reentrancy.spec`](specs/Reentrancy.spec) checks that
   PreLiquidation is reentrancy safe by checking that the storage is never
   used.
+
+- [`Immutability.spec`](specs/Immutability.spec) checks that
+  PreLiquidation's storage is safe by checking that the storage is never
+  changed by a delegate call..
 
 The [`certora/confs`](confs) folder contains a configuration file for
 each corresponding specification file.
