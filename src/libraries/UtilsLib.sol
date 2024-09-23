@@ -6,12 +6,6 @@ import {PreLiquidation} from "../PreLiquidation.sol";
 import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
 import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-/// @title UtilsLib
-/// @author Morpho Labs
-/// @custom:contact security@morpho.org
-/// @notice Library exposing helpers.
-/// @dev Inspired by https://github.com/morpho-org/morpho-utils.
-
 library UtilsLib {
     function computePreLiquidationAddress(
         Id id,
