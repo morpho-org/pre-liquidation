@@ -38,6 +38,13 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiquidation.LOAN_TOKEN() == marketParams.loanToken);
         assert(preLiquidation.IRM() == marketParams.irm);
         assert(preLiquidation.ORACLE() == marketParams.oracle);
+    }
+
+    function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
+        vm.assume(preLiquidationParams.preLltv < lltv);
+
+        factory = new PreLiquidationFactory(address(MORPHO));
+        IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
         address preLiquidationAddress =
             UtilsLib.computePreLiquidationAddress(id, preLiquidationParams, address(MORPHO), address(factory));
