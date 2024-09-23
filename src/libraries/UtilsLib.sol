@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {SALT} from "../libraries/ConstantsLib.sol";
-import {PreLiquidation} from "../Preliquidation.sol";
-import {PreLiquidationParams} from "../interfaces/IPreliquidation.sol";
+import {PreLiquidation} from "../PreLiquidation.sol";
+import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
 import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 /// @title UtilsLib
@@ -18,10 +18,21 @@ library UtilsLib {
         PreLiquidationParams memory preLiquidationParams,
         address morpho,
         address factory
-    ) internal returns (address preLiquidationAddress) {
-        bytes32 init_code_hash =
-            keccak256(abi.encode(type(PreLiquidation).creationCode, id, preLiquidationParams, morpho));
+    ) internal pure returns (address preLiquidationAddress) {
+        bytes32 init_code_hash = keccak256(
+            abi.encodePacked(
+                type(PreLiquidation).creationCode,
+                abi.encode(
+                    id,
+                    preLiquidationParams.preLltv,
+                    preLiquidationParams.closeFactor,
+                    preLiquidationParams.preLiquidationIncentive,
+                    preLiquidationParams.preLiquidationOracle,
+                    morpho
+                )
+            )
+        );
         preLiquidationAddress =
-            address(bytes20(keccak256(abi.encodePacked(uint8(0xff), factory, SALT, init_code_hash))));
+            address(uint160(uint256(keccak256(abi.encodePacked(uint8(0xff), factory, SALT, init_code_hash)))));
     }
 }
