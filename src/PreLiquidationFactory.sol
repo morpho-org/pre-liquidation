@@ -43,7 +43,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         require(address(preLiquidations[preLiquidationId]) == address(0), ErrorsLib.PreLiquidationAlreadyExists());
 
         IPreLiquidation preLiquidation =
-            IPreLiquidation(address(new PreLiquidation(id, preLiquidationParams, address(MORPHO))));
+            IPreLiquidation(address(new PreLiquidation{salt: 0}(id, preLiquidationParams, address(MORPHO))));
         preLiquidations[preLiquidationId] = preLiquidation;
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
