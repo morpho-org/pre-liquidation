@@ -8,6 +8,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 import {UtilsLib} from "./libraries/UtilsLib.sol";
+import {SALT} from "./libraries/ConstantsLib.sol";
 
 /// @title PreLiquidationFactory
 /// @author Morpho Labs
@@ -36,7 +37,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         returns (IPreLiquidation)
     {
         IPreLiquidation preLiquidation =
-            IPreLiquidation(address(new PreLiquidation{salt: 0}(id, preLiquidationParams, address(MORPHO))));
+            IPreLiquidation(address(new PreLiquidation{salt: SALT}(id, preLiquidationParams, address(MORPHO))));
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
 
