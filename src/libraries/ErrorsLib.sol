@@ -8,6 +8,8 @@ import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 /// @custom:contact security@morpho.org
 /// @notice Library exposing errors.
 library ErrorsLib {
+    /* PreLiquidation errors */
+
     error PreLltvTooHigh();
 
     error InconsistentInput();
@@ -18,9 +20,11 @@ library ErrorsLib {
 
     error NotMorpho();
 
+    error NonexistentMarket();
+
+    /* PreLiquidation Factory errors */
+
     error ZeroAddress();
 
     error PreLiquidationAlreadyExists();
-
-    error NonexistentMarket();
 }
