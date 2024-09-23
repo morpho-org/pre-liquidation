@@ -8,7 +8,7 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 
-/// @title Morpho
+/// @title PreLiquidationFactory
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Pre Liquidation Factory Contract for Morpho

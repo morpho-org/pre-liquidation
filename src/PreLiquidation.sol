@@ -16,7 +16,7 @@ import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol"
 import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
 import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 
-/// @title Morpho
+/// @title PreLiquidation
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Pre Liquidation Contract for Morpho
