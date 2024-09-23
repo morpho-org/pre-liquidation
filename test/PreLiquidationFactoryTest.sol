@@ -27,16 +27,20 @@ contract PreLiquidationFactoryTest is BaseTest {
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
         assert(preLiquidation.MORPHO() == MORPHO);
+        assert(Id.unwrap(preLiquidation.ID()) == Id.unwrap(id));
 
-        assert(preLiquidation.PRE_LLTV() == preLiquidationParams.preLltv);
-        assert(preLiquidation.CLOSE_FACTOR() == preLiquidationParams.closeFactor);
-        assert(preLiquidation.PRE_LIQUIDATION_INCENTIVE() == preLiquidationParams.preLiquidationIncentive);
+        PreLiquidationParams memory preLiqParams = preLiquidation.getPreLiquidationParams();
+        assert(preLiqParams.preLltv == preLiquidationParams.preLltv);
+        assert(preLiqParams.closeFactor == preLiquidationParams.closeFactor);
+        assert(preLiqParams.preLiquidationIncentive == preLiquidationParams.preLiquidationIncentive);
+        assert(preLiqParams.preLiquidationOracle == preLiquidationParams.preLiquidationOracle);
 
-        assert(preLiquidation.LLTV() == marketParams.lltv);
-        assert(preLiquidation.COLLATERAL_TOKEN() == marketParams.collateralToken);
-        assert(preLiquidation.LOAN_TOKEN() == marketParams.loanToken);
-        assert(preLiquidation.IRM() == marketParams.irm);
-        assert(preLiquidation.ORACLE() == marketParams.oracle);
+        MarketParams memory preLiqMarketParams = preLiquidation.getMarketParams();
+        assert(preLiqMarketParams.loanToken == marketParams.loanToken);
+        assert(preLiqMarketParams.collateralToken == marketParams.collateralToken);
+        assert(preLiqMarketParams.oracle == marketParams.oracle);
+        assert(preLiqMarketParams.irm == marketParams.irm);
+        assert(preLiqMarketParams.lltv == marketParams.lltv);
 
         bytes32 preLiquidationId = factory.getPreLiquidationId(id, preLiquidationParams);
         assert(factory.preLiquidations(preLiquidationId) == preLiquidation);

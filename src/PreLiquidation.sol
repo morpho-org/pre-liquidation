@@ -32,17 +32,36 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     Id public immutable ID;
 
     // Market parameters
-    address public immutable LOAN_TOKEN;
-    address public immutable COLLATERAL_TOKEN;
-    address public immutable ORACLE;
-    address public immutable IRM;
-    uint256 public immutable LLTV;
+    address internal immutable LOAN_TOKEN;
+    address internal immutable COLLATERAL_TOKEN;
+    address internal immutable ORACLE;
+    address internal immutable IRM;
+    uint256 internal immutable LLTV;
 
     // Pre-liquidation parameters
-    uint256 public immutable PRE_LLTV;
-    uint256 public immutable CLOSE_FACTOR;
-    uint256 public immutable PRE_LIQUIDATION_INCENTIVE;
-    address public immutable PRE_LIQUIDATION_ORACLE;
+    uint256 internal immutable PRE_LLTV;
+    uint256 internal immutable CLOSE_FACTOR;
+    uint256 internal immutable PRE_LIQUIDATION_INCENTIVE;
+    address internal immutable PRE_LIQUIDATION_ORACLE;
+
+    function getMarketParams() public view returns (MarketParams memory) {
+        return MarketParams({
+            loanToken: LOAN_TOKEN,
+            collateralToken: COLLATERAL_TOKEN,
+            oracle: ORACLE,
+            irm: IRM,
+            lltv: LLTV
+        });
+    }
+
+    function getPreLiquidationParams() external view returns (PreLiquidationParams memory) {
+        return PreLiquidationParams({
+            preLltv: PRE_LLTV,
+            closeFactor: CLOSE_FACTOR,
+            preLiquidationIncentive: PRE_LIQUIDATION_INCENTIVE,
+            preLiquidationOracle: PRE_LIQUIDATION_ORACLE
+        });
+    }
 
     constructor(Id id, PreLiquidationParams memory preLiquidationParams, address morpho) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
@@ -71,7 +90,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
 
-        MarketParams memory marketParams = MarketParams(LOAN_TOKEN, COLLATERAL_TOKEN, ORACLE, IRM, LLTV);
+        MarketParams memory marketParams = getMarketParams();
         Market memory market = MORPHO.market(ID);
         Position memory position = MORPHO.position(ID, borrower);
         MORPHO.accrueInterest(marketParams);
