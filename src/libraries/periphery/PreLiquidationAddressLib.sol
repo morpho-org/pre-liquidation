@@ -5,7 +5,7 @@ import {PreLiquidation} from "../../PreLiquidation.sol";
 import {PreLiquidationParams} from "../../interfaces/IPreLiquidation.sol";
 import {Id} from "../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
-library UtilsLib {
+library PreLiquidationAddressLib {
     function computePreLiquidationAddress(
         address morpho,
         address factory,
