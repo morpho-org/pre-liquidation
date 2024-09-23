@@ -11,10 +11,9 @@ library UtilsLib {
         address factory,
         Id id,
         PreLiquidationParams memory preLiquidationParams
-    ) internal pure returns (address preLiquidationAddress) {
+    ) internal pure returns (address) {
         bytes32 init_code_hash =
             keccak256(abi.encodePacked(type(PreLiquidation).creationCode, abi.encode(morpho, id, preLiquidationParams)));
-        preLiquidationAddress =
-            address(uint160(uint256(keccak256(abi.encodePacked(uint8(0xff), factory, uint256(0), init_code_hash)))));
+        return address(uint160(uint256(keccak256(abi.encodePacked(uint8(0xff), factory, uint256(0), init_code_hash)))));
     }
 }
