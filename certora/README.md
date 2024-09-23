@@ -48,7 +48,6 @@ liquidations.
 ### Reentrancy
 
 This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
-Informally, the loan token and the markets of Morpho Blue are trusted.
 
 ## Verification architecture
 
