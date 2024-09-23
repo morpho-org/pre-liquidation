@@ -3,9 +3,8 @@
 This folder contains the
 [CVL](https://docs.certora.com/en/latest/docs/cvl/index.html)
 specification and verification setup for the
-[pre-liquidation](../src/PreLiquidation.sol) contract on [Morpho
-Blue](https://app.morpho.org/?network=mainnet) using the [Certora
-Prover](https://www.certora.com/).
+[pre-liquidation](../src/PreLiquidation.sol) contract using the
+[Certora Prover](https://www.certora.com/).
 
 ## Getting Started
 
