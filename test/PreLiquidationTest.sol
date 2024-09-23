@@ -39,27 +39,30 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 borrowAmount,
         address liquidator
     ) public returns (uint256) {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, market.lltv - 1);
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
         preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD - 1);
         preLiquidationParams.preLiquidationIncentive = bound(preLiquidationParams.preLiquidationIncentive, 1, WAD / 10);
+        preLiquidationParams.preLiquidationOracle = marketParams.oracle;
+
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
-        preLiquidation = factory.createPreLiquidation(market, preLiquidationParams);
+        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
-        uint256 collateralPrice = IOracle(market.oracle).price();
-        uint256 borrowLiquidationThreshold =
-            collateralAmount.mulDivDown(IOracle(market.oracle).price(), ORACLE_PRICE_SCALE).wMulDown(market.lltv);
+        uint256 collateralPrice = IOracle(marketParams.oracle).price();
+        uint256 borrowLiquidationThreshold = collateralAmount.mulDivDown(
+            IOracle(marketParams.oracle).price(), ORACLE_PRICE_SCALE
+        ).wMulDown(marketParams.lltv);
         uint256 borrowPreLiquidationThreshold =
             collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.preLltv);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
         deal(address(loanToken), SUPPLIER, borrowAmount);
         vm.prank(SUPPLIER);
-        MORPHO.supply(market, uint128(borrowAmount), 0, SUPPLIER, hex"");
+        MORPHO.supply(marketParams, uint128(borrowAmount), 0, SUPPLIER, hex"");
 
         deal(address(collateralToken), BORROWER, collateralAmount);
         vm.startPrank(BORROWER);
-        MORPHO.supplyCollateral(market, collateralAmount, BORROWER, hex"");
+        MORPHO.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
 
         vm.startPrank(liquidator);
         deal(address(loanToken), liquidator, type(uint256).max);
@@ -70,7 +73,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidation.preLiquidate(BORROWER, 0, 1, hex"");
 
         vm.startPrank(BORROWER);
-        MORPHO.borrow(market, borrowAmount, 0, BORROWER, BORROWER);
+        MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
         MORPHO.setAuthorization(address(preLiquidation), true);
         vm.stopPrank();
 
@@ -78,20 +81,15 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     }
 
     function testHighLltv(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, market.lltv, type(uint256).max);
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, marketParams.lltv, type(uint256).max);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(ErrorsLib.PreLltvTooHigh.selector, preLiquidationParams.preLltv, market.lltv)
-        );
-        factory.createPreLiquidation(market, preLiquidationParams);
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLltvTooHigh.selector));
+        factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testNonexistentMarket(MarketParams memory marketParams, PreLiquidationParams memory preLiquidationParams)
-        public
-        virtual
-    {
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonexistentMarket.selector, marketParams.id()));
-        factory.createPreLiquidation(marketParams, preLiquidationParams);
+    function testNonexistentMarket(Id _id, PreLiquidationParams memory preLiquidationParams) public virtual {
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonexistentMarket.selector));
+        factory.createPreLiquidation(_id, preLiquidationParams);
     }
 
     function testPreLiquidation(
@@ -103,8 +101,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
 
         vm.startPrank(LIQUIDATOR);
-        Position memory position = MORPHO.position(market.id(), BORROWER);
-        Market memory m = MORPHO.market(market.id());
+        Position memory position = MORPHO.position(id, BORROWER);
+        Market memory m = MORPHO.market(id);
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
@@ -129,13 +127,12 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 collateralPrice =
             preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, address(this));
 
-        Position memory position = MORPHO.position(market.id(), BORROWER);
-        Market memory m = MORPHO.market(market.id());
+        Position memory position = MORPHO.position(marketParams.id(), BORROWER);
+        Market memory market = MORPHO.market(marketParams.id());
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
-        uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
-            preLiquidationParams.preLiquidationIncentive
-        ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+        uint256 seizedAssets = uint256(repayableShares).toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares)
+            .wMulDown(preLiquidationParams.preLiquidationIncentive).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
 
         bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, hex"");
@@ -143,7 +140,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, data);
     }
 
-    function onPreLiquidate(uint256 repaidAssets, bytes memory data) external {
+    function onPreLiquidate(uint256, bytes memory data) external pure {
         bytes4 selector;
         (selector,) = abi.decode(data, (bytes4, bytes));
         require(selector == this.testPreLiquidationCallback.selector);

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {IMorpho, MarketParams} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {PreLiquidation} from "./PreLiquidation.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 
-/// @title Morpho
+/// @title PreLiquidationFactory
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Pre Liquidation Factory Contract for Morpho
@@ -35,25 +35,27 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
     /* EXTERNAL */
 
     /// @inheritdoc IPreLiquidationFactory
-    function createPreLiquidation(
-        MarketParams calldata marketParams,
-        PreLiquidationParams calldata preLiquidationParams
-    ) external returns (IPreLiquidation preLiquidation) {
-        bytes32 preLiquidationId = getPreLiquidationId(marketParams, preLiquidationParams);
+    function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
+        external
+        returns (IPreLiquidation)
+    {
+        bytes32 preLiquidationId = getPreLiquidationId(id, preLiquidationParams);
         require(address(preLiquidations[preLiquidationId]) == address(0), ErrorsLib.PreLiquidationAlreadyExists());
 
-        preLiquidation =
-            IPreLiquidation(address(new PreLiquidation(marketParams, preLiquidationParams, address(MORPHO))));
+        IPreLiquidation preLiquidation =
+            IPreLiquidation(address(new PreLiquidation(id, preLiquidationParams, address(MORPHO))));
         preLiquidations[preLiquidationId] = preLiquidation;
 
-        emit EventsLib.CreatePreLiquidation(address(preLiquidation), marketParams, preLiquidationParams);
+        emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
+
+        return preLiquidation;
     }
 
-    function getPreLiquidationId(MarketParams calldata marketParams, PreLiquidationParams calldata preLiquidationParams)
+    function getPreLiquidationId(Id id, PreLiquidationParams calldata preLiquidationParams)
         public
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encode(marketParams, preLiquidationParams));
+        return keccak256(abi.encode(id, preLiquidationParams));
     }
 }

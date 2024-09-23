@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity >= 0.5.0;
 
-import {MarketParams, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {Id, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./IPreLiquidation.sol";
 
 /// @title IPreLiquidationFactory
@@ -16,10 +16,9 @@ interface IPreLiquidationFactory {
     function preLiquidations(bytes32) external view returns (IPreLiquidation);
 
     /// @notice Creates a PreLiquidation contract.
-    /// @param marketParams The Morpho market for PreLiquidations.
+    /// @param id The Morpho market for PreLiquidations.
     /// @param preLiquidationParams The PreLiquidation params for the PreLiquidation contract.
-    function createPreLiquidation(
-        MarketParams calldata marketParams,
-        PreLiquidationParams calldata preLiquidationParams
-    ) external returns (IPreLiquidation preLiquidation);
+    function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
+        external
+        returns (IPreLiquidation preLiquidation);
 }
