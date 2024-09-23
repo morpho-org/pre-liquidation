@@ -7,13 +7,13 @@ import {Id} from "../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 library UtilsLib {
     function computePreLiquidationAddress(
-        Id id,
-        PreLiquidationParams memory preLiquidationParams,
         address morpho,
-        address factory
+        address factory,
+        Id id,
+        PreLiquidationParams memory preLiquidationParams
     ) internal pure returns (address preLiquidationAddress) {
         bytes32 init_code_hash =
-            keccak256(abi.encodePacked(type(PreLiquidation).creationCode, abi.encode(id, preLiquidationParams, morpho)));
+            keccak256(abi.encodePacked(type(PreLiquidation).creationCode, abi.encode(morpho, id, preLiquidationParams)));
         preLiquidationAddress =
             address(uint160(uint256(keccak256(abi.encodePacked(uint8(0xff), factory, uint256(0), init_code_hash)))));
     }

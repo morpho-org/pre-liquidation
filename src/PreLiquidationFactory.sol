@@ -36,7 +36,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         returns (IPreLiquidation)
     {
         IPreLiquidation preLiquidation =
-            IPreLiquidation(address(new PreLiquidation{salt: 0}(id, preLiquidationParams, address(MORPHO))));
+            IPreLiquidation(address(new PreLiquidation{salt: 0}(address(MORPHO), id, preLiquidationParams)));
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
 

@@ -47,7 +47,7 @@ contract PreLiquidationFactoryTest is BaseTest {
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
         address preLiquidationAddress =
-            UtilsLib.computePreLiquidationAddress(id, preLiquidationParams, address(MORPHO), address(factory));
+            UtilsLib.computePreLiquidationAddress(address(MORPHO), address(factory), id, preLiquidationParams);
         assert(address(preLiquidation) == preLiquidationAddress);
     }
 
