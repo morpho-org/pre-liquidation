@@ -7,7 +7,7 @@ import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidatio
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
-import {UtilsLib} from "./libraries/UtilsLib.sol";
+import {UtilsLib} from "./libraries/periphery/UtilsLib.sol";
 
 /// @title PreLiquidationFactory
 /// @author Morpho Labs
