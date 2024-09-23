@@ -60,8 +60,8 @@ token and the markets of Morpho Blue are trusted.
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Reentrancy.spec`](specs/Reentrancy.spec) checks that
-  PreLiquidation is reentrancy safe by making sure that there are no
-  untrusted external calls.
+  PreLiquidation is reentrant by checking that the storage is never
+  used.
 
 The [`certora/confs`](confs) folder contains a configuration file for
 each corresponding specification file.
