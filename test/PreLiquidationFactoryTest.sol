@@ -50,7 +50,7 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         factory.createPreLiquidation(id, preLiquidationParams);
 
-        vm.expectRevert();
+        vm.expectRevert(bytes(""));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 }
