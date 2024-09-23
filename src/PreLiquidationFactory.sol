@@ -7,6 +7,7 @@ import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidatio
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
+import {UtilsLib} from "./libraries/UtilsLib.sol";
 
 /// @title PreLiquidationFactory
 /// @author Morpho Labs
@@ -17,11 +18,6 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
     /// @inheritdoc IPreLiquidationFactory
     IMorpho public immutable MORPHO;
-
-    /* STORAGE */
-
-    /// @inheritdoc IPreLiquidationFactory
-    mapping(bytes32 => IPreLiquidation) public preLiquidations;
 
     /* CONSTRUCTOR */
 
@@ -39,23 +35,11 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         external
         returns (IPreLiquidation)
     {
-        bytes32 preLiquidationId = getPreLiquidationId(id, preLiquidationParams);
-        require(address(preLiquidations[preLiquidationId]) == address(0), ErrorsLib.PreLiquidationAlreadyExists());
-
         IPreLiquidation preLiquidation =
             IPreLiquidation(address(new PreLiquidation{salt: 0}(id, preLiquidationParams, address(MORPHO))));
-        preLiquidations[preLiquidationId] = preLiquidation;
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
 
         return preLiquidation;
-    }
-
-    function getPreLiquidationId(Id id, PreLiquidationParams calldata preLiquidationParams)
-        public
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(id, preLiquidationParams));
     }
 }

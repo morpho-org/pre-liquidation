@@ -39,9 +39,6 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiquidation.IRM() == marketParams.irm);
         assert(preLiquidation.ORACLE() == marketParams.oracle);
 
-        bytes32 preLiquidationId = factory.getPreLiquidationId(id, preLiquidationParams);
-        assert(factory.preLiquidations(preLiquidationId) == preLiquidation);
-
         address preLiquidationAddress =
             UtilsLib.computePreLiquidationAddress(id, preLiquidationParams, address(MORPHO), address(factory));
         assert(address(preLiquidation) == preLiquidationAddress);
