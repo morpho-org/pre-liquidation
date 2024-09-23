@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {PreLiquidation, Id, MarketParams, PreLiquidationParams} from "../munged/PreLiquidation.sol";
+import {PreLiquidation, Id, MarketParams, PreLiquidationParams} from "../../src/PreLiquidation.sol";
 
 /// @title PreLiquidationHarness
 /// @author Morpho Labs
