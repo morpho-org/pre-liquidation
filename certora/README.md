@@ -14,7 +14,7 @@ the verification. The compiler binaries should be available under the
 following path names:
 
   - `solc-0.8.19` for the solidity compiler version `0.8.19`, which is
-    used for `MorphoBlue`;
+    used for `Morpho`;
   - `solc-0.8.27` for the solidity compiler version `0.8.27`, which is
     used for `PreLiquidation`.
 
