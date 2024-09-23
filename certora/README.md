@@ -3,9 +3,8 @@
 This folder contains the
 [CVL](https://docs.certora.com/en/latest/docs/cvl/index.html)
 specification and verification setup for the
-[pre-liquidation](../src/PreLiquidation.sol) contract on [Morpho
-Blue](https://app.morpho.org/?network=mainnet) using the [Certora
-Prover](https://www.certora.com/).
+[pre-liquidation](../src/PreLiquidation.sol) contract using the
+[Certora Prover](https://www.certora.com/).
 
 ## Getting Started
 
@@ -15,7 +14,7 @@ the verification. The compiler binaries should be available under the
 following path names:
 
   - `solc-0.8.19` for the solidity compiler version `0.8.19`, which is
-    used for `MorphoBlue`;
+    used for `Morpho`;
   - `solc-0.8.27` for the solidity compiler version `0.8.27`, which is
     used for `PreLiquidation`.
 
