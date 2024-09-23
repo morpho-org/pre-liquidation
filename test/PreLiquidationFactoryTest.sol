@@ -43,4 +43,14 @@ contract PreLiquidationFactoryTest is BaseTest {
             UtilsLib.computePreLiquidationAddress(id, preLiquidationParams, address(MORPHO), address(factory));
         assert(address(preLiquidation) == preLiquidationAddress);
     }
+
+    function testRedundantPreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
+        vm.assume(preLiquidationParams.preLltv < lltv);
+        factory = new PreLiquidationFactory(address(MORPHO));
+
+        factory.createPreLiquidation(id, preLiquidationParams);
+
+        vm.expectRevert();
+        factory.createPreLiquidation(id, preLiquidationParams);
+    }
 }
