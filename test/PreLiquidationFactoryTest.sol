@@ -5,6 +5,7 @@ import "./BaseTest.sol";
 import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
 import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
+import {UtilsLib} from "../src/libraries/UtilsLib.sol";
 
 contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;
@@ -40,5 +41,9 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         bytes32 preLiquidationId = factory.getPreLiquidationId(id, preLiquidationParams);
         assert(factory.preLiquidations(preLiquidationId) == preLiquidation);
+
+        address preLiquidationAddress =
+            UtilsLib.computePreLiquidationAddress(id, preLiquidationParams, address(MORPHO), address(factory));
+        assert(address(preLiquidation) == preLiquidationAddress);
     }
 }
