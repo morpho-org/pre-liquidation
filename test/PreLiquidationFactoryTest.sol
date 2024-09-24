@@ -29,13 +29,13 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiquidation.MORPHO() == MORPHO);
         assert(Id.unwrap(preLiquidation.ID()) == Id.unwrap(id));
 
-        PreLiquidationParams memory preLiqParams = preLiquidation.getPreLiquidationParams();
+        PreLiquidationParams memory preLiqParams = preLiquidation.preLiquidationParams();
         assert(preLiqParams.preLltv == preLiquidationParams.preLltv);
         assert(preLiqParams.closeFactor == preLiquidationParams.closeFactor);
         assert(preLiqParams.preLiquidationIncentiveFactor == preLiquidationParams.preLiquidationIncentiveFactor);
         assert(preLiqParams.preLiquidationOracle == preLiquidationParams.preLiquidationOracle);
 
-        MarketParams memory preLiqMarketParams = preLiquidation.getMarketParams();
+        MarketParams memory preLiqMarketParams = preLiquidation.marketParams();
         assert(preLiqMarketParams.loanToken == marketParams.loanToken);
         assert(preLiqMarketParams.collateralToken == marketParams.collateralToken);
         assert(preLiqMarketParams.oracle == marketParams.oracle);

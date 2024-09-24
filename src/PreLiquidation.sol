@@ -44,7 +44,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     uint256 internal immutable PRE_LIQUIDATION_INCENTIVE_FACTOR;
     address internal immutable PRE_LIQUIDATION_ORACLE;
 
-    function getMarketParams() public view returns (MarketParams memory) {
+    function marketParams() public view returns (MarketParams memory) {
         return MarketParams({
             loanToken: LOAN_TOKEN,
             collateralToken: COLLATERAL_TOKEN,
@@ -54,7 +54,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         });
     }
 
-    function getPreLiquidationParams() external view returns (PreLiquidationParams memory) {
+    function preLiquidationParams() external view returns (PreLiquidationParams memory) {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
             closeFactor: CLOSE_FACTOR,
@@ -63,37 +63,36 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         });
     }
 
-    constructor(Id id, PreLiquidationParams memory preLiquidationParams, address morpho) {
+    constructor(Id id, PreLiquidationParams memory _preLiquidationParams, address morpho) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
-        MarketParams memory marketParams = IMorpho(morpho).idToMarketParams(id);
-        require(preLiquidationParams.preLltv < marketParams.lltv, ErrorsLib.PreLltvTooHigh());
+        MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
+        require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
 
         MORPHO = IMorpho(morpho);
 
         ID = id;
 
-        LOAN_TOKEN = marketParams.loanToken;
-        COLLATERAL_TOKEN = marketParams.collateralToken;
-        ORACLE = marketParams.oracle;
-        IRM = marketParams.irm;
-        LLTV = marketParams.lltv;
+        LOAN_TOKEN = _marketParams.loanToken;
+        COLLATERAL_TOKEN = _marketParams.collateralToken;
+        ORACLE = _marketParams.oracle;
+        IRM = _marketParams.irm;
+        LLTV = _marketParams.lltv;
 
-        PRE_LLTV = preLiquidationParams.preLltv;
-        CLOSE_FACTOR = preLiquidationParams.closeFactor;
-        PRE_LIQUIDATION_INCENTIVE_FACTOR = preLiquidationParams.preLiquidationIncentiveFactor;
-        PRE_LIQUIDATION_ORACLE = preLiquidationParams.preLiquidationOracle;
+        PRE_LLTV = _preLiquidationParams.preLltv;
+        CLOSE_FACTOR = _preLiquidationParams.closeFactor;
+        PRE_LIQUIDATION_INCENTIVE_FACTOR = _preLiquidationParams.preLiquidationIncentiveFactor;
+        PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
 
-        ERC20(marketParams.loanToken).safeApprove(morpho, type(uint256).max);
+        ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
     }
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
 
-        MarketParams memory marketParams = getMarketParams();
         Market memory market = MORPHO.market(ID);
         Position memory position = MORPHO.position(ID, borrower);
-        MORPHO.accrueInterest(marketParams);
+        MORPHO.accrueInterest(marketParams());
         require(_isPreLiquidatable(collateralPrice, position, market), ErrorsLib.NotPreLiquidatablePosition());
 
         if (seizedAssets > 0) {
@@ -114,7 +113,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
-        (uint256 repaidAssets,) = MORPHO.repay(marketParams, 0, repaidShares, borrower, callbackData);
+        (uint256 repaidAssets,) = MORPHO.repay(marketParams(), 0, repaidShares, borrower, callbackData);
 
         emit EventsLib.PreLiquidate(ID, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
     }
@@ -124,8 +123,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =
             abi.decode(callbackData, (uint256, address, address, bytes));
 
-        MarketParams memory marketParams = MarketParams(LOAN_TOKEN, COLLATERAL_TOKEN, ORACLE, IRM, LLTV);
-        MORPHO.withdrawCollateral(marketParams, seizedAssets, borrower, liquidator);
+        MORPHO.withdrawCollateral(marketParams(), seizedAssets, borrower, liquidator);
 
         if (data.length > 0) {
             IPreLiquidationCallback(liquidator).onPreLiquidate(repaidAssets, data);

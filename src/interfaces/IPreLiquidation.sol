@@ -27,10 +27,10 @@ interface IPreLiquidation {
     function ID() external view returns (Id);
 
     /// @notice The Morpho market parameters specific to the PreLiquidation contract.
-    function getMarketParams() external returns (MarketParams memory);
+    function marketParams() external returns (MarketParams memory);
 
     /// @notice The pre-liquidation parameters specific to the PreLiquidation contract.
-    function getPreLiquidationParams() external view returns (PreLiquidationParams memory);
+    function preLiquidationParams() external view returns (PreLiquidationParams memory);
 
     /// @notice Preliquidates the given `repaidShares of debt asset or seize the given `seizedAssets`of collateral on the
     /// contract's Morpho market of the given `borrower`'s position, optionally calling back the caller's `onPreLiquidate`
