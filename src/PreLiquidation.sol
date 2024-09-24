@@ -41,7 +41,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     // Pre-liquidation parameters
     uint256 internal immutable PRE_LLTV;
     uint256 internal immutable CLOSE_FACTOR;
-    uint256 internal immutable PRE_LIQUIDATION_INCENTIVE;
+    uint256 internal immutable PRE_LIQUIDATION_INCENTIVE_FACTOR;
     address internal immutable PRE_LIQUIDATION_ORACLE;
 
     function getMarketParams() public view returns (MarketParams memory) {
@@ -58,7 +58,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
             closeFactor: CLOSE_FACTOR,
-            preLiquidationIncentive: PRE_LIQUIDATION_INCENTIVE,
+            preLiquidationIncentiveFactor: PRE_LIQUIDATION_INCENTIVE_FACTOR,
             preLiquidationOracle: PRE_LIQUIDATION_ORACLE
         });
     }
@@ -80,7 +80,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         PRE_LLTV = preLiquidationParams.preLltv;
         CLOSE_FACTOR = preLiquidationParams.closeFactor;
-        PRE_LIQUIDATION_INCENTIVE = preLiquidationParams.preLiquidationIncentive;
+        PRE_LIQUIDATION_INCENTIVE_FACTOR = preLiquidationParams.preLiquidationIncentiveFactor;
         PRE_LIQUIDATION_ORACLE = preLiquidationParams.preLiquidationOracle;
 
         ERC20(marketParams.loanToken).safeApprove(morpho, type(uint256).max);
@@ -99,12 +99,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
-            repaidShares = seizedAssetsQuoted.wDivUp(PRE_LIQUIDATION_INCENTIVE).toSharesUp(
+            repaidShares = seizedAssetsQuoted.wDivUp(PRE_LIQUIDATION_INCENTIVE_FACTOR).toSharesUp(
                 market.totalBorrowAssets, market.totalBorrowShares
             );
         } else {
             seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
-                PRE_LIQUIDATION_INCENTIVE
+                PRE_LIQUIDATION_INCENTIVE_FACTOR
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 

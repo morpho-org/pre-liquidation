@@ -41,7 +41,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     ) public returns (uint256) {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
         preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD - 1);
-        preLiquidationParams.preLiquidationIncentive = bound(preLiquidationParams.preLiquidationIncentive, 1, WAD / 10);
+        preLiquidationParams.preLiquidationIncentiveFactor =
+            bound(preLiquidationParams.preLiquidationIncentiveFactor, 1, WAD / 10);
         preLiquidationParams.preLiquidationOracle = marketParams.oracle;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
@@ -106,7 +107,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
-            preLiquidationParams.preLiquidationIncentive
+            preLiquidationParams.preLiquidationIncentiveFactor
         ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
 
@@ -132,7 +133,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares)
-            .wMulDown(preLiquidationParams.preLiquidationIncentive).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+            .wMulDown(preLiquidationParams.preLiquidationIncentiveFactor).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         vm.assume(seizedAssets > 0);
 
         bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, hex"");

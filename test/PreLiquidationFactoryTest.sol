@@ -32,7 +32,7 @@ contract PreLiquidationFactoryTest is BaseTest {
         PreLiquidationParams memory preLiqParams = preLiquidation.getPreLiquidationParams();
         assert(preLiqParams.preLltv == preLiquidationParams.preLltv);
         assert(preLiqParams.closeFactor == preLiquidationParams.closeFactor);
-        assert(preLiqParams.preLiquidationIncentive == preLiquidationParams.preLiquidationIncentive);
+        assert(preLiqParams.preLiquidationIncentiveFactor == preLiquidationParams.preLiquidationIncentiveFactor);
         assert(preLiqParams.preLiquidationOracle == preLiquidationParams.preLiquidationOracle);
 
         MarketParams memory preLiqMarketParams = preLiquidation.getMarketParams();
