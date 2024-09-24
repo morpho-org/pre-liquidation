@@ -15,7 +15,6 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
 import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
-
 /// @title PreLiquidation
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
@@ -103,9 +102,10 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
 
+        MORPHO.accrueInterest(marketParams());
         Market memory market = MORPHO.market(ID);
         Position memory position = MORPHO.position(ID, borrower);
-        MORPHO.accrueInterest(marketParams());
+
         require(_isPreLiquidatable(collateralPrice, position, market), ErrorsLib.NotPreLiquidatablePosition());
 
         if (seizedAssets > 0) {
