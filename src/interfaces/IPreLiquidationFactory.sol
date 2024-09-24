@@ -15,8 +15,7 @@ interface IPreLiquidationFactory {
     /// @notice Creates a PreLiquidation contract.
     /// @param id The Morpho market for PreLiquidations.
     /// @param preLiquidationParams The PreLiquidation params for the PreLiquidation contract.
-    /// @dev Warning: This function will revert without data if a PreLiquidation with these exact same parameters already exists
-    /// because each PreLiquidation contract's address is deterministically computed with its parameters using create2.
+    /// @dev Warning: This function will revert without data if the pre-liquidation already exists.
     function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
         external
         returns (IPreLiquidation preLiquidation);
