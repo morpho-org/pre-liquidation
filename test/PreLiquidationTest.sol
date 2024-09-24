@@ -40,8 +40,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 collateralAmount,
         uint256 borrowAmount,
         address liquidator
-    ) public{
-
+    ) public {
         preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
         loanToken.mint(SUPPLIER, borrowAmount);
@@ -63,7 +62,6 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
         MORPHO.setAuthorization(address(preLiquidation), true);
         vm.stopPrank();
-
     }
 
     function testHighLltv(PreLiquidationParams memory preLiquidationParams) public virtual {
@@ -161,7 +159,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         assert(entries[3].topics[0] == keccak256("CallbackReached()"));
     }
 
-    function onPreLiquidate(uint256, bytes memory data) external{
+    function onPreLiquidate(uint256, bytes memory data) external {
         bytes4 selector;
         (selector,) = abi.decode(data, (bytes4, bytes));
         require(selector == this.testPreLiquidationCallback.selector);
@@ -169,10 +167,9 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         emit CallbackReached();
     }
 
-    function testPreLiquidationWithInterest(
-        PreLiquidationParams memory preLiquidationParams,
-        uint256 collateralAmount
-    ) public {
+    function testPreLiquidationWithInterest(PreLiquidationParams memory preLiquidationParams, uint256 collateralAmount)
+        public
+    {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
         preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD - 1);
         preLiquidationParams.preLiquidationIncentiveFactor =
@@ -182,8 +179,9 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
-        uint256 borrowThreshold =
-            uint256(collateralAmount).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.preLltv)-1;
+        uint256 borrowThreshold = uint256(collateralAmount).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(
+            preLiquidationParams.preLltv
+        ) - 1;
         preparePreLiquidation(preLiquidationParams, collateralAmount, borrowThreshold, LIQUIDATOR);
 
         vm.startPrank(LIQUIDATOR);
@@ -203,6 +201,5 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         vm.roll(block.number + 1);
 
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
-
     }
 }

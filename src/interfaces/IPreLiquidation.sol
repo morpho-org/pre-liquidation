@@ -15,10 +15,6 @@ struct PreLiquidationParams {
     address preLiquidationOracle;
 }
 
-/// @title IPreLiquidation
-/// @author Morpho Labs
-/// @custom:contact security@morpho.org
-/// @notice Interface of PreLiquidation.
 interface IPreLiquidation {
     function MORPHO() external view returns (IMorpho);
 

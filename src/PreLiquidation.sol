@@ -19,6 +19,7 @@ import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCal
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice The Fixed LI, Fixed CF pre-liquidation contract for Morpho.
+
 contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
@@ -67,6 +68,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         });
     }
 
+    /* CONSTRUCTOR */
+
+    /// @dev Initializes the PreLiquidation contract.
+    /// @param morpho The address of the Morpho protocol.
+    /// @param id The id of the Morpho market on which pre-liquidations will occur.
+    /// @param _preLiquidationParams The pre-liquidation parameters.
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
@@ -89,15 +96,15 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
     }
-    /// @notice Preliquidates the given `repaidShares of debt asset or seize the given `seizedAssets`of collateral on the
-    /// contract's Morpho market of the given `borrower`'s position, optionally calling back the caller's `onPreLiquidate`
-    /// function with the given `data`.
+
+    /* PRE-LIQUIDATION */
+
+    /// @notice Pre-liquidates the given borrower on the market of this contract and with the parameters of this contract.
     /// @dev Either `seizedAssets`or `repaidShares` should be zero.
     /// @param borrower The owner of the position.
     /// @param seizedAssets The amount of collateral to seize.
     /// @param repaidShares The amount of shares to repay.
     /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
-
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
@@ -120,7 +127,6 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        // Check if preliquidation is ok with close factor
         uint256 borrowerShares = position.borrowShares;
         uint256 repayableShares = borrowerShares.wMulDown(CLOSE_FACTOR);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
@@ -131,6 +137,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         emit EventsLib.PreLiquidate(ID, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
     }
 
+    /// @notice Morpho callback after repay call.
+    /// @dev During pre-liquidation, Morpho will call the `onMorphoRepay` callback function in `PreLiquidation` using the provided data.
+    /// This mechanism enables the withdrawal of the position’s collateral before the debt repayment occurs,
+    /// and can also trigger a pre-liquidator callback. The pre-liquidator callback can be used to swap
+    /// the seized collateral into the asset being repaid, facilitating liquidation without the need for a flashloan.
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =
@@ -145,6 +156,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         ERC20(LOAN_TOKEN).safeTransferFrom(liquidator, address(this), repaidAssets);
     }
 
+    /// @notice Assess whether a `position` on some Morpho `market` is pre-liquidatable
+    /// for a specific `collateralPrice` (fetched by calling PRE_LIQUIDATION_ORACLE).
+    /// @param collateralPrice the price of the collateral quoted in loan.
+    /// @param position The position on Morpho.
+    /// @param market The asset totals on the Morpho market.
+    /// @return isPreLiquidatable A boolean which is true if the position is pre-liquidatable and otherwise false.
     function _isPreLiquidatable(uint256 collateralPrice, Position memory position, Market memory market)
         internal
         view
