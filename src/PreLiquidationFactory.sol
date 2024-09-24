@@ -15,7 +15,7 @@ import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 contract PreLiquidationFactory is IPreLiquidationFactory {
     /* IMMUTABLE */
 
-    /// @inheritdoc IPreLiquidationFactory
+    /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
 
     /* CONSTRUCTOR */
@@ -29,7 +29,10 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
     /* EXTERNAL */
 
-    /// @inheritdoc IPreLiquidationFactory
+    /// @notice Creates a PreLiquidation contract.
+    /// @param id The Morpho market for PreLiquidations.
+    /// @param preLiquidationParams The PreLiquidation params for the PreLiquidation contract.
+    /// @dev Warning: This function will revert without data if the pre-liquidation already exists.
     function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
         external
         returns (IPreLiquidation)

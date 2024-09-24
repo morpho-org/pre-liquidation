@@ -28,7 +28,10 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using SafeTransferLib for ERC20;
 
     /* IMMUTABLE */
+
+    /// @notice Morpho's address.
     IMorpho public immutable MORPHO;
+    /// @notice The id of the Morpho Market specific to the PreLiquidation contract.
     Id public immutable ID;
 
     // Market parameters
@@ -44,6 +47,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     uint256 internal immutable PRE_LIQUIDATION_INCENTIVE_FACTOR;
     address internal immutable PRE_LIQUIDATION_ORACLE;
 
+    /// @notice The Morpho market parameters specific to the PreLiquidation contract.
     function marketParams() public view returns (MarketParams memory) {
         return MarketParams({
             loanToken: LOAN_TOKEN,
@@ -53,7 +57,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             lltv: LLTV
         });
     }
-
+    /// @notice The pre-liquidation parameters specific to the PreLiquidation contract.
     function preLiquidationParams() external view returns (PreLiquidationParams memory) {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
@@ -85,7 +89,14 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
     }
-
+    /// @notice Preliquidates the given `repaidShares of debt asset or seize the given `seizedAssets`of collateral on the
+    /// contract's Morpho market of the given `borrower`'s position, optionally calling back the caller's `onPreLiquidate`
+    /// function with the given `data`.
+    /// @dev Either `seizedAssets`or `repaidShares` should be zero.
+    /// @param borrower The owner of the position.
+    /// @param seizedAssets The amount of collateral to seize.
+    /// @param repaidShares The amount of shares to repay.
+    /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
@@ -107,7 +118,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        // Check if liquidation is ok with close factor
+        // Check if preliquidation is ok with close factor
         uint256 borrowerShares = position.borrowShares;
         uint256 repayableShares = borrowerShares.wMulDown(CLOSE_FACTOR);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
