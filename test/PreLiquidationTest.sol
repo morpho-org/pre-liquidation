@@ -27,6 +27,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     PreLiquidationFactory internal factory;
     IPreLiquidation internal preLiquidation;
 
+    event CallbackReached();
+
     function setUp() public override {
         super.setUp();
 
@@ -71,9 +73,9 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testNonexistentMarket(Id _id, PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testNonexistentMarket(PreLiquidationParams memory preLiquidationParams) public virtual {
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonexistentMarket.selector));
-        factory.createPreLiquidation(_id, preLiquidationParams);
+        factory.createPreLiquidation(Id.wrap(bytes32(0)), preLiquidationParams);
     }
 
     function testPreLiquidation(
@@ -151,13 +153,20 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
 
         bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, hex"");
 
+        vm.recordLogs();
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, data);
+
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        assert(entries.length == 7);
+        assert(entries[3].topics[0] == keccak256("CallbackReached()"));
     }
 
-    function onPreLiquidate(uint256, bytes memory data) external pure {
+    function onPreLiquidate(uint256, bytes memory data) external{
         bytes4 selector;
         (selector,) = abi.decode(data, (bytes4, bytes));
         require(selector == this.testPreLiquidationCallback.selector);
+
+        emit CallbackReached();
     }
 
     function testPreLiquidationWithInterest(

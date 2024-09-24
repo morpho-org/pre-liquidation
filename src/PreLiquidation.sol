@@ -56,8 +56,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             lltv: LLTV
         });
     }
-    /// @notice The pre-liquidation parameters specific to the PreLiquidation contract.
 
+    /// @notice The pre-liquidation parameters specific to the PreLiquidation contract.
     function preLiquidationParams() external view returns (PreLiquidationParams memory) {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
