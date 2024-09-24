@@ -18,11 +18,6 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
     /// @inheritdoc IPreLiquidationFactory
     IMorpho public immutable MORPHO;
 
-    /* STORAGE */
-
-    /// @inheritdoc IPreLiquidationFactory
-    mapping(bytes32 => IPreLiquidation) public preLiquidations;
-
     /* CONSTRUCTOR */
 
     /// @param morpho The address of the Morpho contract.
@@ -39,23 +34,11 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
         external
         returns (IPreLiquidation)
     {
-        bytes32 preLiquidationId = getPreLiquidationId(id, preLiquidationParams);
-        require(address(preLiquidations[preLiquidationId]) == address(0), ErrorsLib.PreLiquidationAlreadyExists());
-
         IPreLiquidation preLiquidation =
-            IPreLiquidation(address(new PreLiquidation(id, preLiquidationParams, address(MORPHO))));
-        preLiquidations[preLiquidationId] = preLiquidation;
+            IPreLiquidation(address(new PreLiquidation{salt: 0}(address(MORPHO), id, preLiquidationParams)));
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
 
         return preLiquidation;
-    }
-
-    function getPreLiquidationId(Id id, PreLiquidationParams calldata preLiquidationParams)
-        public
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(id, preLiquidationParams));
     }
 }
