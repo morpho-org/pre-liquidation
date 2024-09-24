@@ -5,6 +5,7 @@ import "./BaseTest.sol";
 import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
 import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
+import {PreLiquidationAddressLib} from "../src/libraries/periphery/PreLiquidationAddressLib.sol";
 
 contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;
@@ -41,8 +42,27 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiqMarketParams.oracle == marketParams.oracle);
         assert(preLiqMarketParams.irm == marketParams.irm);
         assert(preLiqMarketParams.lltv == marketParams.lltv);
+    }
 
-        bytes32 preLiquidationId = factory.getPreLiquidationId(id, preLiquidationParams);
-        assert(factory.preLiquidations(preLiquidationId) == preLiquidation);
+    function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
+        vm.assume(preLiquidationParams.preLltv < lltv);
+
+        factory = new PreLiquidationFactory(address(MORPHO));
+        IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
+
+        address preLiquidationAddress = PreLiquidationAddressLib.computePreLiquidationAddress(
+            address(MORPHO), address(factory), id, preLiquidationParams
+        );
+        assert(address(preLiquidation) == preLiquidationAddress);
+    }
+
+    function testRedundantPreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
+        vm.assume(preLiquidationParams.preLltv < lltv);
+        factory = new PreLiquidationFactory(address(MORPHO));
+
+        factory.createPreLiquidation(id, preLiquidationParams);
+
+        vm.expectRevert(bytes(""));
+        factory.createPreLiquidation(id, preLiquidationParams);
     }
 }

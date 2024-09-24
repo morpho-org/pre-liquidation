@@ -63,7 +63,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         });
     }
 
-    constructor(Id id, PreLiquidationParams memory _preLiquidationParams, address morpho) {
+    constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());

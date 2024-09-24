@@ -25,6 +25,4 @@ library ErrorsLib {
     /* PreLiquidation Factory errors */
 
     error ZeroAddress();
-
-    error PreLiquidationAlreadyExists();
 }
