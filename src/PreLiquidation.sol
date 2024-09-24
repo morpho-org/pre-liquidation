@@ -58,6 +58,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         });
     }
     /// @notice The pre-liquidation parameters specific to the PreLiquidation contract.
+
     function preLiquidationParams() external view returns (PreLiquidationParams memory) {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
@@ -97,6 +98,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @param seizedAssets The amount of collateral to seize.
     /// @param repaidShares The amount of shares to repay.
     /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
+
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();

@@ -8,10 +8,9 @@ import {PreLiquidationFactory} from "../PreLiquidationFactory.sol";
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Interface of PreLiquidation's factory.
+
 interface IPreLiquidationFactory {
-
     function MORPHO() external view returns (IMorpho);
-
 
     function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
         external

@@ -20,18 +20,13 @@ struct PreLiquidationParams {
 /// @custom:contact security@morpho.org
 /// @notice Interface of PreLiquidation.
 interface IPreLiquidation {
-
     function MORPHO() external view returns (IMorpho);
-
 
     function ID() external view returns (Id);
 
-
     function marketParams() external returns (MarketParams memory);
 
-
     function preLiquidationParams() external view returns (PreLiquidationParams memory);
-
 
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
 }
