@@ -19,7 +19,7 @@ import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCal
 /// @title PreLiquidation
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice The Pre Liquidation Contract for Morpho
+/// @notice The Fixed LI, Fixed CF pre-liquidation contract for Morpho.
 contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using MarketParamsLib for MarketParams;
     using UtilsLib for uint256;
