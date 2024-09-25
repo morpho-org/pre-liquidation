@@ -6,7 +6,7 @@ import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
-import {MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
@@ -78,6 +78,9 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
+        require(
+            _preLiquidationParams.preLiquidationIncentiveFactor >= WAD, ErrorsLib.PreLiquidationIncentiveFactorTooLow()
+        );
 
         MORPHO = IMorpho(morpho);
 

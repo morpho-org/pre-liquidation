@@ -6,6 +6,7 @@ import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiqui
 import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {PreLiquidationAddressLib} from "../src/libraries/periphery/PreLiquidationAddressLib.sol";
+import {WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 
 contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;
@@ -22,7 +23,9 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testCreatePreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        vm.assume(preLiquidationParams.preLltv < lltv);
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.preLiquidationIncentiveFactor =
+            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
 
         factory = new PreLiquidationFactory(address(MORPHO));
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
@@ -45,7 +48,9 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
-        vm.assume(preLiquidationParams.preLltv < lltv);
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.preLiquidationIncentiveFactor =
+            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
 
         factory = new PreLiquidationFactory(address(MORPHO));
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
@@ -57,7 +62,10 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testRedundantPreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        vm.assume(preLiquidationParams.preLltv < lltv);
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.preLiquidationIncentiveFactor =
+            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
+
         factory = new PreLiquidationFactory(address(MORPHO));
 
         factory.createPreLiquidation(id, preLiquidationParams);
