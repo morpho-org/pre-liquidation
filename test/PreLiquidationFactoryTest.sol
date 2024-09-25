@@ -24,6 +24,7 @@ contract PreLiquidationFactoryTest is BaseTest {
 
     function testCreatePreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
         preLiquidationParams.preLiquidationIncentiveFactor =
             WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
 
@@ -49,6 +50,7 @@ contract PreLiquidationFactoryTest is BaseTest {
 
     function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
         preLiquidationParams.preLiquidationIncentiveFactor =
             WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
 
@@ -63,6 +65,7 @@ contract PreLiquidationFactoryTest is BaseTest {
 
     function testRedundantPreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
         preLiquidationParams.preLiquidationIncentiveFactor =
             WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
 
