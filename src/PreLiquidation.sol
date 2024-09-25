@@ -111,12 +111,13 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
-        uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
 
         MORPHO.accrueInterest(marketParams());
+
         Market memory market = MORPHO.market(ID);
         Position memory position = MORPHO.position(ID, borrower);
 
+        uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 borrowThreshold =
             uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(PRE_LLTV);
