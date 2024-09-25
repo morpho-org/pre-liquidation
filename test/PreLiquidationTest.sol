@@ -225,4 +225,42 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
 
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
     }
+
+    function testPreLiquidationCallbackData(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 collateralAmount,
+        uint256 borrowAmount,
+        bytes memory _data
+    ) public virtual {
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
+        preLiquidationParams.preLiquidationIncentiveFactor =
+            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
+        preLiquidationParams.preLiquidationOracle = marketParams.oracle;
+
+        collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
+
+        uint256 collateralPrice = IOracle(marketParams.oracle).price();
+        uint256 borrowLiquidationThreshold = collateralAmount.mulDivDown(
+            IOracle(marketParams.oracle).price(), ORACLE_PRICE_SCALE
+        ).wMulDown(marketParams.lltv);
+        uint256 borrowPreLiquidationThreshold =
+            collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.preLltv);
+
+        borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
+
+        preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, address(this));
+
+        Position memory position = MORPHO.position(marketParams.id(), BORROWER);
+        Market memory market = MORPHO.market(marketParams.id());
+
+        uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
+        uint256 seizedAssets = uint256(repayableShares).toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares)
+            .wMulDown(preLiquidationParams.preLiquidationIncentiveFactor).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+        vm.assume(seizedAssets > 0);
+
+        bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, _data);
+
+        preLiquidation.preLiquidate(BORROWER, 0, repayableShares, data);
+    }
 }

@@ -150,8 +150,20 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// the seized collateral into the asset being repaid, facilitating liquidation without the need for a flashloan.
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
-        (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =
-            abi.decode(callbackData, (uint256, address, address, bytes));
+        uint256 seizedAssets;
+        address borrower;
+        address liquidator;
+        bytes memory data;
+        assembly {
+            seizedAssets := calldataload(0x64)
+            borrower := calldataload(0x84)
+            liquidator := calldataload(0xa4)
+            let l := calldataload(0xc4)
+            let fmp := mload(0x40)
+            data := fmp
+            calldatacopy(fmp, 0xe4, add(l, 0x20))
+            mstore(0x40, add(fmp, add(l, 0x20)))
+        }
 
         MORPHO.withdrawCollateral(marketParams(), seizedAssets, borrower, liquidator);
 
