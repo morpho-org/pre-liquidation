@@ -13,8 +13,6 @@ docs/
 # Dotenv file
 .env
 
-.prettierignore
-
 # Emacs
 *~
 
