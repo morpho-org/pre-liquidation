@@ -113,7 +113,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         Market memory market = MORPHO.market(ID);
         Position memory position = MORPHO.position(ID, borrower);
 
-        require(_isPreLiquidatable(collateralPrice, position, market), ErrorsLib.NotPreLiquidatablePosition());
+        uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
+        uint256 borrowThreshold =
+            uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(PRE_LLTV);
+
+        require(borrowed > borrowThreshold, ErrorsLib.NotPreLiquidatablePosition());
 
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
@@ -154,23 +158,5 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         ERC20(LOAN_TOKEN).safeTransferFrom(liquidator, address(this), repaidAssets);
-    }
-
-    /// @notice Assess whether a `position` on some Morpho `market` is pre-liquidatable
-    /// for a specific `collateralPrice` (fetched by calling PRE_LIQUIDATION_ORACLE).
-    /// @param collateralPrice the price of the collateral quoted in loan.
-    /// @param position The position on Morpho.
-    /// @param market The asset totals on the Morpho market.
-    /// @return isPreLiquidatable A boolean which is true if the position is pre-liquidatable and otherwise false.
-    function _isPreLiquidatable(uint256 collateralPrice, Position memory position, Market memory market)
-        internal
-        view
-        returns (bool)
-    {
-        uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
-        uint256 borrowThreshold =
-            uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(PRE_LLTV);
-
-        return borrowed > borrowThreshold;
     }
 }
