@@ -45,11 +45,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     address public immutable PRE_LIQUIDATION_ORACLE;
 
     constructor(Id id, PreLiquidationParams memory preLiquidationParams, address morpho) {
-        require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
+        MORPHO = IMorpho(morpho);
+
+        require(MORPHO.market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory marketParams = IMorpho(morpho).idToMarketParams(id);
         require(preLiquidationParams.preLltv < marketParams.lltv, ErrorsLib.PreLltvTooHigh());
 
-        MORPHO = IMorpho(morpho);
 
         ID = id;
 
