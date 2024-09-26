@@ -12,6 +12,8 @@ import {MarketParams, IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorp
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 
+import {PreLiquidationParams} from "../src/interfaces/IPreLiquidation.sol";
+
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
 
@@ -66,5 +68,24 @@ contract BaseTest is Test {
 
         vm.prank(BORROWER);
         collateralToken.approve(address(MORPHO), type(uint256).max);
+    }
+
+    function boundPreLiquidationParameters(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 minPreLltv,
+        uint256 maxPreLltv,
+        uint256 minCloseFactor,
+        uint256 maxCloseFactor,
+        uint256 minPreLIF,
+        uint256 maxPreLIF,
+        address preLiqOracle
+    ) internal pure returns (PreLiquidationParams memory) {
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, minPreLltv, maxPreLltv);
+        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, minCloseFactor, maxCloseFactor);
+        preLiquidationParams.preLIF1 = bound(preLiquidationParams.preLIF1, minPreLIF, maxPreLIF);
+        preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, minPreLIF, maxPreLIF);
+        preLiquidationParams.preLiquidationOracle = preLiqOracle;
+
+        return preLiquidationParams;
     }
 }

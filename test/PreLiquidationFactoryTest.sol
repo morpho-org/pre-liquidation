@@ -23,9 +23,16 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testCreatePreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
@@ -50,9 +57,16 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
@@ -65,9 +79,16 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testRedundantPreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));

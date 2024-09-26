@@ -64,10 +64,17 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         vm.stopPrank();
     }
 
-    function testHighLltv(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, marketParams.lltv, type(uint256).max);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+    function testHighPreLltv(PreLiquidationParams memory preLiquidationParams) public virtual {
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            marketParams.lltv,
+            type(uint256).max,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLltvTooHigh.selector));
@@ -75,19 +82,26 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     }
 
     function testHighCloseFactor(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD + 1, type(uint256).max);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD + 1,
+            type(uint256).max,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorTooHigh.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testLowpreLIF(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = bound(preLiquidationParams.preLIF1, 0, WAD - 1);
+    function testLowPreLIF(PreLiquidationParams memory preLiquidationParams) public virtual {
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams, WAD / 100, marketParams.lltv - 1, WAD / 100, WAD, 0, WAD - 1, marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFTooLow.selector));
@@ -95,10 +109,17 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     }
 
     function testpreLIFNotIncreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 1, WAD - 1);
-        preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, WAD, preLiquidationParams.preLIF1 - 1);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD + 1,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
+        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1 - 1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFNotIncreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
@@ -114,11 +135,17 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 collateralAmount,
         uint256 borrowAmount
     ) public virtual {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preLiquidationOracle = marketParams.oracle;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
@@ -162,11 +189,17 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 collateralAmount,
         uint256 borrowAmount
     ) public virtual {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preLiquidationOracle = marketParams.oracle;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
@@ -218,11 +251,17 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     function testPreLiquidationWithInterest(PreLiquidationParams memory preLiquidationParams, uint256 collateralAmount)
         public
     {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLIF1 = WAD + bound(preLiquidationParams.preLIF1, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD + WAD / 10,
+            marketParams.oracle
+        );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preLiquidationOracle = marketParams.oracle;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
