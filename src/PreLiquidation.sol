@@ -18,7 +18,7 @@ import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCal
 /// @title PreLiquidation
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice The Fixed LIF, Fixed CF pre-liquidation contract for Morpho.
+/// @notice The Dynamic LIF, Fixed CF pre-liquidation contract for Morpho.
 contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using SharesMathLib for uint256;
     using MathLib for uint256;
@@ -132,6 +132,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         uint256 ltv = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares)
             .wDivDown(uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE));
+        // Computing the preLiquidationIncentiveFactor as a linear combination
         uint256 preLiquidationIncentiveFactor = (
             PRE_LIQUIDATION_INCENTIVE_FACTOR_1.wMulDown(LLTV - ltv)
                 + PRE_LIQUIDATION_INCENTIVE_FACTOR_2.wMulDown(ltv - PRE_LLTV)
