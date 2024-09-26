@@ -139,10 +139,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
         );
         uint256 preLIF = (ltv - preLiquidationParams.preLltv).wMulDown(
-            (preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1).wDivDown(
-                marketParams.lltv - preLiquidationParams.preLltv
-            )
-        ) + preLiquidationParams.preLIF1;
+            preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLIF1;
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
@@ -190,10 +188,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
         );
         uint256 preLIF = (ltv - preLiquidationParams.preLltv).wMulDown(
-            (preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1).wDivDown(
-                marketParams.lltv - preLiquidationParams.preLltv
-            )
-        ) + preLiquidationParams.preLIF1;
+            preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLIF1;
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
@@ -255,10 +251,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         vm.assume(ltv >= preLiquidationParams.preLltv);
         vm.assume(ltv <= marketParams.lltv);
         uint256 preLIF = (ltv - preLiquidationParams.preLltv).wMulDown(
-            (preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1).wDivDown(
-                marketParams.lltv - preLiquidationParams.preLltv
-            )
-        ) + preLiquidationParams.preLIF1;
+            preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLIF1;
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(

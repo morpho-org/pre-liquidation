@@ -79,8 +79,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
         require(_preLiquidationParams.closeFactor <= WAD, ErrorsLib.CloseFactorTooHigh());
         require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
-        require(_preLiquidationParams.preLIF2 >= WAD, ErrorsLib.preLIFTooLow());
-        require(_preLiquidationParams.preLIF1 <= _preLiquidationParams.preLIF2, ErrorsLib.preLIFsNotIncreasing());
+        require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFsNotIncreasing());
         MORPHO = IMorpho(morpho);
 
         ID = id;
@@ -118,15 +117,15 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
         uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
+
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
-        uint256 ltv = borrowed.wDivUp(collateralQuoted);
         uint256 borrowThreshold = collateralQuoted.wMulDown(PRE_LLTV);
 
         require(borrowed > borrowThreshold, ErrorsLib.NotPreLiquidatablePosition());
 
+        uint256 ltv = borrowed.wDivUp(collateralQuoted);
         // Computing the preLIF as a linear combination
-
-        uint256 preLIF = (ltv - PRE_LLTV).wMulDown((PRE_LIF_2 - PRE_LIF_1).wDivDown(LLTV - PRE_LLTV)) + PRE_LIF_1;
+        uint256 preLIF = (ltv - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1).wDivDown(LLTV - PRE_LLTV) + PRE_LIF_1;
 
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
