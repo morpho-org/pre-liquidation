@@ -14,7 +14,6 @@ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
 import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
-import {console} from "../lib/forge-std/src/console.sol";
 
 /// @title PreLiquidation
 /// @author Morpho Labs
@@ -137,9 +136,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             PRE_LIQUIDATION_INCENTIVE_FACTOR_1.wMulDown(LLTV - ltv)
                 + PRE_LIQUIDATION_INCENTIVE_FACTOR_2.wMulDown(ltv - PRE_LLTV)
         ).wDivDown(LLTV - PRE_LLTV);
-        console.log(
-            PRE_LIQUIDATION_INCENTIVE_FACTOR_1, PRE_LIQUIDATION_INCENTIVE_FACTOR_2, preLiquidationIncentiveFactor
-        );
+
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
