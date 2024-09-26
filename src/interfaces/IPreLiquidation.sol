@@ -11,7 +11,8 @@ import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IM
 struct PreLiquidationParams {
     uint256 preLltv;
     uint256 closeFactor;
-    uint256 preLiquidationIncentiveFactor;
+    uint256 preLiquidationIncentiveFactor1;
+    uint256 preLiquidationIncentiveFactor2;
     address preLiquidationOracle;
 }
 
