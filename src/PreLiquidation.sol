@@ -44,7 +44,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     // Pre-liquidation parameters
     uint256 internal immutable PRE_LLTV;
-    uint256 internal immutable CLOSE_FACTOR;
+    uint256 internal immutable CLOSE_FACTOR_1;
+    uint256 internal immutable CLOSE_FACTOR_2;
     uint256 internal immutable PRE_LIF_1;
     uint256 internal immutable PRE_LIF_2;
     address internal immutable PRE_LIQUIDATION_ORACLE;
@@ -64,7 +65,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     function preLiquidationParams() external view returns (PreLiquidationParams memory) {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
-            closeFactor: CLOSE_FACTOR,
+            closeFactor1: CLOSE_FACTOR_1,
+            closeFactor2: CLOSE_FACTOR_2,
             preLIF1: PRE_LIF_1,
             preLIF2: PRE_LIF_2,
             preLiquidationOracle: PRE_LIQUIDATION_ORACLE
@@ -81,7 +83,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
-        require(_preLiquidationParams.closeFactor <= WAD, ErrorsLib.CloseFactorTooHigh());
+        require(_preLiquidationParams.closeFactor2 <= WAD, ErrorsLib.CloseFactorTooHigh());
+        require(
+            _preLiquidationParams.closeFactor2 >= _preLiquidationParams.closeFactor1,
+            ErrorsLib.CloseFactorNotIncreasing()
+        );
         require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
         require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFNotIncreasing());
 
@@ -100,7 +106,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         LLTV = _marketParams.lltv;
 
         PRE_LLTV = _preLiquidationParams.preLltv;
-        CLOSE_FACTOR = _preLiquidationParams.closeFactor;
+        CLOSE_FACTOR_1 = _preLiquidationParams.closeFactor1;
+        CLOSE_FACTOR_2 = _preLiquidationParams.closeFactor2;
         PRE_LIF_1 = _preLiquidationParams.preLIF1;
         PRE_LIF_2 = _preLiquidationParams.preLIF2;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
@@ -150,7 +157,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         uint256 borrowerShares = position.borrowShares;
-        uint256 repayableShares = borrowerShares.wMulDown(CLOSE_FACTOR);
+        // Computing the closeFactor as a linear combination of closeFactor1 and closeFactor2
+        uint256 closeFactor = UtilsLib.min(
+            (ltv - PRE_LLTV).wMulDown(CLOSE_FACTOR_2 - CLOSE_FACTOR_1).wDivDown(LLTV - PRE_LLTV) + CLOSE_FACTOR_1,
+            CLOSE_FACTOR_2
+        );
+        uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);

@@ -14,6 +14,8 @@ library ErrorsLib {
 
     error CloseFactorTooHigh();
 
+    error CloseFactorNotIncreasing();
+
     error preLIFTooLow();
 
     error preLIFTooHigh();
