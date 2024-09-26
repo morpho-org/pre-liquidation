@@ -18,7 +18,7 @@ import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCal
 /// @title PreLiquidation
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice The Dynamic LIF, Fixed CF pre-liquidation contract for Morpho.
+/// @notice A linear LIF, Fixed CF pre-liquidation contract for Morpho.
 contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using SharesMathLib for uint256;
     using MathLib for uint256;
