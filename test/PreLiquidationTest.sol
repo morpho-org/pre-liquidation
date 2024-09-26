@@ -138,10 +138,11 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 ltv = uint256(position.borrowShares).toAssetsUp(m.totalBorrowAssets, m.totalBorrowShares).wDivDown(
             uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
         );
-        uint256 preLIF = (
-            preLiquidationParams.preLIF1.wMulDown(marketParams.lltv - ltv)
-                + preLiquidationParams.preLIF2.wMulDown(ltv - preLiquidationParams.preLltv)
-        ).wDivUp(marketParams.lltv - preLiquidationParams.preLltv);
+        uint256 preLIF = (ltv - preLiquidationParams.preLltv).wMulDown(
+            (preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1).wDivDown(
+                marketParams.lltv - preLiquidationParams.preLltv
+            )
+        ) + preLiquidationParams.preLIF1;
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
@@ -188,10 +189,11 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 ltv = uint256(position.borrowShares).toAssetsUp(m.totalBorrowAssets, m.totalBorrowShares).wDivDown(
             uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
         );
-        uint256 preLIF = (
-            preLiquidationParams.preLIF1.wMulDown(marketParams.lltv - ltv)
-                + preLiquidationParams.preLIF2.wMulDown(ltv - preLiquidationParams.preLltv)
-        ).wDivUp(marketParams.lltv - preLiquidationParams.preLltv);
+        uint256 preLIF = (ltv - preLiquidationParams.preLltv).wMulDown(
+            (preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1).wDivDown(
+                marketParams.lltv - preLiquidationParams.preLltv
+            )
+        ) + preLiquidationParams.preLIF1;
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
@@ -252,10 +254,11 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         console.log(ltv, preLiquidationParams.preLltv, marketParams.lltv);
         vm.assume(ltv >= preLiquidationParams.preLltv);
         vm.assume(ltv <= marketParams.lltv);
-        uint256 preLIF = (
-            preLiquidationParams.preLIF1.wMulDown(marketParams.lltv - ltv)
-                + preLiquidationParams.preLIF2.wMulDown(ltv - preLiquidationParams.preLltv)
-        ).wDivUp(marketParams.lltv - preLiquidationParams.preLltv);
+        uint256 preLIF = (ltv - preLiquidationParams.preLltv).wMulDown(
+            (preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1).wDivDown(
+                marketParams.lltv - preLiquidationParams.preLltv
+            )
+        ) + preLiquidationParams.preLIF1;
 
         uint256 repayableShares = position.borrowShares.wMulDown(preLiquidationParams.closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(

@@ -41,8 +41,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     // Pre-liquidation parameters
     uint256 internal immutable PRE_LLTV;
     uint256 internal immutable CLOSE_FACTOR;
-    uint256 internal immutable PRE_LIQUIDATION_INCENTIVE_FACTOR_1;
-    uint256 internal immutable PRE_LIQUIDATION_INCENTIVE_FACTOR_2;
+    uint256 internal immutable PRE_LIF_1;
+    uint256 internal immutable PRE_LIF_2;
     address internal immutable PRE_LIQUIDATION_ORACLE;
 
     /// @notice The Morpho market parameters specific to the PreLiquidation contract.
@@ -61,8 +61,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
             closeFactor: CLOSE_FACTOR,
-            preLIF1: PRE_LIQUIDATION_INCENTIVE_FACTOR_1,
-            preLIF2: PRE_LIQUIDATION_INCENTIVE_FACTOR_2,
+            preLIF1: PRE_LIF_1,
+            preLIF2: PRE_LIF_2,
             preLiquidationOracle: PRE_LIQUIDATION_ORACLE
         });
     }
@@ -93,8 +93,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         PRE_LLTV = _preLiquidationParams.preLltv;
         CLOSE_FACTOR = _preLiquidationParams.closeFactor;
-        PRE_LIQUIDATION_INCENTIVE_FACTOR_1 = _preLiquidationParams.preLIF1;
-        PRE_LIQUIDATION_INCENTIVE_FACTOR_2 = _preLiquidationParams.preLIF2;
+        PRE_LIF_1 = _preLiquidationParams.preLIF1;
+        PRE_LIF_2 = _preLiquidationParams.preLIF2;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
@@ -117,19 +117,16 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         Position memory position = MORPHO.position(ID, borrower);
 
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
+        uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
-        uint256 borrowThreshold =
-            uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(PRE_LLTV);
+        uint256 ltv = borrowed.wDivUp(collateralQuoted);
+        uint256 borrowThreshold = collateralQuoted.wMulDown(PRE_LLTV);
 
         require(borrowed > borrowThreshold, ErrorsLib.NotPreLiquidatablePosition());
 
-        uint256 ltv = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares)
-            .wDivDown(uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE));
         // Computing the preLIF as a linear combination
-        uint256 preLIF = (
-            PRE_LIQUIDATION_INCENTIVE_FACTOR_1.wMulDown(LLTV - ltv)
-                + PRE_LIQUIDATION_INCENTIVE_FACTOR_2.wMulDown(ltv - PRE_LLTV)
-        ).wDivDown(LLTV - PRE_LLTV);
+
+        uint256 preLIF = (ltv - PRE_LLTV).wMulDown((PRE_LIF_2 - PRE_LIF_1).wDivDown(LLTV - PRE_LLTV)) + PRE_LIF_1;
 
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
