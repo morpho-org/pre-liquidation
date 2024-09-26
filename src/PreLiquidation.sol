@@ -4,7 +4,11 @@ pragma solidity 0.8.27;
 import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
-import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+import {
+    ORACLE_PRICE_SCALE,
+    LIQUIDATION_CURSOR,
+    MAX_LIQUIDATION_INCENTIVE_FACTOR
+} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
@@ -80,6 +84,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(_preLiquidationParams.closeFactor <= WAD, ErrorsLib.CloseFactorTooHigh());
         require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
         require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFNotIncreasing());
+
+        uint256 marketLIF = UtilsLib.min(
+            MAX_LIQUIDATION_INCENTIVE_FACTOR, WAD.wDivDown(WAD - LIQUIDATION_CURSOR.wMulDown(WAD - _marketParams.lltv))
+        );
+        require(_preLiquidationParams.preLIF2 <= marketLIF, ErrorsLib.preLIFTooHigh());
         MORPHO = IMorpho(morpho);
 
         ID = id;

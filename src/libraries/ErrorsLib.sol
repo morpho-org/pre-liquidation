@@ -16,6 +16,8 @@ library ErrorsLib {
 
     error preLIFTooLow();
 
+    error preLIFTooHigh();
+
     error preLIFNotIncreasing();
 
     error InconsistentInput();
