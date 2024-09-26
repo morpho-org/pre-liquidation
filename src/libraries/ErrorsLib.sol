@@ -14,9 +14,9 @@ library ErrorsLib {
 
     error CloseFactorTooHigh();
 
-    error PreLiquidationIncentiveFactorTooLow();
+    error preLIFTooLow();
 
-    error PreLiquidationIncentiveFactorsNotIncreasing();
+    error preLIFsNotIncreasing();
 
     error InconsistentInput();
 

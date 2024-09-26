@@ -61,8 +61,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
             closeFactor: CLOSE_FACTOR,
-            preLiquidationIncentiveFactor1: PRE_LIQUIDATION_INCENTIVE_FACTOR_1,
-            preLiquidationIncentiveFactor2: PRE_LIQUIDATION_INCENTIVE_FACTOR_2,
+            preLIF1: PRE_LIQUIDATION_INCENTIVE_FACTOR_1,
+            preLIF2: PRE_LIQUIDATION_INCENTIVE_FACTOR_2,
             preLiquidationOracle: PRE_LIQUIDATION_ORACLE
         });
     }
@@ -78,16 +78,9 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
         require(_preLiquidationParams.closeFactor <= WAD, ErrorsLib.CloseFactorTooHigh());
-        require(
-            _preLiquidationParams.preLiquidationIncentiveFactor1 >= WAD, ErrorsLib.PreLiquidationIncentiveFactorTooLow()
-        );
-        require(
-            _preLiquidationParams.preLiquidationIncentiveFactor2 >= WAD, ErrorsLib.PreLiquidationIncentiveFactorTooLow()
-        );
-        require(
-            _preLiquidationParams.preLiquidationIncentiveFactor1 <= _preLiquidationParams.preLiquidationIncentiveFactor2,
-            ErrorsLib.PreLiquidationIncentiveFactorsNotIncreasing()
-        );
+        require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
+        require(_preLiquidationParams.preLIF2 >= WAD, ErrorsLib.preLIFTooLow());
+        require(_preLiquidationParams.preLIF1 <= _preLiquidationParams.preLIF2, ErrorsLib.preLIFsNotIncreasing());
         MORPHO = IMorpho(morpho);
 
         ID = id;
@@ -100,8 +93,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         PRE_LLTV = _preLiquidationParams.preLltv;
         CLOSE_FACTOR = _preLiquidationParams.closeFactor;
-        PRE_LIQUIDATION_INCENTIVE_FACTOR_1 = _preLiquidationParams.preLiquidationIncentiveFactor1;
-        PRE_LIQUIDATION_INCENTIVE_FACTOR_2 = _preLiquidationParams.preLiquidationIncentiveFactor2;
+        PRE_LIQUIDATION_INCENTIVE_FACTOR_1 = _preLiquidationParams.preLIF1;
+        PRE_LIQUIDATION_INCENTIVE_FACTOR_2 = _preLiquidationParams.preLIF2;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
@@ -132,8 +125,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         uint256 ltv = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares)
             .wDivDown(uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE));
-        // Computing the preLiquidationIncentiveFactor as a linear combination
-        uint256 preLiquidationIncentiveFactor = (
+        // Computing the preLIF as a linear combination
+        uint256 preLIF = (
             PRE_LIQUIDATION_INCENTIVE_FACTOR_1.wMulDown(LLTV - ltv)
                 + PRE_LIQUIDATION_INCENTIVE_FACTOR_2.wMulDown(ltv - PRE_LLTV)
         ).wDivDown(LLTV - PRE_LLTV);
@@ -141,12 +134,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
-            repaidShares = seizedAssetsQuoted.wDivUp(preLiquidationIncentiveFactor).toSharesUp(
-                market.totalBorrowAssets, market.totalBorrowShares
-            );
+            repaidShares =
+                seizedAssetsQuoted.wDivUp(preLIF).toSharesUp(market.totalBorrowAssets, market.totalBorrowShares);
         } else {
             seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
-                preLiquidationIncentiveFactor
+                preLIF
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
