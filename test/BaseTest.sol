@@ -10,12 +10,19 @@ import {OracleMock} from "../src/mocks/OracleMock.sol";
 
 import {MarketParams, IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
-import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+import {
+    ORACLE_PRICE_SCALE,
+    MAX_LIQUIDATION_INCENTIVE_FACTOR,
+    LIQUIDATION_CURSOR
+} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 import {PreLiquidationParams} from "../src/interfaces/IPreLiquidation.sol";
 
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
+    using MathLib for uint256;
 
     address internal SUPPLIER = makeAddr("Supplier");
     address internal BORROWER = makeAddr("Borrower");
@@ -29,6 +36,7 @@ contract BaseTest is Test {
     OracleMock internal oracle = new OracleMock();
     IrmMock internal irm = new IrmMock();
     uint256 internal lltv = 0.8 ether; // 80%
+    uint256 internal marketLIF;
 
     MarketParams internal marketParams;
     Id internal id;
@@ -61,6 +69,10 @@ contract BaseTest is Test {
         id = marketParams.id();
 
         MORPHO.createMarket(marketParams);
+
+        marketLIF = UtilsLib.min(
+            MAX_LIQUIDATION_INCENTIVE_FACTOR, WAD.wDivDown(WAD - LIQUIDATION_CURSOR.wMulDown(WAD - marketParams.lltv))
+        );
 
         vm.startPrank(SUPPLIER);
         loanToken.approve(address(MORPHO), type(uint256).max);

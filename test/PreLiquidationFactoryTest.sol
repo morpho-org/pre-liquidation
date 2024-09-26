@@ -30,7 +30,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD / 100,
             WAD,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -64,7 +64,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD / 100,
             WAD,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -86,7 +86,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD / 100,
             WAD,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;

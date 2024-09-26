@@ -72,7 +72,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -89,7 +89,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD + 1,
             type(uint256).max,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -108,7 +108,24 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testpreLIFNotIncreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testHighPreLIF(PreLiquidationParams memory preLiquidationParams) public virtual {
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            marketLIF + 1,
+            type(uint256).max,
+            marketParams.oracle
+        );
+        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
+
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFTooHigh.selector));
+        factory.createPreLiquidation(id, preLiquidationParams);
+    }
+
+    function testPreLIFNotIncreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters(
             preLiquidationParams,
             WAD / 100,
@@ -116,7 +133,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD + 1,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1 - 1;
@@ -142,7 +159,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -196,7 +213,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -258,7 +275,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            WAD + WAD / 10,
+            marketLIF - 1,
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
