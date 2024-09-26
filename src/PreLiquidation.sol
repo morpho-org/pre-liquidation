@@ -79,7 +79,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
         require(_preLiquidationParams.closeFactor <= WAD, ErrorsLib.CloseFactorTooHigh());
         require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
-        require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFsNotIncreasing());
+        require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFNotIncreasing());
         MORPHO = IMorpho(morpho);
 
         ID = id;
@@ -124,7 +124,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(borrowed > borrowThreshold, ErrorsLib.NotPreLiquidatablePosition());
 
         uint256 ltv = borrowed.wDivUp(collateralQuoted);
-        // Computing the preLIF as a linear combination
+        // Computing the preLIF as a linear combination of preLIF1 and preLIF2
         uint256 preLIF = (ltv - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1).wDivDown(LLTV - PRE_LLTV) + PRE_LIF_1;
 
         if (seizedAssets > 0) {
