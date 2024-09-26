@@ -86,7 +86,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testLowLiquidationIncentiveFactor(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testLowPreLiquidationIncentiveFactor(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
         preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
         preLiquidationParams.preLiquidationIncentiveFactor1 =
@@ -94,6 +94,24 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidationParams.preLiquidationIncentiveFactor2 = preLiquidationParams.preLiquidationIncentiveFactor1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLiquidationIncentiveFactorTooLow.selector));
+        factory.createPreLiquidation(id, preLiquidationParams);
+    }
+
+    function testPreLiquidationIncentiveFactorsNotIncreasing(PreLiquidationParams memory preLiquidationParams)
+        public
+        virtual
+    {
+        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
+        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
+        preLiquidationParams.preLiquidationIncentiveFactor1 =
+            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor1, 1, WAD - 1);
+        preLiquidationParams.preLiquidationIncentiveFactor2 = bound(
+            preLiquidationParams.preLiquidationIncentiveFactor2,
+            WAD,
+            preLiquidationParams.preLiquidationIncentiveFactor1 - 1
+        );
+
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLiquidationIncentiveFactorsNotIncreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 

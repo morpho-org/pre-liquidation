@@ -86,7 +86,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         );
         require(
             _preLiquidationParams.preLiquidationIncentiveFactor1 <= _preLiquidationParams.preLiquidationIncentiveFactor2,
-            ErrorsLib.PreLiquidationIncentiveFactorTooLow()
+            ErrorsLib.PreLiquidationIncentiveFactorsNotIncreasing()
         );
         MORPHO = IMorpho(morpho);
 

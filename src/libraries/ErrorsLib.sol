@@ -16,6 +16,8 @@ library ErrorsLib {
 
     error PreLiquidationIncentiveFactorTooLow();
 
+    error PreLiquidationIncentiveFactorsNotIncreasing();
+
     error InconsistentInput();
 
     error NotPreLiquidatablePosition();
