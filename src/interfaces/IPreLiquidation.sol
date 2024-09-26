@@ -10,7 +10,7 @@ import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IM
 /// The preLiquidationIncentiveFactor should be equal to preLiquidationIncentiveFactor1
 /// when the position LTV reaches preLltv and evolve linearly between preLltv and Lltv.
 ///  - preLiquidationIncentiveFactor2, the factor used to compute the PreLiquidationIncentiveFactor;
-/// The preLiquidationIncentiveFactor should be equal to preLiquidationIncentiveFactor1
+/// The preLiquidationIncentiveFactor should be equal to preLiquidationIncentiveFactor2
 /// when the position LTV reaches lltv and evolve linearly between preLltv and Lltv.
 ///  - preLiquidationOracle, the oracle used to assess whether or not a position can be preliquidated.
 struct PreLiquidationParams {
