@@ -54,7 +54,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testCloseFactorNotNonDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testCloseFactorDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters(
             preLiquidationParams,
             WAD / 100,
@@ -68,7 +68,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
         preLiquidationParams.preCF2 = preLiquidationParams.preCF1 - 1;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorNotNonDecreasing.selector));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorDecreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
@@ -83,7 +83,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testpreLIFNotNonDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testpreLIFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters(
             preLiquidationParams,
             WAD / 100,
@@ -97,7 +97,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1 - 1;
         preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFNotNonDecreasing.selector));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFDecreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 

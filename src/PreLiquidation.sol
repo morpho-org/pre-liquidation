@@ -79,18 +79,18 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @dev The pre-liquidation close factor parameters should be non-decreasing.
     /// @dev The pre-liquidation LIF parameters should be higher than 100% (1 WAD) and non-decreasing.
     /// @dev The close factor is the maximum proportion of debt that can be pre-liquidated at once.
-    // It increases linearly from preCF1 at preLltv to preCF2 at LLTV.
-    // It is also capped by WAD (100%).
+    /// It increases linearly from preCF1 at preLltv to preCF2 at LLTV.
+    /// It is also capped by WAD (100%).
     /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor
     /// which is multiplied by the repaid debt to compute the seized collateral.
-    // It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
+    /// It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
-        require(_preLiquidationParams.preCF2 >= _preLiquidationParams.preCF1, ErrorsLib.CloseFactorNotNonDecreasing());
+        require(_preLiquidationParams.preCF2 >= _preLiquidationParams.preCF1, ErrorsLib.CloseFactorDecreasing());
         require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
-        require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFNotNonDecreasing());
+        require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFDecreasing());
 
         MORPHO = IMorpho(morpho);
 
