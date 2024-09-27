@@ -4,7 +4,11 @@ methods {
     function _.extSloads(bytes32[]) external => NONDET DELETE;
 }
 
+
+// True when preLiquidate has been called
 persistent ghost bool preLiquidateCalled;
+
+// True when preLiquidate and onMorphoRepay has been called
 persistent ghost bool repayed;
 
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
@@ -15,6 +19,7 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
     }
 }
 
+// Checkt that liquidation will always trigger the repay callback
 rule preLiquidateRepays(method f, env e, calldataarg data) {
     require !preLiquidateCalled;
     require !repayed;
