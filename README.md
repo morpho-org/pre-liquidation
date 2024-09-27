@@ -8,7 +8,7 @@ Any user can deploy a pre-liquidation contract from the factory and authorize it
 A pre-liquidation contract is defined by
 - A morpho market
 - A pre-liquidation-loan-to-value (preLLTV)
-- Two close factors parameters (closeFactor1 and closeFactor2)
+- Two close factors parameters (preCF1 and preCF2)
 - Two pre-liquidation incentive factor (preLIF1 and preLIF2)
 - A pre-liquidation oracle
 

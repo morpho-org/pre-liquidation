@@ -40,8 +40,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     // Pre-liquidation parameters
     uint256 internal immutable PRE_LLTV;
-    uint256 internal immutable CLOSE_FACTOR_1;
-    uint256 internal immutable CLOSE_FACTOR_2;
+    uint256 internal immutable PRE_CF_1;
+    uint256 internal immutable PRE_CF_2;
     uint256 internal immutable PRE_LIF_1;
     uint256 internal immutable PRE_LIF_2;
     address internal immutable PRE_LIQUIDATION_ORACLE;
@@ -61,8 +61,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     function preLiquidationParams() external view returns (PreLiquidationParams memory) {
         return PreLiquidationParams({
             preLltv: PRE_LLTV,
-            closeFactor1: CLOSE_FACTOR_1,
-            closeFactor2: CLOSE_FACTOR_2,
+            preCF1: PRE_CF_1,
+            preCF2: PRE_CF_2,
             preLIF1: PRE_LIF_1,
             preLIF2: PRE_LIF_2,
             preLiquidationOracle: PRE_LIQUIDATION_ORACLE
@@ -79,7 +79,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @dev The pre-liquidation close factor parameters should be increasing.
     /// @dev The pre-liquidation LIF parameters should be higher than 100% (1 WAD) and increasing.
     /// @dev The close factor is the maximum proportion of debt that can be pre-liquidated at once.
-    /// It is computed as the weighted average of closeFactor1 and closeFactor2
+    /// It is computed as the weighted average of preCF1 and preCF2
     /// proportionally to LTV-preLltv and LLTV-LTV. It is also capped by 100% (1 WAD).
     /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor
     /// which is multiplied by the repaid debt to compute the seized collatearl.
@@ -89,10 +89,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
-        require(
-            _preLiquidationParams.closeFactor2 >= _preLiquidationParams.closeFactor1,
-            ErrorsLib.CloseFactorNotIncreasing()
-        );
+        require(_preLiquidationParams.preCF2 >= _preLiquidationParams.preCF1, ErrorsLib.CloseFactorNotIncreasing());
         require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
         require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFNotIncreasing());
 
@@ -107,8 +104,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         LLTV = _marketParams.lltv;
 
         PRE_LLTV = _preLiquidationParams.preLltv;
-        CLOSE_FACTOR_1 = _preLiquidationParams.closeFactor1;
-        CLOSE_FACTOR_2 = _preLiquidationParams.closeFactor2;
+        PRE_CF_1 = _preLiquidationParams.preCF1;
+        PRE_CF_2 = _preLiquidationParams.preCF2;
         PRE_LIF_1 = _preLiquidationParams.preLIF1;
         PRE_LIF_2 = _preLiquidationParams.preLIF2;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
@@ -157,10 +154,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         uint256 borrowerShares = position.borrowShares;
         // the close factor can be greater than 100% (1 WAD) but it's fine because it means the position can be fully pre-liquidated
-        uint256 closeFactor = UtilsLib.min(
-            (ltv - PRE_LLTV).wMulDown(CLOSE_FACTOR_2 - CLOSE_FACTOR_1).wDivDown(LLTV - PRE_LLTV) + CLOSE_FACTOR_1,
-            CLOSE_FACTOR_2
-        );
+        uint256 closeFactor =
+            UtilsLib.min((ltv - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1).wDivDown(LLTV - PRE_LLTV) + PRE_CF_1, PRE_CF_2);
         uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 

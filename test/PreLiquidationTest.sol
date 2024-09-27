@@ -48,7 +48,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLltvTooHigh.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
@@ -66,7 +66,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1 - 1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1 - 1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorNotIncreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
@@ -77,7 +77,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams, WAD / 100, marketParams.lltv - 1, WAD / 100, WAD, 0, WAD - 1, marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFTooLow.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
@@ -95,7 +95,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1 - 1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFNotIncreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
@@ -122,7 +122,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
@@ -145,7 +145,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
@@ -165,7 +165,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
@@ -218,7 +218,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
@@ -244,7 +244,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
@@ -269,8 +269,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLIF1;
 
         uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.closeFactor2 - preLiquidationParams.closeFactor1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.closeFactor1;
+            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
             preLIF
@@ -296,7 +296,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
@@ -322,8 +322,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLIF1;
 
         uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.closeFactor2 - preLiquidationParams.closeFactor1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.closeFactor1;
+            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
             preLIF
@@ -362,7 +362,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
@@ -395,8 +395,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLIF1;
 
         uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.closeFactor2 - preLiquidationParams.closeFactor1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.closeFactor1;
+            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
         uint256 seizedAssets = uint256(repayableShares).toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
             preLIF
@@ -421,7 +421,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             address(customOracle)
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
