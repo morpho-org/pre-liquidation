@@ -3,7 +3,8 @@
 using Morpho as MORPHO;
 
 methods {
-    function MORPHO.market(PreLiquidationHarness.Id) external returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
+    function MORPHO.market(PreLiquidation.Id) external
+      returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
 }
 
 definition exactlyOneZero(uint256 assets, uint256 shares) returns bool =
@@ -22,11 +23,15 @@ rule onMorphoRepaySenderValidation(env e, uint256 repaidAssets, bytes data) {
     assert e.msg.sender != currentContract.MORPHO => lastReverted;
 }
 
-function lastUpdateIsNotNil(PreLiquidationHarness.Id id) returns bool {
+function lastUpdateIsNotNil(PreLiquidation.Id id) returns bool {
     mathint lastUpdate;
     (_,_,_,_,lastUpdate,_) = MORPHO.market(id);
-    return lastUpdate > 0;
+    return lastUpdate != 0;
 }
 
 invariant marketExists()
     lastUpdateIsNotNil(currentContract.ID);
+
+
+invariant preLltvLTlltv()
+    currentContract.PRE_LLTV < currentContract.LLTV;
