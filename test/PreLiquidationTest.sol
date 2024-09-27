@@ -54,24 +54,6 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testHighCloseFactor(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters(
-            preLiquidationParams,
-            WAD / 100,
-            marketParams.lltv - 1,
-            WAD + 1,
-            type(uint256).max,
-            WAD,
-            marketLIF - 1,
-            marketParams.oracle
-        );
-        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.closeFactor2 = preLiquidationParams.closeFactor1;
-
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorTooHigh.selector));
-        factory.createPreLiquidation(id, preLiquidationParams);
-    }
-
     function testCloseFactorNotIncreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters(
             preLiquidationParams,
