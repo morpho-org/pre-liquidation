@@ -125,15 +125,15 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
         uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
-
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 borrowThreshold = collateralQuoted.wMulDown(PRE_LLTV);
-
         require(borrowed > borrowThreshold, ErrorsLib.NotPreLiquidatablePosition());
 
-        uint256 ltv = borrowed.wDivUp(collateralQuoted);
         uint256 preLIF = UtilsLib.min(
-            (ltv - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1).wDivDown(LLTV - PRE_LLTV) + PRE_LIF_1, PRE_LIF_2
+            (borrowed - borrowThreshold).wDivDown(collateralQuoted).wMulDown(PRE_LIF_2 - PRE_LIF_1).wDivDown(
+                LLTV - PRE_LLTV
+            ) + PRE_LIF_1,
+            PRE_LIF_2
         );
 
         if (seizedAssets > 0) {
@@ -149,7 +149,9 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         uint256 borrowerShares = position.borrowShares;
         uint256 closeFactor = UtilsLib.min(
-            (ltv - PRE_LLTV).wMulDown(CLOSE_FACTOR_2 - CLOSE_FACTOR_1).wDivDown(LLTV - PRE_LLTV) + CLOSE_FACTOR_1,
+            (borrowed - borrowThreshold).wDivDown(collateralQuoted).wMulDown(CLOSE_FACTOR_2 - CLOSE_FACTOR_1).wDivDown(
+                LLTV - PRE_LLTV
+            ) + CLOSE_FACTOR_1,
             CLOSE_FACTOR_2
         );
         uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
