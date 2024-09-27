@@ -157,6 +157,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         uint256 borrowerShares = position.borrowShares;
+        // the close factor can be greater than 100% (1 WAD) but it's fine because it means the position can be fully pre-liquidated
         uint256 closeFactor = UtilsLib.min(
             (ltv - PRE_LLTV).wMulDown(CLOSE_FACTOR_2 - CLOSE_FACTOR_1).wDivDown(LLTV - PRE_LLTV) + CLOSE_FACTOR_1,
             CLOSE_FACTOR_2
