@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity 0.8.27;
+pragma solidity ^0.8.27;
 
 import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
@@ -8,9 +8,13 @@ import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 /// @custom:contact security@morpho.org
 /// @notice Library exposing errors.
 library ErrorsLib {
-    /* PreLiquidation errors */
+    /* PRELIQUIDATION ERRORS */
 
     error PreLltvTooHigh();
+
+    error CloseFactorTooHigh();
+
+    error PreLiquidationIncentiveFactorTooLow();
 
     error InconsistentInput();
 
@@ -22,9 +26,7 @@ library ErrorsLib {
 
     error NonexistentMarket();
 
-    /* PreLiquidation Factory errors */
+    /* PRELIQUIDATION FACTORY ERRORS */
 
     error ZeroAddress();
-
-    error PreLiquidationAlreadyExists();
 }

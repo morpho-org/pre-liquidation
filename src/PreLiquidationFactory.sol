@@ -11,17 +11,12 @@ import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 /// @title PreLiquidationFactory
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice The Pre Liquidation Factory Contract for Morpho
+/// @notice The Fixed LIF, Fixed CF pre-liquidation factory contract for Morpho.
 contract PreLiquidationFactory is IPreLiquidationFactory {
     /* IMMUTABLE */
 
-    /// @inheritdoc IPreLiquidationFactory
+    /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
-
-    /* STORAGE */
-
-    /// @inheritdoc IPreLiquidationFactory
-    mapping(bytes32 => IPreLiquidation) public preLiquidations;
 
     /* CONSTRUCTOR */
 
@@ -34,28 +29,19 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
     /* EXTERNAL */
 
-    /// @inheritdoc IPreLiquidationFactory
+    /// @notice Creates a PreLiquidation contract.
+    /// @param id The Morpho market for PreLiquidations.
+    /// @param preLiquidationParams The PreLiquidation params for the PreLiquidation contract.
+    /// @dev Warning: This function will revert without data if the pre-liquidation already exists.
     function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
         external
         returns (IPreLiquidation)
     {
-        bytes32 preLiquidationId = getPreLiquidationId(id, preLiquidationParams);
-        require(address(preLiquidations[preLiquidationId]) == address(0), ErrorsLib.PreLiquidationAlreadyExists());
-
         IPreLiquidation preLiquidation =
-            IPreLiquidation(address(new PreLiquidation(id, preLiquidationParams, address(MORPHO))));
-        preLiquidations[preLiquidationId] = preLiquidation;
+            IPreLiquidation(address(new PreLiquidation{salt: 0}(address(MORPHO), id, preLiquidationParams)));
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
 
         return preLiquidation;
-    }
-
-    function getPreLiquidationId(Id id, PreLiquidationParams calldata preLiquidationParams)
-        public
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encode(id, preLiquidationParams));
     }
 }
