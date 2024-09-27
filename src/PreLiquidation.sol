@@ -4,8 +4,7 @@ pragma solidity 0.8.27;
 import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
-import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
-import "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
@@ -19,10 +18,8 @@ import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCal
 /// @title PreLiquidation
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice The Fixed LI, Fixed CF pre-liquidation contract for Morpho.
+/// @notice The Fixed LIF, Fixed CF pre-liquidation contract for Morpho.
 contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
-    using MarketParamsLib for MarketParams;
-    using UtilsLib for uint256;
     using SharesMathLib for uint256;
     using MathLib for uint256;
     using SafeTransferLib for ERC20;
@@ -78,6 +75,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
+        require(_preLiquidationParams.closeFactor <= WAD, ErrorsLib.CloseFactorTooHigh());
         require(
             _preLiquidationParams.preLiquidationIncentiveFactor >= WAD, ErrorsLib.PreLiquidationIncentiveFactorTooLow()
         );
@@ -103,19 +101,20 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /* PRE-LIQUIDATION */
 
     /// @notice Pre-liquidates the given borrower on the market of this contract and with the parameters of this contract.
-    /// @dev Either `seizedAssets`or `repaidShares` should be zero.
+    /// @dev Either `seizedAssets` or `repaidShares` should be zero.
     /// @param borrower The owner of the position.
     /// @param seizedAssets The amount of collateral to seize.
     /// @param repaidShares The amount of shares to repay.
     /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
-        uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
 
         MORPHO.accrueInterest(marketParams());
+
         Market memory market = MORPHO.market(ID);
         Position memory position = MORPHO.position(ID, borrower);
 
+        uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 borrowThreshold =
             uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(PRE_LLTV);
