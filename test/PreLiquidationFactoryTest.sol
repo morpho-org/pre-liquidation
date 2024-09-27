@@ -56,6 +56,8 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiqMarketParams.oracle == marketParams.oracle);
         assert(preLiqMarketParams.irm == marketParams.irm);
         assert(preLiqMarketParams.lltv == marketParams.lltv);
+
+        assert(factory.isPreLiquidation(address(preLiquidation)));
     }
 
     function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {

@@ -18,6 +18,11 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
     /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
 
+    /* STORAGE */
+
+    /// @notice Mapping which returns true if the address is a preLiquidation contract created by this factory.
+    mapping(address => bool) public isPreLiquidation;
+
     /* CONSTRUCTOR */
 
     /// @param morpho The address of the Morpho contract.
@@ -41,6 +46,8 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
             IPreLiquidation(address(new PreLiquidation{salt: 0}(address(MORPHO), id, preLiquidationParams)));
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
+
+        isPreLiquidation[address(preLiquidation)] = true;
 
         return preLiquidation;
     }
