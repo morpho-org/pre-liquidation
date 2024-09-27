@@ -140,7 +140,6 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(borrowed > borrowThreshold, ErrorsLib.NotPreLiquidatablePosition());
 
         uint256 ltv = borrowed.wDivUp(collateralQuoted);
-        // Computing the preLIF as a linear combination of preLIF1 and preLIF2
         uint256 preLIF = UtilsLib.min(
             (ltv - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1).wDivDown(LLTV - PRE_LLTV) + PRE_LIF_1, PRE_LIF_2
         );
