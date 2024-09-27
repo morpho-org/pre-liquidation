@@ -9,7 +9,7 @@ import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
 /// @custom:contact security@morpho.org
 /// @notice Library exposing events.
 library EventsLib {
-    /// @dev this event is emitted after calling `onPreLiquidate` which can tamper with the order of events.
+    /// @dev This event is emitted after calling `onPreLiquidate` which can tamper with the order of events.
     event PreLiquidate(
         Id indexed id,
         address indexed liquidator,
