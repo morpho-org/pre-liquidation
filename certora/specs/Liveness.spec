@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+methods {
+    function _.extSloads(bytes32[]) external => NONDET DELETE;
+}
+
 persistent ghost bool preLiquidateCalled;
 persistent ghost bool repayed;
 
