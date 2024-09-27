@@ -22,7 +22,7 @@ import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCal
 /// @title PreLiquidation
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice A linear LIF, Fixed CF pre-liquidation contract for Morpho.
+/// @notice A linear LIF and linear CF pre-liquidation contract for Morpho.
 contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     using SharesMathLib for uint256;
     using MathLib for uint256;
@@ -157,7 +157,6 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         uint256 borrowerShares = position.borrowShares;
-        // Computing the closeFactor as a linear combination of closeFactor1 and closeFactor2
         uint256 closeFactor = UtilsLib.min(
             (ltv - PRE_LLTV).wMulDown(CLOSE_FACTOR_2 - CLOSE_FACTOR_1).wDivDown(LLTV - PRE_LLTV) + CLOSE_FACTOR_1,
             CLOSE_FACTOR_2
