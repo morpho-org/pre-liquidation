@@ -75,6 +75,16 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @param morpho The address of the Morpho protocol.
     /// @param id The id of the Morpho market on which pre-liquidations will occur.
     /// @param _preLiquidationParams The pre-liquidation parameters.
+    /// @dev The pre-liquidation LLTV should be strictly lower than the market LLTV.
+    /// @dev The pre-liquidation close factor parameters should be increasing.
+    /// @dev The pre-liquidation LIF parameters should be higher than 100% (1 WAD) and increasing.
+    /// @dev The close factor is the maximum proportion of debt that can be pre-liquidated at once.
+    /// It is computed as the weighted average of closeFactor1 and closeFactor2
+    /// proportionally to LTV-preLltv and LLTV-LTV. It is also capped by 100% (1 WAD).
+    /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor
+    /// which is multiplied by the repaid debt to compute the seized collatearl.
+    /// It is computed as the weighted average of preLIF1 and preLIF2
+    /// proportionally to LTV-preLltv and LLTV-LTV.
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
