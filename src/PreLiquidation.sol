@@ -128,7 +128,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 ltv = borrowed.wDivUp(collateralQuoted);
 
-        // The following require is equivalent to checking that borrowed > collateralQuoted.wMulDown(PRE_LLTV)
+        // The following require is equivalent to checking that borrowed > collateralQuoted.wMulDown(PRE_LLTV).
         require(ltv > PRE_LLTV, ErrorsLib.NotPreLiquidatablePosition());
 
         uint256 preLIF = UtilsLib.min(
