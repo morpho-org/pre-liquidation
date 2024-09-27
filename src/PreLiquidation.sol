@@ -77,10 +77,9 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @param _preLiquidationParams The pre-liquidation parameters.
     /// @dev The pre-liquidation LLTV should be strictly lower than the market LLTV.
     /// @dev The pre-liquidation close factor parameters should be non-decreasing.
-    /// @dev The pre-liquidation LIF parameters should be higher than 100% (1 WAD) and non-decreasing.
+    /// @dev The pre-liquidation LIF parameters should be higher than WAD (100%) and non-decreasing.
     /// @dev The close factor is the maximum proportion of debt that can be pre-liquidated at once.
     /// It increases linearly from preCF1 at preLltv to preCF2 at LLTV.
-    /// It is also capped by WAD (100%).
     /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor
     /// which is multiplied by the repaid debt to compute the seized collateral.
     /// It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
@@ -152,7 +151,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         uint256 borrowerShares = position.borrowShares;
-        // Note that close factor can be greater than 100% (1 WAD). In this case the position can be fully pre-liquidated.
+        // Note that the close factor can be greater than WAD (100%). In this case the position can be fully pre-liquidated.
         uint256 closeFactor =
             UtilsLib.min((ltv - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1).wDivDown(LLTV - PRE_LLTV) + PRE_CF_1, PRE_CF_2);
         uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
