@@ -45,6 +45,12 @@ This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
 
 This is checked in [`Immutability.spec`](specs/Immutability.spec).
 
+
+### Liveness properties
+
+This is checked in [`Liveness.spec`](specs/Liveness.spec).
+
+
 ## Verification architecture
 
 ### Folders and file structure
@@ -59,14 +65,12 @@ The [`certora/specs`](specs) folder contains the following files:
   PreLiquidation contract is immutable because it doesn't perform any
   delegate call.
 
+- [`Liveness.spec`](specs/Liveness.spec) ensure that expected
+computations will always be performed. For instance, pre-liquidations
+will always trigger a repay operation.
+
 The [`certora/confs`](confs) folder contains a configuration file for
 each corresponding specification file.
-
-The [`certora/helpers`](helpers) folder contains helper contracts that
-enable the verification of PreLiquidation. Notably, this allows
-handling the fact that library functions should be called from a
-contract to be verified independently, and it allows defining needed
-getters.
 
 ## TODO
 
