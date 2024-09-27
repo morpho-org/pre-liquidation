@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+persistent ghost bool preLiquidateCalled;
+persistent ghost bool repayed;
+
+hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
+    if(selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
+       preLiquidateCalled = true;
+    } else if(selector == sig:onMorphoRepay(uint256, bytes).selector && preLiquidateCalled) {
+        repayed = true;
+    }
+}
+
+rule preLiquidateRepays(method f, env e, calldataarg data) {
+    require !preLiquidateCalled;
+    require !repayed;
+    f(e,data);
+    assert preLiquidateCalled <=> repayed;
+}
