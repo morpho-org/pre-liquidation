@@ -109,6 +109,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidationParams.preLiquidationIncentiveFactor =
             WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
         preLiquidationParams.preLiquidationOracle = marketParams.oracle;
+        preLiquidationParams.preLiquidator = address(0);
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
@@ -150,6 +151,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidationParams.preLiquidationIncentiveFactor =
             WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
         preLiquidationParams.preLiquidationOracle = marketParams.oracle;
+        preLiquidationParams.preLiquidator = address(0);
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
@@ -198,6 +200,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         preLiquidationParams.preLiquidationIncentiveFactor =
             WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
         preLiquidationParams.preLiquidationOracle = marketParams.oracle;
+        preLiquidationParams.preLiquidator = address(0);
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 

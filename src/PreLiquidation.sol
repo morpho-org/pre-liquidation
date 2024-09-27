@@ -43,6 +43,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     uint256 internal immutable CLOSE_FACTOR;
     uint256 internal immutable PRE_LIQUIDATION_INCENTIVE_FACTOR;
     address internal immutable PRE_LIQUIDATION_ORACLE;
+    address internal immutable PRE_LIQUIDATOR;
 
     /// @notice The Morpho market parameters specific to the PreLiquidation contract.
     function marketParams() public view returns (MarketParams memory) {
@@ -61,7 +62,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             preLltv: PRE_LLTV,
             closeFactor: CLOSE_FACTOR,
             preLiquidationIncentiveFactor: PRE_LIQUIDATION_INCENTIVE_FACTOR,
-            preLiquidationOracle: PRE_LIQUIDATION_ORACLE
+            preLiquidationOracle: PRE_LIQUIDATION_ORACLE,
+            preLiquidator: PRE_LIQUIDATOR
         });
     }
 
@@ -94,6 +96,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         CLOSE_FACTOR = _preLiquidationParams.closeFactor;
         PRE_LIQUIDATION_INCENTIVE_FACTOR = _preLiquidationParams.preLiquidationIncentiveFactor;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
+        PRE_LIQUIDATOR = _preLiquidationParams.preLiquidator;
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
     }
@@ -107,6 +110,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @param repaidShares The amount of shares to repay.
     /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
+        require(PRE_LIQUIDATOR == address(0) || msg.sender == PRE_LIQUIDATOR, ErrorsLib.UnauthorizedLiquidator());
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
 
         MORPHO.accrueInterest(marketParams());

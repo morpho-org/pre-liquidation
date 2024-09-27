@@ -10,6 +10,8 @@ import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 library ErrorsLib {
     /* PRELIQUIDATION ERRORS */
 
+    error UnauthorizedLiquidator();
+
     error PreLltvTooHigh();
 
     error CloseFactorTooHigh();

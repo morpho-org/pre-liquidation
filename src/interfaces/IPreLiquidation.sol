@@ -8,11 +8,13 @@ import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IM
 ///  - closeFactor, the maximum proportion of debt that can be pre-liquidated at once.
 ///  - preLiquidationIncentiveFactor, the factor used to multiply repaid debt value to get the seized collateral value in a pre-liquidation.
 ///  - preLiquidationOracle, the oracle used to assess whether or not a position can be preliquidated.
+///  - preLiquidator, if set, the only account authorized to pre-liquidate.
 struct PreLiquidationParams {
     uint256 preLltv;
     uint256 closeFactor;
     uint256 preLiquidationIncentiveFactor;
     address preLiquidationOracle;
+    address preLiquidator;
 }
 
 interface IPreLiquidation {
