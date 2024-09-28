@@ -44,7 +44,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -62,7 +62,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD + 1,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -91,7 +91,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD + 1,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1 - 1;
@@ -118,7 +118,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -141,7 +141,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -161,7 +161,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -214,7 +214,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -240,13 +240,13 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
         preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
-        collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
+        collateralAmount = bound(collateralAmount, 10 ** 19, 10 ** 24);
         uint256 collateralPrice = IOracle(marketParams.oracle).price();
         uint256 borrowLiquidationThreshold = collateralAmount.mulDivDown(
             IOracle(marketParams.oracle).price(), ORACLE_PRICE_SCALE
@@ -292,7 +292,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -358,7 +358,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -417,7 +417,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             address(customOracle)
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;

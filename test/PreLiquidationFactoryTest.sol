@@ -10,6 +10,7 @@ import {WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 
 contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;
+    using MathLib for uint256;
 
     PreLiquidationFactory factory;
 
@@ -30,7 +31,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -68,7 +69,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
@@ -91,7 +92,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD / 100,
             WAD,
             WAD,
-            marketLIF - 1,
+            WAD.wDivDown(lltv),
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
