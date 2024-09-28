@@ -136,7 +136,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(ltv > PRE_LLTV, ErrorsLib.NotPreLiquidatablePosition());
 
         uint256 preLIF = UtilsLib.min(
-            (ltv - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1).wDivDown(LLTV - PRE_LLTV) + PRE_LIF_1, PRE_LIF_2
+            (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1, PRE_LIF_2
         );
 
         if (seizedAssets > 0) {
@@ -153,7 +153,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         uint256 borrowerShares = position.borrowShares;
         // Note that the close factor can be greater than WAD (100%). In this case the position can be fully pre-liquidated.
         uint256 closeFactor =
-            UtilsLib.min((ltv - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1).wDivDown(LLTV - PRE_LLTV) + PRE_CF_1, PRE_CF_2);
+            UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
         uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
