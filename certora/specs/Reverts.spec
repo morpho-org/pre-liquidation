@@ -1,15 +1,26 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 using Morpho as MORPHO;
-using OracleMock as PRE_LIQUIDATION_ORACLE;
 
 methods {
     function MORPHO.market(PreLiquidation.Id) external
       returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
     function MORPHO.position(PreLiquidation.Id, address) external
       returns (uint256, uint128, uint128) envfree;
-    function PRE_LIQUIDATION_ORACLE.price() external
-      returns (uint256) envfree => ALWAYS(1);
+    function _.price() external => mockPrice() expect uint256;
+}
+
+
+persistent ghost uint256 lastPrice;
+persistent ghost bool priceChanged;
+
+function mockPrice() returns uint256 {
+    uint256 updatedPrice;
+    if (updatedPrice != lastPrice) {
+        priceChanged = true;
+        lastPrice = updatedPrice;
+    }
+    return updatedPrice;
 }
 
 definition exactlyOneZero(uint256 assets, uint256 shares) returns bool =
@@ -71,7 +82,8 @@ rule nonLiquidatablePositionReverts(env e,address borrower, uint256 seizedAssets
     (_, _, mTotalBorrowAssets,mTotalBorrowShares,mLastUpdate, _) = MORPHO.market(currentContract.ID);
     require mLastUpdate == e.block.timestamp;
 
-    uint256 collateralPrice = 1;
+    priceChanged = false;
+    uint256 collateralPrice = mockPrice();
 
     (_, pBorrowShares, pCollateral) = MORPHO.position(currentContract.ID, borrower);
 
@@ -80,5 +92,5 @@ rule nonLiquidatablePositionReverts(env e,address borrower, uint256 seizedAssets
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
-    assert (borrowed <= borrowThreshold) => lastReverted;
+    assert !priceChanged  && (borrowed <= borrowThreshold) => lastReverted;
 }
