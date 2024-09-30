@@ -31,6 +31,11 @@ function summaryMulDivUp(uint256 x,uint256 y, uint256 d) returns uint256 {
     return require_uint256((x * y + (d-1)) / d);
 }
 
+function summaryMulDivDown(uint256 x,uint256 y, uint256 d) returns uint256 {
+    // Safe require because the reference implementation would revert.
+    return require_uint256((x * y)/d);
+}
+
 definition tAU(uint256 shares, uint256 totalAssets, uint256 totalShares) returns uint256 =
     summaryMulDivUp(shares, require_uint256(totalAssets + (10^6)), require_uint256(totalShares + (10^6)));
 
@@ -86,9 +91,6 @@ rule nonLiquidatablePositionReverts(env e,address borrower, uint256 seizedAssets
         require_uint256(summaryMulDivDown(pCollateral, collateralPrice, 10^36));
     mathint borrowed = require_uint256(tAU(pBorrowShares, mTotalBorrowAssets, mTotalBorrowShares));
     mathint ltv = require_uint256(wDU(require_uint256(borrowed), require_uint256(collateralQuoted)));
-
-
-    wDivUp(borrowed, collateralQuoted);
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
