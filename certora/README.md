@@ -38,6 +38,10 @@ This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
 
 This is checked in [`Immutability.spec`](specs/Immutability.spec).
 
+## Invalid inputs trigger a revert operation
+
+This is checked in [`Revers.spec`](specs/Reverts.spec).
+
 ## Verification architecture
 
 ### Folders and file structure
@@ -51,6 +55,9 @@ The [`certora/specs`](specs) folder contains the following files:
 - [`Immutability.spec`](specs/Immutability.spec) checks that
   PreLiquidation contract is immutable because it doesn't perform any
   delegate call.
+
+- [`Reverts.spec`](specs/Reverts.spec) checks the conditions for
+  reverts and that inputs are correctly validated.
 
 The [`certora/confs`](confs) folder contains a configuration file for
 each corresponding specification file.

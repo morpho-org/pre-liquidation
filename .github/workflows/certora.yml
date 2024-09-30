@@ -18,6 +18,7 @@ jobs:
         conf:
           - Immutability
           - Reentrancy
+          - Reverts
 
     steps:
       - uses: actions/checkout@v4
