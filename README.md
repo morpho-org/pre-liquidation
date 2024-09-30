@@ -1,7 +1,7 @@
 # PreLiquidation
 ## Overview
 
-This project puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower. 
+This repository puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower. 
 We call these user-defined Morpho Blue transactions pre-liquidations.
 Borrowers can authorize pre-liquidations choosing different liquidation incentive factors to repay the liquidator or, where only part of the debt may be liquidated.
 The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
