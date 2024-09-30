@@ -1,8 +1,7 @@
 # PreLiquidation
 ## Overview
 
-The PreLiquidation is a set of contracts developed on top of Morpho on which borrowers can enable pre-liquidations, which are liquidations with different guarantees.
-For example, a user can authorize pre-liquidations where a lower bonus is given to the liquidator or where only a part of the debt is allowed to be repaid.
+This project puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower. We call these user-defined Morpho Blue transactions pre-liquidations. For example, a user can authorize pre-liquidations where a lower bonus is given to the liquidator or where only a part of the debt is allowed to be repaid.
 
 There are two distinct types of contracts in this project.
 
@@ -22,8 +21,8 @@ The pre-liquidation close factor and the pre-liquidation incentive factor evolve
 - the close factor is `preCF1` when the position LTV equals `preLLTV` and `preCF2` when it equals `LLTV`
 - the liquidation incentive factor is `preLIF1` when the position LTV equals `preLLTV` and `preLIF2` shen it equals `LLTV`
 
-This computation is represented in the following graph
-![LIF&CF](./img/pre-liquidation-cf-and-lif.png)
+This computation is represented in the Figure 1.
+![Figure 1](./img/pre-liquidation-cf-and-lif.png)
 
 This design enable different many pre-liquidation settings, the two main use-cases being:
 1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
@@ -36,16 +35,8 @@ Install [Foundry](https://book.getfoundry.sh/getting-started/installation)
 ### Run tests
 Run `forge test`
 
-### Deploy a PreLiquidation contract
-
-Any PreLiquidation contract can be deployed using the official pre-liquidation factory address.
-
-`cast send <FACTORY_ADDRESS> "createPreLiquidation(bytes32,(uint256,uint256,uint256,uint256,uint256,address))" --rpc-url <RPC_PROVIDER_URL> --interactive <MARKET_ID> <PRE_LLTV> <PRE_CF_1> <PRE_CF_2> <PRE_LIF_1> <PRE_LIF_2> <PRE_ORACLE_ADDRESS>`
-
-Note that this command will revert if another pre-liquidation contract with the same settings already exists.
-
 ## Audits
 All audits are stored in the `audits` folder.
 
 ## License
-PreLiquidation is licensed under `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
+The source code in this repository is publicly available under licens `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
