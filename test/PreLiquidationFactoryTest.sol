@@ -10,6 +10,7 @@ import {WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 
 contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;
+    using MathLib for uint256;
 
     PreLiquidationFactory factory;
 
@@ -23,10 +24,18 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testCreatePreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLiquidationIncentiveFactor =
-            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD.wDivDown(lltv),
+            marketParams.oracle
+        );
+        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
@@ -36,8 +45,10 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         PreLiquidationParams memory preLiqParams = preLiquidation.preLiquidationParams();
         assert(preLiqParams.preLltv == preLiquidationParams.preLltv);
-        assert(preLiqParams.closeFactor == preLiquidationParams.closeFactor);
-        assert(preLiqParams.preLiquidationIncentiveFactor == preLiquidationParams.preLiquidationIncentiveFactor);
+        assert(preLiqParams.preCF1 == preLiquidationParams.preCF1);
+        assert(preLiqParams.preCF2 == preLiquidationParams.preCF2);
+        assert(preLiqParams.preLIF1 == preLiquidationParams.preLIF1);
+        assert(preLiqParams.preLIF2 == preLiquidationParams.preLIF2);
         assert(preLiqParams.preLiquidationOracle == preLiquidationParams.preLiquidationOracle);
 
         MarketParams memory preLiqMarketParams = preLiquidation.marketParams();
@@ -46,13 +57,23 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiqMarketParams.oracle == marketParams.oracle);
         assert(preLiqMarketParams.irm == marketParams.irm);
         assert(preLiqMarketParams.lltv == marketParams.lltv);
+
+        assert(factory.isPreLiquidation(address(preLiquidation)));
     }
 
     function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLiquidationIncentiveFactor =
-            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD.wDivDown(lltv),
+            marketParams.oracle
+        );
+        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
@@ -64,10 +85,18 @@ contract PreLiquidationFactoryTest is BaseTest {
     }
 
     function testRedundantPreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, WAD / 100, marketParams.lltv - 1);
-        preLiquidationParams.closeFactor = bound(preLiquidationParams.closeFactor, WAD / 100, WAD);
-        preLiquidationParams.preLiquidationIncentiveFactor =
-            WAD + bound(preLiquidationParams.preLiquidationIncentiveFactor, 0, WAD / 10);
+        preLiquidationParams = boundPreLiquidationParameters(
+            preLiquidationParams,
+            WAD / 100,
+            marketParams.lltv - 1,
+            WAD / 100,
+            WAD,
+            WAD,
+            WAD.wDivDown(lltv),
+            marketParams.oracle
+        );
+        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
+        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
 
