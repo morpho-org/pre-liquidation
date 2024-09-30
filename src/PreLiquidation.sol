@@ -139,6 +139,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1, PRE_LIF_2
         );
 
+        require(ltv > WAD.wDivDown(preLIF));
+
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
