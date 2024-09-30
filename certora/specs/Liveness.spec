@@ -14,7 +14,7 @@ persistent ghost bool repayed;
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
     if(selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
        preLiquidateCalled = true;
-    } else if(selector == sig:onMorphoRepay(uint256, bytes).selector && preLiquidateCalled) {
+    } else if(selector == sig:onMorphoRepay(uint256, bytes).selector) {
         repayed = true;
     }
 }
