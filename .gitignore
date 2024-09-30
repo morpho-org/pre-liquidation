@@ -13,8 +13,5 @@ docs/
 # Dotenv file
 .env
 
-# Emacs
-*~
-
 # Certora
 .certora_internal

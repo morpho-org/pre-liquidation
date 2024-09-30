@@ -12,9 +12,11 @@ library ErrorsLib {
 
     error PreLltvTooHigh();
 
-    error CloseFactorTooHigh();
+    error CloseFactorDecreasing();
 
-    error PreLiquidationIncentiveFactorTooLow();
+    error preLIFTooLow();
+
+    error preLIFDecreasing();
 
     error InconsistentInput();
 
