@@ -27,9 +27,13 @@ Install [Foundry](https://book.getfoundry.sh/getting-started/installation)
 Run `forge test`
 
 ### Deploy a PreLiquidation contract
-If no factory has been deployed yet, it's possible to deploy one using `forge create src/PreLiquidationFactory.sol:PreLiquidationFactory --constructor-args <MORPHO_ADDRESS> --interactive --rpc-url <RPC_PROVIDER_URL>`
+If no factory has been deployed yet, it's possible to deploy one using
 
-Then a PreLiquidation contract can be deployed using `cast send <FACTORY_ADDRESS> "createPreLiquidation(bytes32,(uint256,uint256,uint256,uint256,uint256,address))" --rpc-url <RPC_PROVIDER_URL> --interactive <MARKET_ID> <PRE_LLTV> <PRE_CF_1> <PRE_CF_2> <PRE_LIF_1> <PRE_LIF_2> <PRE_ORACLE_ADDRESS>`
+`forge create src/PreLiquidationFactory.sol:PreLiquidationFactory --constructor-args <MORPHO_ADDRESS> --interactive --rpc-url <RPC_PROVIDER_URL>`
+
+Then a PreLiquidation contract can be deployed using
+
+`cast send <FACTORY_ADDRESS> "createPreLiquidation(bytes32,(uint256,uint256,uint256,uint256,uint256,address))" --rpc-url <RPC_PROVIDER_URL> --interactive <MARKET_ID> <PRE_LLTV> <PRE_CF_1> <PRE_CF_2> <PRE_LIF_1> <PRE_LIF_2> <PRE_ORACLE_ADDRESS>`
 
 ## Audits
 All audits are stored in the `audits` folder.
