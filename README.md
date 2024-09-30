@@ -1,8 +1,8 @@
 # PreLiquidation
 ## Overview
 
-The PreLiquidation is a set of contracts developed on top of Morpho on which borrowers can enable pre-liquidations, a liquidation with different guarantees.
-For example, liquidations were a lower bonus is given to the liquidator or where only a part of the debt is allowed to be repaid.
+The PreLiquidation is a set of contracts developed on top of Morpho on which borrowers can enable pre-liquidations, which are liquidations with different guarantees.
+For example, a user can authorize pre-liquidations where a lower bonus is given to the liquidator or where only a part of the debt is allowed to be repaid.
 
 There are two distinct types of contracts in this project.
 
@@ -10,24 +10,24 @@ There are two distinct types of contracts in this project.
 - PreLiquidationFactory whose role is to deploy various PreLiquidation contracts each with its own pre-liquidation parameters.
 
 A pre-liquidation setting is composed of
-- a morpho market (`id`)
-- a pre-liquidation-loan-to-value (`preLltv`)
+- a Morpho market (`id`)
+- a pre-liquidation loan-to-value (`preLltv`)
 - two pre-liquidation close factor parameters (`preCF1` and `preCF2`)
 - two pre-liquidation incentive factor parameters (`preLIF1` and `preLIF2`)
 - a pre-liquidation oracle (`preLiquidationOracle`)
 
 
-### How is the pre-liquidation close factor and pre-liquidation incentive factor computed ?
+### Pre-liquidation close factor and incentive factor
 The pre-liquidation close factor and the pre-liquidation incentive factor evolve linearly with the user's LTV:
-- the close factor is preCF1 when the position LTV equals preLLTV and preCF2 when it equals LLTV
-- the liquidation incentive factor is preLIF1 at LTV=preLLTV and preLIF2 at LTV=LLTV
+- the close factor is `preCF1` when the position LTV equals `preLLTV` and `preCF2` when it equals `LLTV`
+- the liquidation incentive factor is `preLIF1` when the position LTV equals `preLLTV` and `preLIF2` shen it equals `LLTV`
 
 This computation is represented in the following graph
 ![LIF&CF](./img/pre-liquidation-cf-and-lif.png)
 
-This design enable infinitely many pre-liquidation settings, the two main use-cases being
-1. Using normal fixed parameters when preLIF1=preLIF2 and preCF1=preCF2.
-2. Using health dependent dutch auction style liquidation (as implemented by Euler) when either preLIF1 < preLIF2 or preCF1 < preCF2.
+This design enable different many pre-liquidation settings, the two main use-cases being:
+1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
+2. Using health dependent dutch auction style liquidation (as implemented by Euler) when either `preLIF1 < preLIF2` or `preCF1 < preCF2`.
 
 ## Getting started
 ### Package installation
@@ -38,7 +38,7 @@ Run `forge test`
 
 ### Deploy a PreLiquidation contract
 
-Any PreLiquidation contract can be deployed using the official pre-liquidation factory address
+Any PreLiquidation contract can be deployed using the official pre-liquidation factory address.
 
 `cast send <FACTORY_ADDRESS> "createPreLiquidation(bytes32,(uint256,uint256,uint256,uint256,uint256,address))" --rpc-url <RPC_PROVIDER_URL> --interactive <MARKET_ID> <PRE_LLTV> <PRE_CF_1> <PRE_CF_2> <PRE_LIF_1> <PRE_LIF_2> <PRE_ORACLE_ADDRESS>`
 
