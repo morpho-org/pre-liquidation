@@ -4,6 +4,7 @@
 This repository puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower. 
 We call these user-defined Morpho Blue transactions pre-liquidations.
 Borrowers can authorize pre-liquidations choosing different liquidation incentive factors to repay the liquidator or, where only part of the debt may be liquidated.
+
 The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
 Note that pre-liquidation must be authorized on Morpho. Liquidators may perform pre-liquidations on a position using the `preLiquidate` entry point on a deployed PreLiquidation contract.
 The [`PreLiquidatiationFactory`](./src/PreLiquidatiationFactory.sol) factory contract eases out deployment and indexing of pre-liquidation contracts.
@@ -22,6 +23,7 @@ The pre-liquidation close factor and the pre-liquidation incentive factor evolve
 - the liquidation incentive factor is `preLIF1` when the position LTV equals `preLLTV` and `preLIF2` when the LTV is equal to `LLTV`
 
 This computation is represented in the Figure 1.
+
 <img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/0c11c961-a046-4701-9063-9f6b84a6c3b2">
 
 This design enable different pre-liquidation settings, the two main use-cases are the following:
