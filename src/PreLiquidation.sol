@@ -78,11 +78,10 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @dev The pre-liquidation LLTV should be strictly lower than the market LLTV.
     /// @dev The pre-liquidation close factor parameters should be non-decreasing.
     /// @dev The pre-liquidation LIF parameters should be higher than WAD (100%) and non-decreasing.
-    /// @dev The close factor is the maximum proportion of debt that can be pre-liquidated at once.
-    /// It increases linearly from preCF1 at preLltv to preCF2 at LLTV.
-    /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor
-    /// which is multiplied by the repaid debt to compute the seized collateral.
-    /// It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
+    /// @dev The close factor is the maximum proportion of debt that can be pre-liquidated at once. It increases
+    /// linearly from preCF1 at preLltv to preCF2 at LLTV.
+    /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor which is multiplied by the repaid
+    /// debt to compute the seized collateral. It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
@@ -113,12 +112,16 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     /* PRE-LIQUIDATION */
 
-    /// @notice Pre-liquidates the given borrower on the market of this contract and with the parameters of this contract.
-    /// @dev Either `seizedAssets` or `repaidShares` should be zero.
+    /// @notice Pre-liquidates the given borrower on the market of this contract and with the parameters of this
+    /// contract.
     /// @param borrower The owner of the position.
     /// @param seizedAssets The amount of collateral to seize.
     /// @param repaidShares The amount of shares to repay.
     /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
+    /// @dev Either `seizedAssets` or `repaidShares` should be zero.
+    /// @dev Reverts if the account is still liquidatable on Morpho after the pre-liquidation (withdrawCollateral will
+    /// fail). This can happen if either the LIF is bigger than 1/LLTV, or if the account is already unhealthy on
+    /// Morpho.
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
 
@@ -151,7 +154,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         }
 
         uint256 borrowerShares = position.borrowShares;
-        // Note that the close factor can be greater than WAD (100%). In this case the position can be fully pre-liquidated.
+        // Note that the close factor can be greater than WAD (100%). In this case the position can be fully
+        // pre-liquidated.
         uint256 closeFactor =
             UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
         uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
@@ -164,10 +168,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     }
 
     /// @notice Morpho callback after repay call.
-    /// @dev During pre-liquidation, Morpho will call the `onMorphoRepay` callback function in `PreLiquidation` using the provided data.
-    /// This mechanism enables the withdrawal of the position’s collateral before the debt repayment occurs,
-    /// and can also trigger a pre-liquidator callback. The pre-liquidator callback can be used to swap
-    /// the seized collateral into the asset being repaid, facilitating liquidation without the need for a flashloan.
+    /// @dev During pre-liquidation, Morpho will call the `onMorphoRepay` callback function in `PreLiquidation` using
+    /// the provided data. This mechanism enables the withdrawal of the position’s collateral before the debt
+    /// repayment occurs, and can also trigger a pre-liquidator callback. The pre-liquidator callback can be used to
+    /// swap the seized collateral into the asset being repaid, facilitating liquidation without the need for a
+    /// flashloan.
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =
