@@ -18,8 +18,9 @@ A pre-liquidation setting is composed of
 
 
 ### How is the pre-liquidation close factor and pre-liquidation incentive factor computed ?
-The pre-liquidation close factor and the pre-liquidation incentive factor evolve linearly with the user's LTV.
-The close factor is preCF1 when the position LTV equals preLLTV and preCF2 when it equals LLTV whereas the liquidation incentive factor is preLIF1 at LTV=preLLTV and preLIF2 at LTV=LLTV.
+The pre-liquidation close factor and the pre-liquidation incentive factor evolve linearly with the user's LTV:
+- the close factor is preCF1 when the position LTV equals preLLTV and preCF2 when it equals LLTV
+- the liquidation incentive factor is preLIF1 at LTV=preLLTV and preLIF2 at LTV=LLTV
 
 This computation is represented in the following graph
 ![LIF&CF](./img/pre-liquidation-cf-and-lif.png)
