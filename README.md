@@ -1,9 +1,12 @@
 # PreLiquidation
 ## Overview
 
-This project puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower. We call these user-defined Morpho Blue transactions pre-liquidations.
+This project puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower. 
+We call these user-defined Morpho Blue transactions pre-liquidations.
 Borrowers can authorize pre-liquidations choosing different liquidation incentive factors to repay the liquidator or, where only part of the debt may be liquidated.
-The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers. Note that pre-liquidation must be authorized on Morpho. Liquidators may perform pre-liquidations on a position using the `preLiquidate` entry point on a deployed PreLiquidation contract. The [`PreLiquidatiationFactory`](./src/PreLiquidatiationFactory.sol) factory contract eases out deployment and indexing of pre-liquidation contracts.
+The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
+Note that pre-liquidation must be authorized on Morpho. Liquidators may perform pre-liquidations on a position using the `preLiquidate` entry point on a deployed PreLiquidation contract.
+The [`PreLiquidatiationFactory`](./src/PreLiquidatiationFactory.sol) factory contract eases out deployment and indexing of pre-liquidation contracts.
 
 The set of pre-liquidation parameters is composed of
 - a Morpho market (`id`);
@@ -23,7 +26,7 @@ This computation is represented in the Figure 1.
 
 This design enable different pre-liquidation settings, the two main use-cases are the following:
 1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
-2. Using health dependent liquidation similar to a Dutch Auction (as implemented by Euler) when either `preLIF1 < preLIF2` or `preCF1 < preCF2`.
+2. Using health dependent liquidation similar to a Quasi Dutch Auction (as implemented by Euler) when either `preLIF1 < preLIF2` or `preCF1 < preCF2`.
 
 ## Getting started
 ### Package installation
@@ -36,4 +39,4 @@ Run `forge test`
 All audits are stored in the `audits` folder.
 
 ## License
-The source code in this repository is publicly available under licens `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
+Files in this repository are publicly available under license `GPL-2.0-or-later`, see [`LICENSE`](./LICENSE).
