@@ -1,10 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-methods {
-    function _.extSloads(bytes32[]) external => NONDET DELETE;
-}
-
-
 // True when preLiquidate has been called
 persistent ghost bool preLiquidateCalled;
 
