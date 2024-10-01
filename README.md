@@ -27,7 +27,6 @@ The pre-liquidation close factor and the pre-liquidation incentive factor evolve
 This computation is represented in the Figure 1.
 <img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/0c11c961-a046-4701-9063-9f6b84a6c3b2">
 
-This design enables different pre-liquidation parameters.
 The two main use-cases are:
 
 1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
