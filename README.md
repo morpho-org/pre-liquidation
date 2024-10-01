@@ -47,7 +47,7 @@ Run `forge test`.
 
 ## Audits
 
-All audits are stored in the `audits` folder.
+All audits are stored in the [`audits`](./audits) folder.
 
 ## License
 
