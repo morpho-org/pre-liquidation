@@ -8,6 +8,8 @@ import {PreLiquidationFactory} from "../PreLiquidationFactory.sol";
 interface IPreLiquidationFactory {
     function MORPHO() external view returns (IMorpho);
 
+    function isPreLiquidation(address) external returns (bool);
+
     function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
         external
         returns (IPreLiquidation preLiquidation);

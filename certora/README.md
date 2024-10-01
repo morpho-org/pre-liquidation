@@ -18,17 +18,10 @@ following path names:
   - `solc-0.8.27` for the solidity compiler version `0.8.27`, which is
     used for `PreLiquidation`.
 
-### Installing the Certora Prover
-
-The Certora CLI can be installed by running `python3 -m pip3 install
-certora-cli`. Detailed installation instructions can be found on
-Certora's official
-[documentation](https://docs.certora.com/en/latest/docs/user-guide/install.html).
-
 To verifying a specification, run the command `certoraRun Spec.conf`
 where `Spec.conf` is the configuration file of the matching CVL
 specification. Configuration files are available in
-[`certora/conf`](./confs). Please ensure that `CERTORA_KEY` is set up
+[`certora/conf`](./confs). Please ensure that `CERTORAKEY` is set up
 in your environment.
 
 ## Overview

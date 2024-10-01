@@ -5,13 +5,17 @@ import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IM
 
 /// @notice The pre-liquidation parameters are:
 ///  - preLltv, the maximum LTV of a position before allowing pre-liquidation.
-///  - closeFactor, the maximum proportion of debt that can be pre-liquidated at once.
-///  - preLiquidationIncentiveFactor, the factor used to multiply repaid debt value to get the seized collateral value in a pre-liquidation.
+///  - preCF1, the close factor when the position LTV is equal to preLltv.
+///  - preCF2, the close factor when the position LTV is equal to LLTV.
+///  - preLIF1, the pre-liquidation incentive factor when the position LTV is equal to preLltv.
+///  - preLIF2, the pre-liquidation incentive factor when the position LTV is equal to LLTV.
 ///  - preLiquidationOracle, the oracle used to assess whether or not a position can be preliquidated.
 struct PreLiquidationParams {
     uint256 preLltv;
-    uint256 closeFactor;
-    uint256 preLiquidationIncentiveFactor;
+    uint256 preCF1;
+    uint256 preCF2;
+    uint256 preLIF1;
+    uint256 preLIF2;
     address preLiquidationOracle;
 }
 

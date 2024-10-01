@@ -11,12 +11,17 @@ import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 /// @title PreLiquidationFactory
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice The Fixed LIF, Fixed CF pre-liquidation factory contract for Morpho.
+/// @notice A linear LIF and linear CF pre-liquidation factory contract for Morpho.
 contract PreLiquidationFactory is IPreLiquidationFactory {
     /* IMMUTABLE */
 
     /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
+
+    /* STORAGE */
+
+    /// @notice Mapping which returns true if the address is a preLiquidation contract created by this factory.
+    mapping(address => bool) public isPreLiquidation;
 
     /* CONSTRUCTOR */
 
@@ -41,6 +46,8 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
             IPreLiquidation(address(new PreLiquidation{salt: 0}(address(MORPHO), id, preLiquidationParams)));
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
+
+        isPreLiquidation[address(preLiquidation)] = true;
 
         return preLiquidation;
     }
