@@ -65,6 +65,10 @@ will always trigger a repay operation.
 The [`certora/confs`](confs) folder contains a configuration file for
 each corresponding specification file.
 
+The [`certora/helpers`](helpers) folder contains helper contracts that enable the verification of PreLiquidation.
+Notably, this allows handling the fact that library functions should be called from a contract to be verified independently.
+
+
 ## TODO
 
 - [ ] Provide an overview of the specification.

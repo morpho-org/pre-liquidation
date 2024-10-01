@@ -11,14 +11,13 @@ contract Wallet {
         preLiq = p;
     }
 
-    function preLiquidateCall(bytes calldata args) external {
-        (address borrower, uint256 seizedAssets, uint256 repaidShares, bytes memory data) =
-            abi.decode(args, (address, uint256, uint256, bytes));
+    function preLiquidateCall(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes memory data)
+        external
+    {
         preLiq.preLiquidate(borrower, seizedAssets, repaidShares, data);
     }
 
-    function onMorphoRepayCall(bytes calldata args) external {
-        (uint256 repaidAssets, bytes memory data) = abi.decode(args, (uint256, bytes));
+    function onMorphoRepayCall(uint256 repaidAssets, bytes memory data) external {
         preLiq.onMorphoRepay(repaidAssets, data);
     }
 
