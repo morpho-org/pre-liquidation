@@ -21,8 +21,8 @@ The set of pre-liquidation parameters is composed of
 
 The pre-liquidation close factor and the pre-liquidation incentive factor evolve linearly with the user's LTV:
 
-- the close factor is `preCF1` when the position LTV is equal to `preLLTV` and `preCF2` when the LTV is equal to `LLTV`
-- the pre-liquidation incentive factor is `preLIF1` when the position LTV equals `preLLTV` and `preLIF2` when the LTV is equal to `LLTV`
+- the close factor is `preCF1` when the position LTV is equal to `preLLTV` and `preCF2` when the LTV is equal to `LLTV`;
+- the pre-liquidation incentive factor is `preLIF1` when the position LTV equals `preLLTV` and `preLIF2` when the LTV is equal to `LLTV`.
 
 This computation is represented in the Figure 1.
 <img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/0c11c961-a046-4701-9063-9f6b84a6c3b2">
