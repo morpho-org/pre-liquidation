@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+using PreLiquidation as preLiq;
+
+methods {
+    function preLiq.MORPHO() external returns address envfree;
+}
+
 // True when preLiquidate has been called
 persistent ghost bool preLiquidateCalled;
 
@@ -18,6 +24,7 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
 rule preLiquidateRepays(method f, env e, calldataarg data) {
     require !preLiquidateCalled;
     require !repayed;
+    require e.msg.sender != preLiq.MORPHO();
     f(e,data);
     assert preLiquidateCalled <=> repayed;
 }

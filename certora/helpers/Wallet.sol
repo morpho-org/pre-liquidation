@@ -2,7 +2,7 @@
 pragma solidity 0.8.27;
 
 import {PreLiquidation, Id, Market, Position, PreLiquidationParams} from "../../src/PreLiquidation.sol";
-// import {IMorphoRepayCallback} from "../../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
+import {IMorphoStaticTyping} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 contract Wallet {
     PreLiquidation immutable preLiq;
@@ -20,5 +20,21 @@ contract Wallet {
     function onMorphoRepayCall(bytes calldata args) external {
         (uint256 repaidAssets, bytes memory data) = abi.decode(args, (uint256, bytes));
         preLiq.onMorphoRepay(repaidAssets, data);
+    }
+
+    function marketParamsCall() external view {
+        preLiq.marketParams();
+    }
+
+    function preLiquidationParamsCall() external view {
+        preLiq.preLiquidationParams();
+    }
+
+    function morphoCall() external view {
+        preLiq.MORPHO();
+    }
+
+    function idCall() external view {
+        preLiq.ID();
     }
 }
