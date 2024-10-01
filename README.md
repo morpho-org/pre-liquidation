@@ -7,7 +7,7 @@ We call these user-defined Morpho Blue transactions pre-liquidations.
 Borrowers can authorize pre-liquidations by choosing different liquidation incentive factors to repay the liquidator, or where only part of the debt may be liquidated.
 The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
 Note that pre-liquidation must be authorized on Morpho. Liquidators may perform pre-liquidations on a position using the `preLiquidate` entry point on a deployed PreLiquidation contract.
-The [`PreLiquidatiationFactory`](./src/PreLiquidatiationFactory.sol) factory contract eases the deployment and indexing of pre-liquidation contracts.
+The [`PreLiquidationFactory`](./src/PreLiquidationFactory.sol) factory contract eases the deployment and indexing of pre-liquidation contracts.
 
 The set of pre-liquidation parameters is composed of
 
