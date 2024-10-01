@@ -159,8 +159,6 @@ rule excessivePreliquidationReverts(env e,address borrower, uint256 seizedAssets
     // Safe require because the implementation would revert.
     require collateralQuoted > 0;
     require seizedAssets > 0;
-    require currentContract.PRE_LIF_1 == currentContract.PRE_LIF_2;
-    require currentContract.PRE_CF_1 == currentContract.PRE_CF_2;
 
     requireInvariant preLltvLTlltv();
     requireInvariant preCFIncreasing();
