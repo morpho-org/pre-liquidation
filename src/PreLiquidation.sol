@@ -85,10 +85,6 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
-        require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
-        require(_preLiquidationParams.preCF2 >= _preLiquidationParams.preCF1, ErrorsLib.CloseFactorDecreasing());
-        require(_preLiquidationParams.preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
-        require(_preLiquidationParams.preLIF2 >= _preLiquidationParams.preLIF1, ErrorsLib.preLIFDecreasing());
 
         MORPHO = IMorpho(morpho);
 
@@ -106,6 +102,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         PRE_LIF_1 = _preLiquidationParams.preLIF1;
         PRE_LIF_2 = _preLiquidationParams.preLIF2;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
+
+        require(PRE_LLTV < LLTV, ErrorsLib.PreLltvTooHigh());
+        require(PRE_CF_2 >= PRE_CF_1, ErrorsLib.CloseFactorDecreasing());
+        require(PRE_LIF_1 >= WAD, ErrorsLib.preLIFTooLow());
+        require(PRE_LIF_2 >= PRE_LIF_1, ErrorsLib.preLIFDecreasing());
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
     }
