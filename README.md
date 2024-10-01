@@ -33,7 +33,7 @@ These functions are illustrated in the following figure:
 The two main use-cases are:
 
 1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
-2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preCF1 < preCF2`, similar to a Quasi Dutch Auction (as implemented by Euler).
+2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preCF1 < preCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
 
 ## Getting started
 
