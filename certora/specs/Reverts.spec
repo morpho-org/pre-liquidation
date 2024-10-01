@@ -85,10 +85,15 @@ rule nonLiquidatablePositionReverts(env e,address borrower, uint256 seizedAssets
     priceChanged = false;
     uint256 collateralPrice = mockPrice();
 
+
     (_, pBorrowShares, pCollateral) = MORPHO.position(currentContract.ID, borrower);
 
     mathint collateralQuoted =
         require_uint256(summaryMulDivDown(pCollateral, collateralPrice, 10^36));
+
+    // Safe require because the implementation would revert.
+    require collateralQuoted>0;
+
     mathint borrowed = require_uint256(tAU(pBorrowShares, mTotalBorrowAssets, mTotalBorrowShares));
     mathint ltv = require_uint256(wDU(require_uint256(borrowed), require_uint256(collateralQuoted)));
 
