@@ -261,7 +261,16 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
 
-        preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
+        uint256 liquidatorCollatBefore = collateralToken.balanceOf(LIQUIDATOR);
+        uint256 liquidatorLoanBefore = loanToken.balanceOf(LIQUIDATOR);
+
+        (uint256 seizedAssets, uint256 repaidAssets) = preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
+
+        uint256 liquidatorCollatAfter = collateralToken.balanceOf(LIQUIDATOR);
+        uint256 liquidatorLoanAfter = loanToken.balanceOf(LIQUIDATOR);
+
+        assertEq (liquidatorCollatAfter - liquidatorCollatBefore, seizedAssets);
+        assertEq (liquidatorLoanBefore - liquidatorLoanAfter, repaidAssets);
     }
 
     function testPreLiquidationCallback(
