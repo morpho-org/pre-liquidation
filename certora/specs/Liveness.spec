@@ -25,6 +25,11 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
     require !preLiquidateCalled;
     require !repayed;
     require e.msg.sender != preLiq.MORPHO();
+    if(f.selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
+       preLiquidateCalled = true;
+    } else if(f.selector == sig:onMorphoRepay(uint256, bytes).selector) {
+        repayed = true;
+    }
     f(e,data);
     assert preLiquidateCalled <=> repayed;
 }
