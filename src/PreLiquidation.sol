@@ -12,7 +12,7 @@ import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
-import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+import {IPreLiquidation} from "./interfaces/IPreLiquidation.sol";
 import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 
 /// @title PreLiquidation
@@ -58,15 +58,24 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     }
 
     /// @notice The pre-liquidation parameters specific to the PreLiquidation contract.
-    function preLiquidationParams() external view returns (PreLiquidationParams memory) {
-        return PreLiquidationParams({
-            preLltv: PRE_LLTV,
-            preCF1: PRE_CF_1,
-            preCF2: PRE_CF_2,
-            preLIF1: PRE_LIF_1,
-            preLIF2: PRE_LIF_2,
-            preLiquidationOracle: PRE_LIQUIDATION_ORACLE
-        });
+    function preLiquidationParams()
+        external
+        view
+        returns (
+            uint256 preLltv,
+            uint256 preCF1,
+            uint256 preCF2,
+            uint256 preLIF1,
+            uint256 preLIF2,
+            address preLiquidationOracle
+        )
+    {
+        preLltv = PRE_LLTV;
+        preCF1 = PRE_CF_1;
+        preCF2 = PRE_CF_2;
+        preLIF1 = PRE_LIF_1;
+        preLIF2 = PRE_LIF_2;
+        preLiquidationOracle = PRE_LIQUIDATION_ORACLE;
     }
 
     /* CONSTRUCTOR */
@@ -74,7 +83,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @dev Initializes the PreLiquidation contract.
     /// @param morpho The address of the Morpho protocol.
     /// @param id The id of the Morpho market on which pre-liquidations will occur.
-    /// @param _preLiquidationParams The pre-liquidation parameters.
+    ///  @param preLltv the maximum LTV of a position before allowing pre-liquidation.
+    ///  @param preCF1 the close factor when the position LTV is equal to preLltv.
+    ///  @param preCF2 the close factor when the position LTV is equal to LLTV.
+    ///  @param preLIF1 the pre-liquidation incentive factor when the position LTV is equal to preLltv.
+    ///  @param preLIF2 the pre-liquidation incentive factor when the position LTV is equal to LLTV.
+    ///  @param preLiquidationOracle the oracle used to assess whether or not a position can be preliquidated.
     /// @dev The pre-liquidation LLTV should be strictly lower than the market LLTV.
     /// @dev The pre-liquidation close factor parameters should be non-decreasing.
     /// @dev The pre-liquidation LIF parameters should be higher than WAD (100%) and non-decreasing.
@@ -82,9 +96,22 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// linearly from preCF1 at preLltv to preCF2 at LLTV.
     /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor which is multiplied by the repaid
     /// debt to compute the seized collateral. It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
-    constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
+    constructor(
+        address morpho,
+        Id id,
+        uint256 preLltv,
+        uint256 preCF1,
+        uint256 preCF2,
+        uint256 preLIF1,
+        uint256 preLIF2,
+        address preLiquidationOracle
+    ) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
+        require(preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
+        require(preCF2 >= preCF1, ErrorsLib.CloseFactorDecreasing());
+        require(preLIF1 >= WAD, ErrorsLib.preLIFTooLow());
+        require(preLIF2 >= preLIF1, ErrorsLib.preLIFDecreasing());
 
         MORPHO = IMorpho(morpho);
 
@@ -96,17 +123,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         IRM = _marketParams.irm;
         LLTV = _marketParams.lltv;
 
-        PRE_LLTV = _preLiquidationParams.preLltv;
-        PRE_CF_1 = _preLiquidationParams.preCF1;
-        PRE_CF_2 = _preLiquidationParams.preCF2;
-        PRE_LIF_1 = _preLiquidationParams.preLIF1;
-        PRE_LIF_2 = _preLiquidationParams.preLIF2;
-        PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
-
-        require(PRE_LLTV < LLTV, ErrorsLib.PreLltvTooHigh());
-        require(PRE_CF_2 >= PRE_CF_1, ErrorsLib.CloseFactorDecreasing());
-        require(PRE_LIF_1 >= WAD, ErrorsLib.preLIFTooLow());
-        require(PRE_LIF_2 >= PRE_LIF_1, ErrorsLib.preLIFDecreasing());
+        PRE_LLTV = preLltv;
+        PRE_CF_1 = preCF1;
+        PRE_CF_2 = preCF2;
+        PRE_LIF_1 = preLIF1;
+        PRE_LIF_2 = preLIF2;
+        PRE_LIQUIDATION_ORACLE = preLiquidationOracle;
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
     }

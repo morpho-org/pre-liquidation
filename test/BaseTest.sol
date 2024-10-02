@@ -14,8 +14,6 @@ import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
-import {PreLiquidationParams} from "../src/interfaces/IPreLiquidation.sol";
-
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
 
@@ -73,7 +71,11 @@ contract BaseTest is Test {
     }
 
     function boundPreLiquidationParameters(
-        PreLiquidationParams memory preLiquidationParams,
+        uint256 preLltv,
+        uint256 preCF1,
+        uint256 preCF2,
+        uint256 preLIF1,
+        uint256 preLIF2,
         uint256 minPreLltv,
         uint256 maxPreLltv,
         uint256 minCloseFactor,
@@ -81,14 +83,14 @@ contract BaseTest is Test {
         uint256 minPreLIF,
         uint256 maxPreLIF,
         address preLiqOracle
-    ) internal pure returns (PreLiquidationParams memory) {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, minPreLltv, maxPreLltv);
-        preLiquidationParams.preCF1 = bound(preLiquidationParams.preCF1, minCloseFactor, maxCloseFactor);
-        preLiquidationParams.preCF2 = bound(preLiquidationParams.preCF2, minCloseFactor, maxCloseFactor);
-        preLiquidationParams.preLIF1 = bound(preLiquidationParams.preLIF1, minPreLIF, maxPreLIF);
-        preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, minPreLIF, maxPreLIF);
-        preLiquidationParams.preLiquidationOracle = preLiqOracle;
-
-        return preLiquidationParams;
+    ) internal pure returns (uint256, uint256, uint256, uint256, uint256, address) {
+        return (
+            bound(preLltv, minPreLltv, maxPreLltv),
+            bound(preCF1, minCloseFactor, maxCloseFactor),
+            bound(preCF2, minCloseFactor, maxCloseFactor),
+            bound(preLIF1, minPreLIF, maxPreLIF),
+            bound(preLIF2, minPreLIF, maxPreLIF),
+            preLiqOracle
+        );
     }
 }

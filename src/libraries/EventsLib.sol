@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import {Id, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
 
 /// @title EventsLib
 /// @author Morpho Labs
@@ -19,5 +18,14 @@ library EventsLib {
         uint256 seizedAssets
     );
 
-    event CreatePreLiquidation(address indexed preLiquidation, Id id, PreLiquidationParams preLiquidationParams);
+    event CreatePreLiquidation(
+        address indexed preLiquidation,
+        Id id,
+        uint256 preLltv,
+        uint256 preCF1,
+        uint256 preCF2,
+        uint256 preLIF1,
+        uint256 preLIF2,
+        address preLiquidationOracle
+    );
 }

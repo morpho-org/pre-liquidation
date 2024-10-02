@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./BaseTest.sol";
-import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
+import {IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
 import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {PreLiquidationAddressLib} from "../src/libraries/periphery/PreLiquidationAddressLib.sol";
@@ -23,9 +23,20 @@ contract PreLiquidationFactoryTest is BaseTest {
         new PreLiquidationFactory(address(0));
     }
 
-    function testCreatePreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams = boundPreLiquidationParameters(
-            preLiquidationParams,
+    function testCreatePreLiquidation(
+        uint256 preLltv,
+        uint256 preCF1,
+        uint256 preCF2,
+        uint256 preLIF1,
+        uint256 preLIF2,
+        address preLiquidationOracle
+    ) public {
+        (preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle) = boundPreLiquidationParameters(
+            preLltv,
+            preCF1,
+            preCF2,
+            preLIF1,
+            preLIF2,
             WAD / 100,
             marketParams.lltv - 1,
             WAD / 100,
@@ -34,22 +45,30 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD.wDivDown(lltv),
             marketParams.oracle
         );
-        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
+        preLIF2 = preLIF1;
+        preCF2 = preCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
-        IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
+        IPreLiquidation preLiquidation =
+            factory.createPreLiquidation(id, preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle);
 
         assert(preLiquidation.MORPHO() == MORPHO);
         assert(Id.unwrap(preLiquidation.ID()) == Id.unwrap(id));
 
-        PreLiquidationParams memory preLiqParams = preLiquidation.preLiquidationParams();
-        assert(preLiqParams.preLltv == preLiquidationParams.preLltv);
-        assert(preLiqParams.preCF1 == preLiquidationParams.preCF1);
-        assert(preLiqParams.preCF2 == preLiquidationParams.preCF2);
-        assert(preLiqParams.preLIF1 == preLiquidationParams.preLIF1);
-        assert(preLiqParams.preLIF2 == preLiquidationParams.preLIF2);
-        assert(preLiqParams.preLiquidationOracle == preLiquidationParams.preLiquidationOracle);
+        (
+            uint256 _preLltv,
+            uint256 _preCF1,
+            uint256 _preCF2,
+            uint256 _preLIF1,
+            uint256 _preLIF2,
+            address _preLiquidationOracle
+        ) = preLiquidation.preLiquidationParams();
+        assert(_preLltv == preLltv);
+        assert(_preCF1 == preCF1);
+        assert(_preCF2 == preCF2);
+        assert(_preLIF1 == preLIF1);
+        assert(_preLIF2 == preLIF2);
+        assert(_preLiquidationOracle == preLiquidationOracle);
 
         MarketParams memory preLiqMarketParams = preLiquidation.marketParams();
         assert(preLiqMarketParams.loanToken == marketParams.loanToken);
@@ -61,9 +80,20 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(factory.isPreLiquidation(address(preLiquidation)));
     }
 
-    function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams = boundPreLiquidationParameters(
-            preLiquidationParams,
+    function testCreate2Deployment(
+        uint256 preLltv,
+        uint256 preCF1,
+        uint256 preCF2,
+        uint256 preLIF1,
+        uint256 preLIF2,
+        address preLiquidationOracle
+    ) public {
+        (preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle) = boundPreLiquidationParameters(
+            preLltv,
+            preCF1,
+            preCF2,
+            preLIF1,
+            preLIF2,
             WAD / 100,
             marketParams.lltv - 1,
             WAD / 100,
@@ -72,21 +102,34 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD.wDivDown(lltv),
             marketParams.oracle
         );
-        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
+        preLIF2 = preLIF1;
+        preCF2 = preCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
-        IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
+        console.log("PRE LIF 1", preLIF1);
+        IPreLiquidation preLiquidation =
+            factory.createPreLiquidation(id, preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle);
 
         address preLiquidationAddress = PreLiquidationAddressLib.computePreLiquidationAddress(
-            address(MORPHO), address(factory), id, preLiquidationParams
+            address(MORPHO), address(factory), id, preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle
         );
-        assert(address(preLiquidation) == preLiquidationAddress);
+        assertEq(address(preLiquidation), preLiquidationAddress);
     }
 
-    function testRedundantPreLiquidation(PreLiquidationParams memory preLiquidationParams) public {
-        preLiquidationParams = boundPreLiquidationParameters(
-            preLiquidationParams,
+    function testRedundantPreLiquidation(
+        uint256 preLltv,
+        uint256 preCF1,
+        uint256 preCF2,
+        uint256 preLIF1,
+        uint256 preLIF2,
+        address preLiquidationOracle
+    ) public {
+        (preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle) = boundPreLiquidationParameters(
+            preLltv,
+            preCF1,
+            preCF2,
+            preLIF1,
+            preLIF2,
             WAD / 100,
             marketParams.lltv - 1,
             WAD / 100,
@@ -95,14 +138,14 @@ contract PreLiquidationFactoryTest is BaseTest {
             WAD.wDivDown(lltv),
             marketParams.oracle
         );
-        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
+        preLIF2 = preLIF1;
+        preCF2 = preCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
 
-        factory.createPreLiquidation(id, preLiquidationParams);
+        factory.createPreLiquidation(id, preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle);
 
         vm.expectRevert(bytes(""));
-        factory.createPreLiquidation(id, preLiquidationParams);
+        factory.createPreLiquidation(id, preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle);
     }
 }

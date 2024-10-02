@@ -3,7 +3,7 @@ pragma solidity 0.8.27;
 
 import {IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {PreLiquidation} from "./PreLiquidation.sol";
-import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+import {IPreLiquidation} from "./interfaces/IPreLiquidation.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
@@ -36,16 +36,33 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
     /// @notice Creates a PreLiquidation contract.
     /// @param id The Morpho market for PreLiquidations.
-    /// @param preLiquidationParams The PreLiquidation params for the PreLiquidation contract.
+    ///  @param preLltv the maximum LTV of a position before allowing pre-liquidation.
+    ///  @param preCF1 the close factor when the position LTV is equal to preLltv.
+    ///  @param preCF2 the close factor when the position LTV is equal to LLTV.
+    ///  @param preLIF1 the pre-liquidation incentive factor when the position LTV is equal to preLltv.
+    ///  @param preLIF2 the pre-liquidation incentive factor when the position LTV is equal to LLTV.
+    ///  @param preLiquidationOracle the oracle used to assess whether or not a position can be preliquidated.
     /// @dev Warning: This function will revert without data if the pre-liquidation already exists.
-    function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
-        external
-        returns (IPreLiquidation)
-    {
-        IPreLiquidation preLiquidation =
-            IPreLiquidation(address(new PreLiquidation{salt: 0}(address(MORPHO), id, preLiquidationParams)));
+    function createPreLiquidation(
+        Id id,
+        uint256 preLltv,
+        uint256 preCF1,
+        uint256 preCF2,
+        uint256 preLIF1,
+        uint256 preLIF2,
+        address preLiquidationOracle
+    ) external returns (IPreLiquidation) {
+        IPreLiquidation preLiquidation = IPreLiquidation(
+            address(
+                new PreLiquidation{salt: 0}(
+                    address(MORPHO), id, preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle
+                )
+            )
+        );
 
-        emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, preLiquidationParams);
+        emit EventsLib.CreatePreLiquidation(
+            address(preLiquidation), id, preLltv, preCF1, preCF2, preLIF1, preLIF2, preLiquidationOracle
+        );
 
         isPreLiquidation[address(preLiquidation)] = true;
 
