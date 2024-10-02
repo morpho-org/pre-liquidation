@@ -118,11 +118,16 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @param seizedAssets The amount of collateral to seize.
     /// @param repaidShares The amount of shares to repay.
     /// @param data Arbitrary data to pass to the `onPreLiquidate` callback. Pass empty data if not needed.
+    /// @return seizedAssets The amount of collateral seized.
+    /// @return repaidAssets The amount of debt repaid.
     /// @dev Either `seizedAssets` or `repaidShares` should be zero.
     /// @dev Reverts if the account is still liquidatable on Morpho after the pre-liquidation (withdrawCollateral will
     /// fail). This can happen if either the LIF is bigger than 1/LLTV, or if the account is already unhealthy on
     /// Morpho.
-    function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external {
+    function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data)
+        external
+        returns (uint256, uint256)
+    {
         require(UtilsLib.exactlyOneZero(seizedAssets, repaidShares), ErrorsLib.InconsistentInput());
 
         MORPHO.accrueInterest(marketParams());
@@ -165,6 +170,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         (uint256 repaidAssets,) = MORPHO.repay(marketParams(), 0, repaidShares, borrower, callbackData);
 
         emit EventsLib.PreLiquidate(ID, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
+
+        return (seizedAssets, repaidAssets);
     }
 
     /// @notice Morpho callback after repay call.

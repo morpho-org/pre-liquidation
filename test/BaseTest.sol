@@ -84,9 +84,9 @@ contract BaseTest is Test {
     ) internal pure returns (PreLiquidationParams memory) {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, minPreLltv, maxPreLltv);
         preLiquidationParams.preCF1 = bound(preLiquidationParams.preCF1, minCloseFactor, maxCloseFactor);
-        preLiquidationParams.preCF2 = bound(preLiquidationParams.preCF2, minCloseFactor, maxCloseFactor);
+        preLiquidationParams.preCF2 = bound(preLiquidationParams.preCF2, preLiquidationParams.preCF1, maxCloseFactor);
         preLiquidationParams.preLIF1 = bound(preLiquidationParams.preLIF1, minPreLIF, maxPreLIF);
-        preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, minPreLIF, maxPreLIF);
+        preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, preLiquidationParams.preLIF1, maxPreLIF);
         preLiquidationParams.preLiquidationOracle = preLiqOracle;
 
         return preLiquidationParams;
