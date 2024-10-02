@@ -269,8 +269,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 liquidatorCollatAfter = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanAfter = loanToken.balanceOf(LIQUIDATOR);
 
-        assertEq (liquidatorCollatAfter - liquidatorCollatBefore, seizedAssets);
-        assertEq (liquidatorLoanBefore - liquidatorLoanAfter, repaidAssets);
+        assertEq(liquidatorCollatAfter - liquidatorCollatBefore, seizedAssets);
+        assertEq(liquidatorLoanBefore - liquidatorLoanAfter, repaidAssets);
     }
 
     function testPreLiquidationCallback(
