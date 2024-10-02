@@ -2,6 +2,10 @@
 
 using PreLiquidation as preLiq;
 
+methods {
+    function preLiq.MORPHO() external returns address envfree;
+}
+
 // True when preLiquidate has been called
 persistent ghost bool preLiquidateCalled;
 
