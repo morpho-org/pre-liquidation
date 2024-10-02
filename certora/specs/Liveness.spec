@@ -30,6 +30,6 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
     } else if(f.selector == sig:onMorphoRepay(uint256, bytes).selector) {
         repayed = true;
     }
-    f(e,data);
-    assert preLiquidateCalled <=> repayed;
+    f@withrevert(e,data);
+    assert !lastReverted => (preLiquidateCalled <=> repayed);
 }
