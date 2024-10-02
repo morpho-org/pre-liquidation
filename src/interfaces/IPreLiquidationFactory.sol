@@ -3,7 +3,6 @@ pragma solidity >= 0.5.0;
 
 import {Id, IMorpho} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./IPreLiquidation.sol";
-import {PreLiquidationFactory} from "../PreLiquidationFactory.sol";
 
 interface IPreLiquidationFactory {
     function MORPHO() external view returns (IMorpho);
