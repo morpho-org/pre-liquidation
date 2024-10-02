@@ -132,9 +132,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         Position memory position = MORPHO.position(ID, borrower);
 
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
-        uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
-        uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
-        uint256 ltv = borrowed.wDivUp(collateralQuoted);
+        uint256 ltv;
+        {
+            uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
+            uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
+            ltv = borrowed.wDivUp(collateralQuoted);
+        }
 
         // The following require is equivalent to checking that borrowed > collateralQuoted.wMulDown(PRE_LLTV).
         require(ltv > PRE_LLTV, ErrorsLib.NotPreLiquidatablePosition());
@@ -154,18 +157,19 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        uint256 borrowerShares = position.borrowShares;
         // Note that the close factor can be greater than WAD (100%). In this case the position can be fully
         // pre-liquidated.
-        uint256 closeFactor =
-            UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
-        uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
-        require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
+        {
+            uint256 closeFactor =
+                UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
+            uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
+            require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
+        }
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
-        (uint256 repaidAssets,) = MORPHO.repay(marketParams(), 0, repaidShares, borrower, callbackData);
+        MORPHO.repay(marketParams(), 0, repaidShares, borrower, callbackData);
 
-        emit EventsLib.PreLiquidate(ID, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
+        // emit EventsLib.PreLiquidate(ID, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
     }
 
     /// @notice Morpho callback after repay call.
