@@ -9,6 +9,7 @@ import {IrmMock} from "../src/mocks/IrmMock.sol";
 import {OracleMock} from "../src/mocks/OracleMock.sol";
 
 import {MarketParams, IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
@@ -150,5 +151,18 @@ contract BaseTest is Test {
             ) + preLiquidationParams.preLIF1,
             preLiquidationParams.preLIF2
         );
+    }
+
+    function _getBorrowBounds(
+        PreLiquidationParams memory preLiquidationParams,
+        MarketParams memory _marketParams,
+        uint256 collateralAmount
+    ) internal view returns (uint256, uint256, uint256) {
+        uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
+        uint256 collateralQuoted = collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
+        uint256 borrowPreLiquidationThreshold = collateralQuoted.wMulDown(preLiquidationParams.preLltv);
+        uint256 borrowLiquidationThreshold = collateralQuoted.wMulDown(_marketParams.lltv);
+
+        return (collateralQuoted, borrowPreLiquidationThreshold, borrowLiquidationThreshold);
     }
 }

@@ -204,17 +204,14 @@ contract PreLiquidationErrorTest is BaseTest {
         });
 
         collateralAmount = bound(collateralAmount, 10 ** 19, 10 ** 24);
-        uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
-        uint256 collateralQuoted = collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
-        uint256 borrowLiquidationThreshold = collateralQuoted.wMulDown(marketParams.lltv);
-        uint256 borrowPreLiquidationThreshold = collateralQuoted.wMulDown(preLiquidationParams.preLltv);
+        (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
+            _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
         _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = MORPHO.position(id, BORROWER);
-        Market memory m = MORPHO.market(id);
 
         uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
         uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
