@@ -26,10 +26,11 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
     // Set up the initial state.
     require !preLiquidateCalled;
     require !onMorphoRepayCalled;
-    
+
     // Safe require because Morpho cannot send transactions.
     require e.msg.sender != preLiq.MORPHO();
 
+    // Capture the first method call which is not performed with a CALL opcode.
     if (f.selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
        preLiquidateCalled = true;
     } else if (f.selector == sig:onMorphoRepay(uint256, bytes).selector) {
