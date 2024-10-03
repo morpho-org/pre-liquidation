@@ -133,38 +133,44 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         MORPHO.accrueInterest(marketParams());
 
-        Market memory market = MORPHO.market(ID);
-        Position memory position = MORPHO.position(ID, borrower);
+        {
+            Market memory market = MORPHO.market(ID);
+            Position memory position = MORPHO.position(ID, borrower);
 
-        uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
-        uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
-        uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
-        uint256 ltv = borrowed.wDivUp(collateralQuoted);
+            uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
+            uint ltv;
+            {
+                uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
+                uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
+                ltv = borrowed.wDivUp(collateralQuoted);
+            }
 
-        // The following require is equivalent to checking that borrowed > collateralQuoted.wMulDown(PRE_LLTV).
-        require(ltv > PRE_LLTV, ErrorsLib.NotPreLiquidatablePosition());
+            // The following require is equivalent to checking that borrowed > collateralQuoted.wMulDown(PRE_LLTV).
+            require(ltv > PRE_LLTV, ErrorsLib.NotPreLiquidatablePosition());
 
-        uint256 preLIF = UtilsLib.min(
-            (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1, PRE_LIF_2
-        );
+            uint256 preLIF = UtilsLib.min(
+                (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1, PRE_LIF_2
+            );
 
-        if (seizedAssets > 0) {
-            uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
+            if (seizedAssets > 0) {
+                uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
 
-            repaidShares =
-                seizedAssetsQuoted.wDivUp(preLIF).toSharesUp(market.totalBorrowAssets, market.totalBorrowShares);
-        } else {
-            seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
-                preLIF
-            ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+                repaidShares =
+                    seizedAssetsQuoted.wDivUp(preLIF).toSharesUp(market.totalBorrowAssets, market.totalBorrowShares);
+            } else {
+                uint seizedAssetsQuoted = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
+                    preLIF
+                );
+                seizedAssets = seizedAssetsQuoted.mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+            }
+
+            // Note that the close factor can be greater than WAD (100%). In this case the position can be fully
+            // pre-liquidated.
+            uint256 closeFactor =
+                UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
+            uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
+            require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
         }
-
-        // Note that the close factor can be greater than WAD (100%). In this case the position can be fully
-        // pre-liquidated.
-        uint256 closeFactor =
-            UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
-        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
-        require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
         (uint256 repaidAssets,) = MORPHO.repay(marketParams(), 0, repaidShares, borrower, callbackData);
