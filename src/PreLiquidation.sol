@@ -170,8 +170,6 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @notice Morpho callback after repay call.
     /// @dev During pre-liquidation, Morpho will call the `onMorphoRepay` callback function in `PreLiquidation` using
     /// the provided `data`.
-    /// @dev Thanks to the callback, the collateral can be withdrawn before the debt repayment occurs
-    /// allowing the liquidator to pre-liquidate without the need for a flashloan.
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =

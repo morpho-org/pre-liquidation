@@ -51,7 +51,7 @@ It's possible to use the corresponding market oracle or any other oracle includi
 ### PreLiquidationAddressLib
 
 PreLiquidation contract addresses are generated using the CREATE2 opcode, allowing for predictable address computation depending on pre-liquidation parameters.
-The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
+The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides a `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
 
 ## Getting started
 
