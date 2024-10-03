@@ -8,7 +8,7 @@ Borrowers can set custom pre-liquidation parameters, allowing them to specify li
 Liquidation incentive factors determine incentives given to liquidators and close factors limit the proportion of the position that can be closed during a liquidation.
 
 The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
-Note that pre-liquidation must be authorized on Morpho. 
+Note that pre-liquidation must be authorized on Morpho.
 Liquidators may perform pre-liquidations on a position using the `preLiquidate` entry point on a deployed `PreLiquidation` contract.
 The [`PreLiquidationFactory`](./src/PreLiquidationFactory.sol) factory contract simplifies the deployment and indexing of pre-liquidation contracts.
 
