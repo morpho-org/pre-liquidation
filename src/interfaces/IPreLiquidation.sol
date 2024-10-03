@@ -12,8 +12,8 @@ import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IM
 ///  - preLiquidationOracle, the oracle used to assess whether or not a position can be preliquidated.
 struct PreLiquidationParams {
     uint256 preLltv;
-    uint256 preCF1;
-    uint256 preCF2;
+    uint256 preLCF1;
+    uint256 preLCF2;
     uint256 preLIF1;
     uint256 preLIF2;
     address preLiquidationOracle;
