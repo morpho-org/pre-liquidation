@@ -39,8 +39,8 @@ The [`certora/specs`](specs) folder contains the following files:
 - [`Reentrancy.spec`](specs/Reentrancy.spec) checks that PreLiquidation is reentrancy safe by checking that the storage is never used;
 - [`Immutability.spec`](specs/Immutability.spec) checks that PreLiquidation contract is immutable because it doesn't perform any delegate call;
 - [`Liveness.spec`](specs/Liveness.spec) ensure that expected computations will always be performed.
-For instance, pre-liquidations will always trigger a repay operation.
-We also check that pre-liquidation can successfully be performed by repaying shares instead of seizing collateral.
+  For instance, pre-liquidations will always trigger a repay operation.
+  We also check that pre-liquidation can successfully be performed by passing shares to be repaid instead of the collateral ammount to be seized.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
