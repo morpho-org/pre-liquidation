@@ -27,7 +27,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     /* IMMUTABLE */
 
-    /// @notice Morpho's address.
+    /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
     /// @notice The id of the Morpho Market specific to the PreLiquidation contract.
     Id public immutable ID;
@@ -73,7 +73,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /* CONSTRUCTOR */
 
     /// @dev Initializes the PreLiquidation contract.
-    /// @param morpho The address of the Morpho protocol.
+    /// @param morpho The address of the Morpho contract.
     /// @param id The id of the Morpho market on which pre-liquidations will occur.
     /// @param _preLiquidationParams The pre-liquidation parameters.
     /// @dev The pre-liquidation LLTV should be strictly lower than the market LLTV.
@@ -154,12 +154,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        uint256 borrowerShares = position.borrowShares;
         // Note that the close factor can be greater than WAD (100%). In this case the position can be fully
         // pre-liquidated.
         uint256 closeFactor =
             UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
-        uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);

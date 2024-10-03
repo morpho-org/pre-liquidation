@@ -22,7 +22,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
     /* STORAGE */
 
-    /// @notice Mapping which returns true if the address is a preLiquidation contract created by this factory.
+    /// @notice Mapping which returns true if the address is a PreLiquidation contract created by this factory.
     mapping(address => bool) public isPreLiquidation;
 
     /* CONSTRUCTOR */
