@@ -37,16 +37,18 @@ The two main use-cases are:
 
 ### `onPreLiquidate` callback
 
-When calling `preLiquidate` to pre-liquidate a position, the liquidator can implement a callback by calling the pre-liquidation with a smart contract that inherits the `IPreLiquidationCallback` interface. Through this, the liquidator's smart contract will have its `onPreLiquidate` function called after the withdrawal of the position's collateral and before the debt repayment occurs. This mechanism eliminates the need for a flashloan.
+By calling `preLiquidate` with a smart contract that implements the `IPreLiquidationCallback` interface, the liquidator can be called back.
+More precisely, the `onPreLiquidate` function of the liquidator's smart contract will be called after the collateral withdrawal and before the debt repayment.
+This mechanism eliminates the need for a flashloan.
 
 
 ### PreLiquidation Oracle
 
-The `PreLiquidationParams` struct includes a `preLiquidationOracle` attribute, allowing pre-liquidation using any compatible oracle. This oracle should implement [Morpho's `IOracle` interface](https://github.com/morpho-org/morpho-blue/blob/main/src/interfaces/IOracle.sol) and adhere to the behavior specified in the interface natspec. It's possible to use the corresponding market oracle or any other oracle including OEV oracles.
+The `PreLiquidationParams` struct includes a `preLiquidationOracle` attribute, allowing pre-liquidation using any compatible oracle. This oracle should implement [Morpho's `IOracle` interface](https://github.com/morpho-org/morpho-blue/blob/main/src/interfaces/IOracle.sol) and adhere to the behavior specified in the documentation. It's possible to use the corresponding market oracle or any other oracle including OEV solutions.
 
 ### PreLiquidationAddressLib
 
-PreLiquidation contract addresses are generated using the CREATE2 opcode, allowing for deterministic address computation based on pre-liquidation parameters. The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
+PreLiquidation contract addresses are generated using the CREATE2 opcode, allowing for predictable address computation depending on pre-liquidation parameters. The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
 
 ## Getting started
 
