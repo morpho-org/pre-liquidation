@@ -104,9 +104,9 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
 
         require(PRE_LLTV < LLTV, ErrorsLib.PreLltvTooHigh());
-        require(PRE_CF_2 >= PRE_CF_1, ErrorsLib.CloseFactorDecreasing());
-        require(PRE_LIF_1 >= WAD, ErrorsLib.preLIFTooLow());
-        require(PRE_LIF_2 >= PRE_LIF_1, ErrorsLib.preLIFDecreasing());
+        require(PRE_CF_1 <= PRE_CF_2, ErrorsLib.CloseFactorDecreasing());
+        require(WAD <= PRE_LIF_1, ErrorsLib.preLIFTooLow());
+        require(PRE_LIF_1 <= PRE_LIF_2, ErrorsLib.preLIFDecreasing());
 
         ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
     }
