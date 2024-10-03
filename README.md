@@ -44,7 +44,9 @@ This mechanism eliminates the need for a flashloan.
 
 ### PreLiquidation Oracle
 
-The `PreLiquidationParams` struct includes a `preLiquidationOracle` attribute, allowing pre-liquidation using any compatible oracle. This oracle should implement [Morpho's `IOracle` interface](https://github.com/morpho-org/morpho-blue/blob/main/src/interfaces/IOracle.sol) and adhere to the behavior specified in the documentation. It's possible to use the corresponding market oracle or any other oracle including OEV solutions.
+The `PreLiquidationParams` struct includes a `preLiquidationOracle` attribute, allowing pre-liquidation using any compatible oracle.
+This oracle should implement [Morpho's `IOracle` interface](https://github.com/morpho-org/morpho-blue/blob/main/src/interfaces/IOracle.sol) and adhere to the behavior specified in the documentation.
+It's possible to use the corresponding market oracle or any other oracle including OEV solutions.
 
 ### PreLiquidationAddressLib
 
