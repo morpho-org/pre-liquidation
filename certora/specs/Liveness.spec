@@ -22,8 +22,12 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
 
 // Check that pre-liquidations happen if and only if `onMorphoRepay` is called.
 rule preLiquidateRepays(method f, env e, calldataarg data) {
+
+    // Set up the initial state.
     require !preLiquidateCalled;
     require !onMorphoRepayCalled;
+    
+    // Safe require because Morpho cannot send transactions.
     require e.msg.sender != preLiq.MORPHO();
 
     if (f.selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
