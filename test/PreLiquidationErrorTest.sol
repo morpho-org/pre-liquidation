@@ -181,7 +181,7 @@ contract PreLiquidationErrorTest is BaseTest {
 
         collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
 
-        preparePreLiquidation(preLiquidationParams, collateralAmount, 0, LIQUIDATOR);
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, 0, LIQUIDATOR);
 
         vm.expectRevert(ErrorsLib.NotPreLiquidatablePosition.selector);
         preLiquidation.preLiquidate(BORROWER, 0, 1, hex"");
@@ -210,20 +210,14 @@ contract PreLiquidationErrorTest is BaseTest {
         uint256 borrowPreLiquidationThreshold = collateralQuoted.wMulDown(preLiquidationParams.preLltv);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
-        preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = MORPHO.position(id, BORROWER);
         Market memory m = MORPHO.market(id);
 
         uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
-
-        uint256 closeFactor = UtilsLib.min(
-            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
-                preLiquidationParams.preCF2 - preLiquidationParams.preCF1
-            ) + preLiquidationParams.preCF1,
-            preLiquidationParams.preCF2
-        );
+        uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
 
         vm.expectRevert(

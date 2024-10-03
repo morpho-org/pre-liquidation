@@ -13,12 +13,16 @@ import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 
 import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
 import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
+    using SharesMathLib for uint256;
+    using MathLib for uint256;
+    using MathLib for uint128;
 
     address internal SUPPLIER = makeAddr("Supplier");
     address internal BORROWER = makeAddr("Borrower");
@@ -96,12 +100,12 @@ contract BaseTest is Test {
         return preLiquidationParams;
     }
 
-    function preparePreLiquidation(
+    function _preparePreLiquidation(
         PreLiquidationParams memory preLiquidationParams,
         uint256 collateralAmount,
         uint256 borrowAmount,
         address liquidator
-    ) public {
+    ) internal {
         preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
         loanToken.mint(SUPPLIER, borrowAmount);
@@ -124,5 +128,27 @@ contract BaseTest is Test {
         }
         MORPHO.setAuthorization(address(preLiquidation), true);
         vm.stopPrank();
+    }
+
+    function _closeFactor(PreLiquidationParams memory preLiquidationParams, uint256 ltv)
+        internal
+        view
+        returns (uint256)
+    {
+        return UtilsLib.min(
+            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
+                preLiquidationParams.preCF2 - preLiquidationParams.preCF1
+            ) + preLiquidationParams.preCF1,
+            preLiquidationParams.preCF2
+        );
+    }
+
+    function _preLIF(PreLiquidationParams memory preLiquidationParams, uint256 ltv) internal view returns (uint256) {
+        return UtilsLib.min(
+            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
+                preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
+            ) + preLiquidationParams.preLIF1,
+            preLiquidationParams.preLIF2
+        );
     }
 }
