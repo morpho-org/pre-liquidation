@@ -12,8 +12,6 @@ contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;
     using MathLib for uint256;
 
-    PreLiquidationFactory factory;
-
     function setUp() public override {
         super.setUp();
     }

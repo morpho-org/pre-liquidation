@@ -14,7 +14,8 @@ import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
-import {PreLiquidationParams} from "../src/interfaces/IPreLiquidation.sol";
+import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
+import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
@@ -34,6 +35,9 @@ contract BaseTest is Test {
 
     MarketParams internal marketParams;
     Id internal id;
+
+    PreLiquidationFactory internal factory;
+    IPreLiquidation internal preLiquidation;
 
     function setUp() public virtual {
         vm.label(address(MORPHO), "Morpho");
@@ -90,5 +94,35 @@ contract BaseTest is Test {
         preLiquidationParams.preLiquidationOracle = preLiqOracle;
 
         return preLiquidationParams;
+    }
+
+    function preparePreLiquidation(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 collateralAmount,
+        uint256 borrowAmount,
+        address liquidator
+    ) public {
+        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
+
+        loanToken.mint(SUPPLIER, borrowAmount);
+        vm.prank(SUPPLIER);
+        if (borrowAmount > 0) {
+            MORPHO.supply(marketParams, borrowAmount, 0, SUPPLIER, hex"");
+        }
+
+        collateralToken.mint(BORROWER, collateralAmount);
+        vm.startPrank(BORROWER);
+        MORPHO.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
+
+        vm.startPrank(liquidator);
+        loanToken.mint(liquidator, type(uint128).max);
+        loanToken.approve(address(preLiquidation), type(uint256).max);
+
+        vm.startPrank(BORROWER);
+        if (borrowAmount > 0) {
+            MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
+        }
+        MORPHO.setAuthorization(address(preLiquidation), true);
+        vm.stopPrank();
     }
 }
