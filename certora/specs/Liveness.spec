@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-// True when preLiquidate has been called
+// True when `preLiquidate` has been called
 persistent ghost bool preLiquidateCalled;
 
 // True when `onMorphoRepay` has been called.
