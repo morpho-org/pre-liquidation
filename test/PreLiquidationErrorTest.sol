@@ -22,9 +22,7 @@ import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
 contract PreLiquidationErrorTest is BaseTest {
     using MarketParamsLib for MarketParams;
-    using SharesMathLib for uint256;
     using MathLib for uint256;
-    using MathLib for uint128;
 
     function setUp() public override {
         super.setUp();
@@ -190,7 +188,8 @@ contract PreLiquidationErrorTest is BaseTest {
     function testPreLiquidationTooLarge(
         PreLiquidationParams memory preLiquidationParams,
         uint256 collateralAmount,
-        uint256 borrowAmount
+        uint256 borrowAmount,
+        uint256 repaidShares
     ) public virtual {
         preLiquidationParams = boundPreLiquidationParameters({
             preLiquidationParams: preLiquidationParams,
@@ -215,11 +214,12 @@ contract PreLiquidationErrorTest is BaseTest {
 
         uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
         uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
 
+        repaidShares = bound(repaidShares, repayableShares + 1, type(uint128).max);
         vm.expectRevert(
-            abi.encodeWithSelector(ErrorsLib.PreLiquidationTooLarge.selector, repayableShares + 1, repayableShares)
+            abi.encodeWithSelector(ErrorsLib.PreLiquidationTooLarge.selector, repaidShares, repayableShares)
         );
-        preLiquidation.preLiquidate(BORROWER, 0, repayableShares + 1, hex"");
+        preLiquidation.preLiquidate(BORROWER, 0, repaidShares, hex"");
     }
 }

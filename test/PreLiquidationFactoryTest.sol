@@ -2,11 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "./BaseTest.sol";
-import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
-import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
+
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {PreLiquidationAddressLib} from "../src/libraries/periphery/PreLiquidationAddressLib.sol";
-import {WAD} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 
 contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;

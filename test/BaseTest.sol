@@ -14,16 +14,13 @@ import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
-import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 
 import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
 import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
-    using SharesMathLib for uint256;
     using MathLib for uint256;
-    using MathLib for uint128;
 
     address internal SUPPLIER = makeAddr("Supplier");
     address internal BORROWER = makeAddr("Borrower");
