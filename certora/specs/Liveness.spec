@@ -6,10 +6,10 @@ methods {
     function preLiq.MORPHO() external returns address envfree;
 }
 
-// True when preLiquidate has been called
+// True when `preLiquidate` has been called.
 persistent ghost bool preLiquidateCalled;
 
-// True when onMorphoRepay has been called
+// True when `onMorphoRepay` has been called.
 persistent ghost bool repayed;
 
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
@@ -19,7 +19,6 @@ hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, ui
        repayed = true;
     }
 }
-
 
 // Check that pre-liquidations happen if and only if `onMorphoRepay` is called.
 rule preLiquidateRepays(method f, env e, calldataarg data) {
@@ -35,6 +34,6 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
 
     f@withrevert(e,data);
 
-    // Avoid failing vacuity checks, either the proposition is true or the execution reverts
+    // Avoid failing vacuity checks, either the proposition is true or the execution reverts.
     assert !lastReverted => (preLiquidateCalled <=> repayed);
 }
