@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity 0.8.27;
 
-import {IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {PreLiquidation} from "./PreLiquidation.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
+import {IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
-import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
+
+import {PreLiquidation} from "./PreLiquidation.sol";
 
 /// @title PreLiquidationFactory
 /// @author Morpho Labs
@@ -20,7 +22,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
     /* STORAGE */
 
-    /// @notice Mapping which returns true if the address is a preLiquidation contract created by this factory.
+    /// @notice Mapping which returns true if the address is a PreLiquidation contract created by this factory.
     mapping(address => bool) public isPreLiquidation;
 
     /* CONSTRUCTOR */

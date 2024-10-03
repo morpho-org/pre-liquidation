@@ -2,18 +2,19 @@
 pragma solidity 0.8.27;
 
 import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
+import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
-import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
-import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
-import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
-import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 
 /// @title PreLiquidation
 /// @author Morpho Labs
@@ -26,7 +27,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     /* IMMUTABLE */
 
-    /// @notice Morpho's address.
+    /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
     /// @notice The id of the Morpho Market specific to the PreLiquidation contract.
     Id public immutable ID;
@@ -72,7 +73,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /* CONSTRUCTOR */
 
     /// @dev Initializes the PreLiquidation contract.
-    /// @param morpho The address of the Morpho protocol.
+    /// @param morpho The address of the Morpho contract.
     /// @param id The id of the Morpho market on which pre-liquidations will occur.
     /// @param _preLiquidationParams The pre-liquidation parameters.
     /// @dev The following requirements should be met:
@@ -159,13 +160,12 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        uint256 borrowerShares = position.borrowShares;
         // Note that the close factor can be greater than WAD (100%). In this case the position can be fully
         // pre-liquidated.
         uint256 preLCF = UtilsLib.min(
             (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LCF_2 - PRE_LCF_1) + PRE_LCF_1, PRE_LCF_2
         );
-        uint256 repayableShares = borrowerShares.wMulDown(preLCF);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(preLCF);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
