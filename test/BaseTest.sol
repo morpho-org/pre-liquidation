@@ -41,6 +41,9 @@ contract BaseTest is Test {
     MarketParams internal marketParams;
     Id internal id;
 
+    uint256 internal lowerCollateralAmount = 10 ** 18;
+    uint256 internal upperCollateralAmount = 10 ** 24;
+
     PreLiquidationFactory internal factory;
     IPreLiquidation internal preLiquidation;
 

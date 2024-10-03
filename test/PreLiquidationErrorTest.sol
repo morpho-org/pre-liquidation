@@ -203,7 +203,7 @@ contract PreLiquidationErrorTest is BaseTest {
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, 10 ** 19, 10 ** 24);
+        collateralAmount = bound(collateralAmount, lowerCollateralAmount, upperCollateralAmount);
         (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
             _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
