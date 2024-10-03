@@ -83,10 +83,10 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @dev The pre-liquidation incentive factor (preLIF) corresponds to the factor which is multiplied by the repaid
     /// debt to compute the seized collateral. It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
-        require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
 
         MORPHO = IMorpho(morpho);
+        require(MORPHO.market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
 
         ID = id;
 
