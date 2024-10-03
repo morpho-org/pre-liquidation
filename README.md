@@ -35,6 +35,24 @@ The two main use-cases are:
 1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
 2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preCF1 < preCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
 
+### `onPreLiquidate` callback
+
+By calling `preLiquidate` with a smart contract that implements the `IPreLiquidationCallback` interface, the liquidator can be called back.
+More precisely, the `onPreLiquidate` function of the liquidator's smart contract will be called after the collateral withdrawal and before the debt repayment.
+This mechanism eliminates the need for a flashloan.
+
+
+### PreLiquidation Oracle
+
+The `PreLiquidationParams` struct includes a `preLiquidationOracle` attribute, allowing pre-liquidation using any compatible oracle.
+This oracle should implement [Morpho's `IOracle` interface](https://github.com/morpho-org/morpho-blue/blob/main/src/interfaces/IOracle.sol) and adhere to the behavior specified in the documentation.
+It's possible to use the corresponding market oracle or any other oracle including OEV solutions.
+
+### PreLiquidationAddressLib
+
+PreLiquidation contract addresses are generated using the CREATE2 opcode, allowing for predictable address computation depending on pre-liquidation parameters.
+The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides a `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
+
 ## Getting started
 
 ### Package installation
