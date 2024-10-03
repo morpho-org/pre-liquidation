@@ -28,5 +28,7 @@ interface IPreLiquidation {
 
     function preLiquidationParams() external view returns (PreLiquidationParams memory);
 
-    function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data) external;
+    function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data)
+        external
+        returns (uint256, uint256);
 }
