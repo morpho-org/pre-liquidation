@@ -19,8 +19,9 @@ library SoftLiquidationAddressLib {
         Id id,
         SoftLiquidationParams memory softLiquidationParams
     ) internal pure returns (address) {
-        bytes32 initCodeHash =
-            keccak256(abi.encodePacked(type(SoftLiquidation).creationCode, abi.encode(morpho, id, softLiquidationParams)));
+        bytes32 initCodeHash = keccak256(
+            abi.encodePacked(type(SoftLiquidation).creationCode, abi.encode(morpho, id, softLiquidationParams))
+        );
         return address(uint160(uint256(keccak256(abi.encodePacked(uint8(0xff), factory, uint256(0), initCodeHash)))));
     }
 }

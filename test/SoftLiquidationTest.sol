@@ -65,7 +65,8 @@ contract SoftLiquidationTest is BaseTest, ISoftLiquidationCallback {
         uint256 liquidatorCollatBefore = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanBefore = loanToken.balanceOf(LIQUIDATOR);
 
-        (uint256 seizedAssets, uint256 repaidAssets) = softLiquidation.softLiquidate(BORROWER, 0, repayableShares, hex"");
+        (uint256 seizedAssets, uint256 repaidAssets) =
+            softLiquidation.softLiquidate(BORROWER, 0, repayableShares, hex"");
 
         uint256 liquidatorCollatAfter = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanAfter = loanToken.balanceOf(LIQUIDATOR);
@@ -113,7 +114,8 @@ contract SoftLiquidationTest is BaseTest, ISoftLiquidationCallback {
         uint256 liquidatorCollatBefore = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanBefore = loanToken.balanceOf(LIQUIDATOR);
 
-        (uint256 seizedAssets, uint256 repaidAssets) = softLiquidation.softLiquidate(BORROWER, seizabledAssets, 0, hex"");
+        (uint256 seizedAssets, uint256 repaidAssets) =
+            softLiquidation.softLiquidate(BORROWER, seizabledAssets, 0, hex"");
 
         uint256 liquidatorCollatAfter = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanAfter = loanToken.balanceOf(LIQUIDATOR);
@@ -169,9 +171,10 @@ contract SoftLiquidationTest is BaseTest, ISoftLiquidationCallback {
         emit CallbackReached();
     }
 
-    function testSoftLiquidationWithInterest(SoftLiquidationParams memory softLiquidationParams, uint256 collateralAmount)
-        public
-    {
+    function testSoftLiquidationWithInterest(
+        SoftLiquidationParams memory softLiquidationParams,
+        uint256 collateralAmount
+    ) public {
         softLiquidationParams = boundSoftLiquidationParameters({
             softLiquidationParams: softLiquidationParams,
             minSoftLltv: WAD / 100,

@@ -122,8 +122,8 @@ contract SoftLiquidation is ISoftLiquidation, IMorphoRepayCallback {
     /// @dev Reverts if the account is still liquidatable on Morpho after the soft-liquidation (withdrawCollateral will
     /// fail). This can happen if either the LIF is bigger than 1/LLTV, or if the account is already unhealthy on
     /// Morpho.
-    /// @dev The soft-liquidation close factor (softLCF) is the maximum proportion of debt that can be soft-liquidated at
-    /// once. It increases linearly from softLCF1 at softLltv to softLCF2 at LLTV.
+    /// @dev The soft-liquidation close factor (softLCF) is the maximum proportion of debt that can be soft-liquidated
+    /// at once. It increases linearly from softLCF1 at softLltv to softLCF2 at LLTV.
     /// @dev The soft-liquidation incentive factor (softLIF) is the factor by which the repaid debt is multiplied to
     /// compute the seized collateral. It increases linearly from softLIF1 at softLltv to softLIF2 at LLTV.
     function softLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data)

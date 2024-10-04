@@ -93,9 +93,11 @@ contract BaseTest is Test {
     ) internal pure returns (SoftLiquidationParams memory) {
         softLiquidationParams.softLltv = bound(softLiquidationParams.softLltv, minSoftLltv, maxSoftLltv);
         softLiquidationParams.softLCF1 = bound(softLiquidationParams.softLCF1, minSoftLCF, maxSoftLCF);
-        softLiquidationParams.softLCF2 = bound(softLiquidationParams.softLCF2, softLiquidationParams.softLCF1, maxSoftLCF);
+        softLiquidationParams.softLCF2 =
+            bound(softLiquidationParams.softLCF2, softLiquidationParams.softLCF1, maxSoftLCF);
         softLiquidationParams.softLIF1 = bound(softLiquidationParams.softLIF1, minSoftLIF, maxSoftLIF);
-        softLiquidationParams.softLIF2 = bound(softLiquidationParams.softLIF2, softLiquidationParams.softLIF1, maxSoftLIF);
+        softLiquidationParams.softLIF2 =
+            bound(softLiquidationParams.softLIF2, softLiquidationParams.softLIF1, maxSoftLIF);
         softLiquidationParams.softLiquidationOracle = softLiqOracle;
 
         return softLiquidationParams;
@@ -144,7 +146,11 @@ contract BaseTest is Test {
         );
     }
 
-    function _softLIF(SoftLiquidationParams memory softLiquidationParams, uint256 ltv) internal view returns (uint256) {
+    function _softLIF(SoftLiquidationParams memory softLiquidationParams, uint256 ltv)
+        internal
+        view
+        returns (uint256)
+    {
         return UtilsLib.min(
             (ltv - softLiquidationParams.softLltv).wDivDown(marketParams.lltv - softLiquidationParams.softLltv).wMulDown(
                 softLiquidationParams.softLIF2 - softLiquidationParams.softLIF1
