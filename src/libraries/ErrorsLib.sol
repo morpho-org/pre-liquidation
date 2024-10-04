@@ -6,27 +6,27 @@ pragma solidity ^0.8.27;
 /// @custom:contact security@morpho.org
 /// @notice Library exposing errors.
 library ErrorsLib {
-    /* PRELIQUIDATION ERRORS */
+    /* SOFTLIQUIDATION ERRORS */
 
-    error PreLltvTooHigh();
+    error SoftLltvTooHigh();
 
-    error PreLCFDecreasing();
+    error SoftLCFDecreasing();
 
-    error PreLIFTooLow();
+    error SoftLIFTooLow();
 
-    error PreLIFDecreasing();
+    error SoftLIFDecreasing();
 
     error InconsistentInput();
 
-    error NotPreLiquidatablePosition();
+    error NotSoftLiquidatablePosition();
 
-    error PreLiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
+    error SoftLiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
     error NotMorpho();
 
     error NonexistentMarket();
 
-    /* PRELIQUIDATION FACTORY ERRORS */
+    /* SOFTLIQUIDATION FACTORY ERRORS */
 
     error ZeroAddress();
 }

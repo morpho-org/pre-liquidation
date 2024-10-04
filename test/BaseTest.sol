@@ -15,8 +15,8 @@ import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
-import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
-import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
+import {SoftLiquidationParams, ISoftLiquidation} from "../src/interfaces/ISoftLiquidation.sol";
+import {SoftLiquidationFactory} from "../src/SoftLiquidationFactory.sol";
 
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
@@ -41,8 +41,8 @@ contract BaseTest is Test {
     uint256 internal minCollateral = 10 ** 18;
     uint256 internal maxCollateral = 10 ** 24;
 
-    PreLiquidationFactory internal factory;
-    IPreLiquidation internal preLiquidation;
+    SoftLiquidationFactory internal factory;
+    ISoftLiquidation internal softLiquidation;
 
     function setUp() public virtual {
         vm.label(address(MORPHO), "Morpho");
@@ -81,33 +81,33 @@ contract BaseTest is Test {
         collateralToken.approve(address(MORPHO), type(uint256).max);
     }
 
-    function boundPreLiquidationParameters(
-        PreLiquidationParams memory preLiquidationParams,
-        uint256 minPreLltv,
-        uint256 maxPreLltv,
-        uint256 minPreLCF,
-        uint256 maxPreLCF,
-        uint256 minPreLIF,
-        uint256 maxPreLIF,
-        address preLiqOracle
-    ) internal pure returns (PreLiquidationParams memory) {
-        preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, minPreLltv, maxPreLltv);
-        preLiquidationParams.preLCF1 = bound(preLiquidationParams.preLCF1, minPreLCF, maxPreLCF);
-        preLiquidationParams.preLCF2 = bound(preLiquidationParams.preLCF2, preLiquidationParams.preLCF1, maxPreLCF);
-        preLiquidationParams.preLIF1 = bound(preLiquidationParams.preLIF1, minPreLIF, maxPreLIF);
-        preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, preLiquidationParams.preLIF1, maxPreLIF);
-        preLiquidationParams.preLiquidationOracle = preLiqOracle;
+    function boundSoftLiquidationParameters(
+        SoftLiquidationParams memory softLiquidationParams,
+        uint256 minSoftLltv,
+        uint256 maxSoftLltv,
+        uint256 minSoftLCF,
+        uint256 maxSoftLCF,
+        uint256 minSoftLIF,
+        uint256 maxSoftLIF,
+        address softLiqOracle
+    ) internal pure returns (SoftLiquidationParams memory) {
+        softLiquidationParams.softLltv = bound(softLiquidationParams.softLltv, minSoftLltv, maxSoftLltv);
+        softLiquidationParams.softLCF1 = bound(softLiquidationParams.softLCF1, minSoftLCF, maxSoftLCF);
+        softLiquidationParams.softLCF2 = bound(softLiquidationParams.softLCF2, softLiquidationParams.softLCF1, maxSoftLCF);
+        softLiquidationParams.softLIF1 = bound(softLiquidationParams.softLIF1, minSoftLIF, maxSoftLIF);
+        softLiquidationParams.softLIF2 = bound(softLiquidationParams.softLIF2, softLiquidationParams.softLIF1, maxSoftLIF);
+        softLiquidationParams.softLiquidationOracle = softLiqOracle;
 
-        return preLiquidationParams;
+        return softLiquidationParams;
     }
 
-    function _preparePreLiquidation(
-        PreLiquidationParams memory preLiquidationParams,
+    function _prepareSoftLiquidation(
+        SoftLiquidationParams memory softLiquidationParams,
         uint256 collateralAmount,
         uint256 borrowAmount,
         address liquidator
     ) internal {
-        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
+        softLiquidation = factory.createSoftLiquidation(id, softLiquidationParams);
 
         loanToken.mint(SUPPLIER, borrowAmount);
         vm.prank(SUPPLIER);
@@ -123,46 +123,46 @@ contract BaseTest is Test {
         if (borrowAmount > 0) {
             MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
         }
-        MORPHO.setAuthorization(address(preLiquidation), true);
+        MORPHO.setAuthorization(address(softLiquidation), true);
         vm.stopPrank();
 
         loanToken.mint(liquidator, type(uint128).max);
         vm.prank(liquidator);
-        loanToken.approve(address(preLiquidation), type(uint256).max);
+        loanToken.approve(address(softLiquidation), type(uint256).max);
     }
 
-    function _closeFactor(PreLiquidationParams memory preLiquidationParams, uint256 ltv)
+    function _closeFactor(SoftLiquidationParams memory softLiquidationParams, uint256 ltv)
         internal
         view
         returns (uint256)
     {
         return UtilsLib.min(
-            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
-                preLiquidationParams.preLCF2 - preLiquidationParams.preLCF1
-            ) + preLiquidationParams.preLCF1,
-            preLiquidationParams.preLCF2
+            (ltv - softLiquidationParams.softLltv).wDivDown(marketParams.lltv - softLiquidationParams.softLltv).wMulDown(
+                softLiquidationParams.softLCF2 - softLiquidationParams.softLCF1
+            ) + softLiquidationParams.softLCF1,
+            softLiquidationParams.softLCF2
         );
     }
 
-    function _preLIF(PreLiquidationParams memory preLiquidationParams, uint256 ltv) internal view returns (uint256) {
+    function _softLIF(SoftLiquidationParams memory softLiquidationParams, uint256 ltv) internal view returns (uint256) {
         return UtilsLib.min(
-            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
-                preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
-            ) + preLiquidationParams.preLIF1,
-            preLiquidationParams.preLIF2
+            (ltv - softLiquidationParams.softLltv).wDivDown(marketParams.lltv - softLiquidationParams.softLltv).wMulDown(
+                softLiquidationParams.softLIF2 - softLiquidationParams.softLIF1
+            ) + softLiquidationParams.softLIF1,
+            softLiquidationParams.softLIF2
         );
     }
 
     function _getBorrowBounds(
-        PreLiquidationParams memory preLiquidationParams,
+        SoftLiquidationParams memory softLiquidationParams,
         MarketParams memory _marketParams,
         uint256 collateralAmount
     ) internal view returns (uint256, uint256, uint256) {
-        uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
+        uint256 collateralPrice = IOracle(softLiquidationParams.softLiquidationOracle).price();
         uint256 collateralQuoted = collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
-        uint256 borrowPreLiquidationThreshold = collateralQuoted.wMulDown(preLiquidationParams.preLltv);
+        uint256 borrowSoftLiquidationThreshold = collateralQuoted.wMulDown(softLiquidationParams.softLltv);
         uint256 borrowLiquidationThreshold = collateralQuoted.wMulDown(_marketParams.lltv);
 
-        return (collateralQuoted, borrowPreLiquidationThreshold, borrowLiquidationThreshold);
+        return (collateralQuoted, borrowSoftLiquidationThreshold, borrowLiquidationThreshold);
     }
 }

@@ -2,15 +2,15 @@
 pragma solidity ^0.8.0;
 
 import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
+import {SoftLiquidationParams} from "../interfaces/ISoftLiquidation.sol";
 
 /// @title EventsLib
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
 /// @notice Library exposing events.
 library EventsLib {
-    /// @dev This event is emitted after calling `onPreLiquidate` which can tamper with the order of events.
-    event PreLiquidate(
+    /// @dev This event is emitted after calling `onSoftLiquidate` which can tamper with the order of events.
+    event SoftLiquidate(
         Id indexed id,
         address indexed liquidator,
         address indexed borrower,
@@ -19,5 +19,5 @@ library EventsLib {
         uint256 seizedAssets
     );
 
-    event CreatePreLiquidation(address indexed preLiquidation, Id id, PreLiquidationParams preLiquidationParams);
+    event CreateSoftLiquidation(address indexed softLiquidation, Id id, SoftLiquidationParams softLiquidationParams);
 }
