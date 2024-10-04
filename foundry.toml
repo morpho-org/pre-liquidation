@@ -8,4 +8,6 @@ optimizer_runs = 999999 # Etherscan does not support verifying contracts with mo
 [profile.default.fmt]
 wrap_comments = true
 
+[fuzz]
+runs = 10_000
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

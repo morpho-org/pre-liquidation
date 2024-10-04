@@ -9,15 +9,18 @@ import {IrmMock} from "../src/mocks/IrmMock.sol";
 import {OracleMock} from "../src/mocks/OracleMock.sol";
 
 import {MarketParams, IMorpho, Id} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 import {MarketParamsLib} from "../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
 import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 
-import {PreLiquidationParams} from "../src/interfaces/IPreLiquidation.sol";
+import {PreLiquidationParams, IPreLiquidation} from "../src/interfaces/IPreLiquidation.sol";
+import {PreLiquidationFactory} from "../src/PreLiquidationFactory.sol";
 
 contract BaseTest is Test {
     using MarketParamsLib for MarketParams;
+    using MathLib for uint256;
 
     address internal SUPPLIER = makeAddr("Supplier");
     address internal BORROWER = makeAddr("Borrower");
@@ -34,6 +37,12 @@ contract BaseTest is Test {
 
     MarketParams internal marketParams;
     Id internal id;
+
+    uint256 internal minCollateral = 10 ** 18;
+    uint256 internal maxCollateral = 10 ** 24;
+
+    PreLiquidationFactory internal factory;
+    IPreLiquidation internal preLiquidation;
 
     function setUp() public virtual {
         vm.label(address(MORPHO), "Morpho");
@@ -90,5 +99,70 @@ contract BaseTest is Test {
         preLiquidationParams.preLiquidationOracle = preLiqOracle;
 
         return preLiquidationParams;
+    }
+
+    function _preparePreLiquidation(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 collateralAmount,
+        uint256 borrowAmount,
+        address liquidator
+    ) internal {
+        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
+
+        loanToken.mint(SUPPLIER, borrowAmount);
+        vm.prank(SUPPLIER);
+        if (borrowAmount > 0) {
+            MORPHO.supply(marketParams, borrowAmount, 0, SUPPLIER, hex"");
+        }
+
+        collateralToken.mint(BORROWER, collateralAmount);
+        vm.startPrank(BORROWER);
+
+        MORPHO.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
+
+        if (borrowAmount > 0) {
+            MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
+        }
+        MORPHO.setAuthorization(address(preLiquidation), true);
+        vm.stopPrank();
+
+        loanToken.mint(liquidator, type(uint128).max);
+        vm.prank(liquidator);
+        loanToken.approve(address(preLiquidation), type(uint256).max);
+    }
+
+    function _closeFactor(PreLiquidationParams memory preLiquidationParams, uint256 ltv)
+        internal
+        view
+        returns (uint256)
+    {
+        return UtilsLib.min(
+            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
+                preLiquidationParams.preCF2 - preLiquidationParams.preCF1
+            ) + preLiquidationParams.preCF1,
+            preLiquidationParams.preCF2
+        );
+    }
+
+    function _preLIF(PreLiquidationParams memory preLiquidationParams, uint256 ltv) internal view returns (uint256) {
+        return UtilsLib.min(
+            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
+                preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
+            ) + preLiquidationParams.preLIF1,
+            preLiquidationParams.preLIF2
+        );
+    }
+
+    function _getBorrowBounds(
+        PreLiquidationParams memory preLiquidationParams,
+        MarketParams memory _marketParams,
+        uint256 collateralAmount
+    ) internal view returns (uint256, uint256, uint256) {
+        uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
+        uint256 collateralQuoted = collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
+        uint256 borrowPreLiquidationThreshold = collateralQuoted.wMulDown(preLiquidationParams.preLltv);
+        uint256 borrowLiquidationThreshold = collateralQuoted.wMulDown(_marketParams.lltv);
+
+        return (collateralQuoted, borrowPreLiquidationThreshold, borrowLiquidationThreshold);
     }
 }
