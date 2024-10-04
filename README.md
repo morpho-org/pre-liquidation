@@ -4,8 +4,8 @@
 
 This repository puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower.
 We call these user-defined Morpho Blue transactions pre-liquidations.
-Borrowers can set custom pre-liquidation parameters, allowing them to specify liquidation incentive factors and close factors.
-Liquidation incentive factors determine incentives given to liquidators and close factors limit the proportion of the position that can be closed during a liquidation.
+Borrowers can set custom pre-liquidation parameters, allowing them to specify pre-liquidation incentive factors and pre-liquidation close factors.
+Pre-liquidation incentive factors determine incentives given to liquidators and pre-liquidation close factors limit the proportion of the position that can be closed during a liquidation.
 
 The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
 Note that pre-liquidation must be authorized on Morpho.
