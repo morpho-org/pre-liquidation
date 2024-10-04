@@ -41,8 +41,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: marketParams.lltv,
             maxPreLltv: type(uint256).max,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -52,20 +52,20 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testCloseFactorDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testPreLCFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters({
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD + 1,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
         preLiquidationParams.preLCF2 = preLiquidationParams.preLCF1 - 1;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorDecreasing.selector));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLCFDecreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
@@ -74,31 +74,31 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: 0,
             maxPreLIF: WAD - 1,
             preLiqOracle: marketParams.oracle
         });
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFTooLow.selector));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLIFTooLow.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testpreLIFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testPreLIFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters({
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD + 1,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1 - 1;
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFDecreasing.selector));
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLIFDecreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
@@ -116,8 +116,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -137,8 +137,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -155,8 +155,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -206,8 +206,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -230,8 +230,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -282,8 +282,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -339,8 +339,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
@@ -389,8 +389,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: address(customOracle)

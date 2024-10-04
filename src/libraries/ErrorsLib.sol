@@ -10,11 +10,11 @@ library ErrorsLib {
 
     error PreLltvTooHigh();
 
-    error CloseFactorDecreasing();
+    error PreLCFDecreasing();
 
-    error preLIFTooLow();
+    error PreLIFTooLow();
 
-    error preLIFDecreasing();
+    error PreLIFDecreasing();
 
     error InconsistentInput();
 
