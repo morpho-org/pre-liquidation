@@ -279,7 +279,12 @@ contract PreLiquidationErrorTest is BaseTest {
         preLiquidation.preLiquidate(BORROWER, seizedAssets, 0, hex"");
     }
 
-    function testPreLiquidationUndercollateralizedPosition(PreLiquidationParams memory preLiquidationParams, uint256 collateralAmount, uint256 oraclePrice, uint256 repaidShares) public virtual {
+    function testPreLiquidationUndercollateralizedPosition(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 collateralAmount,
+        uint256 oraclePrice,
+        uint256 repaidShares
+    ) public virtual {
         preLiquidationParams = boundPreLiquidationParameters({
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
