@@ -23,7 +23,6 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     using MarketParamsLib for MarketParams;
     using SharesMathLib for uint256;
     using MathLib for uint256;
-    using MathLib for uint128;
 
     event CallbackReached();
 
@@ -61,7 +60,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
 
         uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
         uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
 
         uint256 liquidatorCollatBefore = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanBefore = loanToken.balanceOf(LIQUIDATOR);
@@ -106,7 +105,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         uint256 preLIF = _preLIF(preLiquidationParams, ltv);
 
         uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
         uint256 seizabledAssets = repayableShares.toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
             preLIF
         ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
@@ -150,7 +149,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
 
         uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
         uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
 
         bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, hex"");
 
@@ -208,7 +207,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         vm.assume(ltv <= marketParams.lltv);
 
         uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
 
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
     }
