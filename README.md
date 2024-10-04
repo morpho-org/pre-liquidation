@@ -4,8 +4,8 @@
 
 This repository puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower.
 We call these user-defined Morpho Blue transactions pre-liquidations.
-Borrowers can set custom pre-liquidation parameters, allowing them to specify liquidation incentive factors and close factors.
-Liquidation incentive factors determine incentives given to liquidators and close factors limit the proportion of the position that can be closed during a liquidation.
+Borrowers can set custom pre-liquidation parameters, allowing them to specify pre-liquidation incentive factors and pre-liquidation close factors.
+Pre-liquidation incentive factors determine incentives given to liquidators and pre-liquidation close factors limit the proportion of the position that can be closed during a liquidation.
 
 The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
 Note that pre-liquidation must be authorized on Morpho.
@@ -16,7 +16,7 @@ The set of pre-liquidation parameters is composed of
 
 - a Morpho market (`id`);
 - a pre-liquidation loan-to-value (`preLltv`);
-- two pre-liquidation close factor parameters (`preCF1` and `preCF2`);
+- two pre-liquidation close factor parameters (`preLCF1` and `preLCF2`);
 - two pre-liquidation incentive factor parameters (`preLIF1` and `preLIF2`);
 - a pre-liquidation oracle (`preLiquidationOracle`).
 
@@ -24,7 +24,7 @@ The set of pre-liquidation parameters is composed of
 
 The pre-liquidation close factor and the pre-liquidation incentive factor evolve linearly with the user's LTV:
 
-- the close factor is `preCF1` when the position LTV is equal to `preLltv` and `preCF2` when the LTV is equal to `LLTV`;
+- the pre-liquidation close factor is `preLCF1` when the position LTV is equal to `preLltv` and `preLCF2` when the LTV is equal to `LLTV`;
 - the pre-liquidation incentive factor is `preLIF1` when the position LTV equals `preLltv` and `preLIF2` when the LTV is equal to `LLTV`.
 
 These functions are illustrated in the following figure:
@@ -33,8 +33,8 @@ These functions are illustrated in the following figure:
 
 The two main use-cases are:
 
-1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
-2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preCF1 < preCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
+1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preLCF1 = preLCF2`.
+2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preLCF1 < preLCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
 
 ### `onPreLiquidate` callback
 

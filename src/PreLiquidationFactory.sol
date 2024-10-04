@@ -13,7 +13,7 @@ import {PreLiquidation} from "./PreLiquidation.sol";
 /// @title PreLiquidationFactory
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
-/// @notice A linear LIF and linear CF pre-liquidation factory contract for Morpho.
+/// @notice A linear LIF and linear LCF pre-liquidation factory contract for Morpho.
 contract PreLiquidationFactory is IPreLiquidationFactory {
     /* IMMUTABLE */
 

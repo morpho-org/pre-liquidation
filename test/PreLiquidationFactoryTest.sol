@@ -31,7 +31,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
+        preLiquidationParams.preLCF2 = preLiquidationParams.preLCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
@@ -41,8 +41,8 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         PreLiquidationParams memory preLiqParams = preLiquidation.preLiquidationParams();
         assert(preLiqParams.preLltv == preLiquidationParams.preLltv);
-        assert(preLiqParams.preCF1 == preLiquidationParams.preCF1);
-        assert(preLiqParams.preCF2 == preLiquidationParams.preCF2);
+        assert(preLiqParams.preLCF1 == preLiquidationParams.preLCF1);
+        assert(preLiqParams.preLCF2 == preLiquidationParams.preLCF2);
         assert(preLiqParams.preLIF1 == preLiquidationParams.preLIF1);
         assert(preLiqParams.preLIF2 == preLiquidationParams.preLIF2);
         assert(preLiqParams.preLiquidationOracle == preLiquidationParams.preLiquidationOracle);
@@ -69,7 +69,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
+        preLiquidationParams.preLCF2 = preLiquidationParams.preLCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
@@ -92,7 +92,7 @@ contract PreLiquidationFactoryTest is BaseTest {
             marketParams.oracle
         );
         preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1;
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1;
+        preLiquidationParams.preLCF2 = preLiquidationParams.preLCF1;
 
         factory = new PreLiquidationFactory(address(MORPHO));
 
