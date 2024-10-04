@@ -278,4 +278,31 @@ contract PreLiquidationErrorTest is BaseTest {
         );
         preLiquidation.preLiquidate(BORROWER, seizedAssets, 0, hex"");
     }
+
+    function testPreLiquidationUndercollateralizedPosition(PreLiquidationParams memory preLiquidationParams, uint256 collateralAmount, uint256 oraclePrice, uint256 repaidShares) public virtual {
+        preLiquidationParams = boundPreLiquidationParameters({
+            preLiquidationParams: preLiquidationParams,
+            minPreLltv: WAD / 100,
+            maxPreLltv: marketParams.lltv - 1,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
+            minPreLIF: WAD,
+            maxPreLIF: WAD.wDivDown(lltv),
+            preLiqOracle: marketParams.oracle
+        });
+
+        oraclePrice = bound(oraclePrice, 1, ORACLE_PRICE_SCALE / 2);
+        OracleMock(preLiquidationParams.preLiquidationOracle).setPrice(oraclePrice);
+
+        uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
+
+        collateralAmount = bound(collateralAmount, 1, ORACLE_PRICE_SCALE / collateralPrice - 1);
+
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, 0, LIQUIDATOR);
+
+        repaidShares = bound(repaidShares, 1, type(uint128).max);
+
+        vm.expectRevert(ErrorsLib.UncollateralizedPosition.selector);
+        preLiquidation.preLiquidate(BORROWER, 0, repaidShares, hex"");
+    }
 }

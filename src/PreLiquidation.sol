@@ -139,6 +139,9 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
         uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
+
+        require(collateralQuoted > 0, ErrorsLib.UncollateralizedPosition());
+
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 ltv = borrowed.wDivUp(collateralQuoted);
 

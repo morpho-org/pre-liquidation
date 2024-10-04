@@ -20,6 +20,8 @@ library ErrorsLib {
 
     error NotPreLiquidatablePosition();
 
+    error UncollateralizedPosition();
+
     error PreLiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
     error NotMorpho();
