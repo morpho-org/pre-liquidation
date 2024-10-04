@@ -79,7 +79,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @dev The following requirements should be met:
     /// - preLltv < LLTV;
     /// - preLCF1 <= preLCF2;
-    /// - WAD <= preLIF1 <= preLIF2.
+    /// - WAD <= preLIF1 <= preLIF2 <= 1 / LLTV.
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
@@ -87,6 +87,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(_preLiquidationParams.preLCF1 <= _preLiquidationParams.preLCF2, ErrorsLib.PreLCFDecreasing());
         require(WAD <= _preLiquidationParams.preLIF1, ErrorsLib.PreLIFTooLow());
         require(_preLiquidationParams.preLIF1 <= _preLiquidationParams.preLIF2, ErrorsLib.PreLIFDecreasing());
+        require(_preLiquidationParams.preLIF2 <= WAD.wDivDown(_marketParams.lltv), ErrorsLib.PreLIFTooHigh());
 
         MORPHO = IMorpho(morpho);
 
@@ -160,7 +161,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        // Note that the pre-liquidation close factor can be greater than WAD (100%). In this case the position can be fully
+        // Note that the pre-liquidation close factor can be greater than WAD (100%). In this case the position can be
+        // fully
         // pre-liquidated.
         uint256 preLCF = UtilsLib.min(
             (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LCF_2 - PRE_LCF_1) + PRE_LCF_1, PRE_LCF_2

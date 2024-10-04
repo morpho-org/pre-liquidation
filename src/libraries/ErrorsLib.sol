@@ -16,6 +16,8 @@ library ErrorsLib {
 
     error PreLIFDecreasing();
 
+    error PreLIFTooHigh();
+
     error InconsistentInput();
 
     error NotPreLiquidatablePosition();
