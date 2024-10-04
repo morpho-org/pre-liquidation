@@ -2,18 +2,19 @@
 pragma solidity 0.8.27;
 
 import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
+import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
-import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+
 import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
-import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
 import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
 import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
 import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
 import {EventsLib} from "./libraries/EventsLib.sol";
 import {ErrorsLib} from "./libraries/ErrorsLib.sol";
-import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
-import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
-import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 
 /// @title PreLiquidation
 /// @author Morpho Labs
@@ -26,7 +27,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     /* IMMUTABLE */
 
-    /// @notice Morpho's address.
+    /// @notice The address of the Morpho contract.
     IMorpho public immutable MORPHO;
     /// @notice The id of the Morpho Market specific to the PreLiquidation contract.
     Id public immutable ID;
@@ -72,7 +73,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /* CONSTRUCTOR */
 
     /// @dev Initializes the PreLiquidation contract.
-    /// @param morpho The address of the Morpho protocol.
+    /// @param morpho The address of the Morpho contract.
     /// @param id The id of the Morpho market on which pre-liquidations will occur.
     /// @param _preLiquidationParams The pre-liquidation parameters.
     /// @dev The pre-liquidation LLTV should be strictly lower than the market LLTV.
@@ -158,12 +159,11 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        uint256 borrowerShares = position.borrowShares;
         // Note that the close factor can be greater than WAD (100%). In this case the position can be fully
         // pre-liquidated.
         uint256 closeFactor =
             UtilsLib.min((ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_CF_2 - PRE_CF_1) + PRE_CF_1, PRE_CF_2);
-        uint256 repayableShares = borrowerShares.wMulDown(closeFactor);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
 
         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
@@ -176,10 +176,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     /// @notice Morpho callback after repay call.
     /// @dev During pre-liquidation, Morpho will call the `onMorphoRepay` callback function in `PreLiquidation` using
-    /// the provided data. This mechanism enables the withdrawal of the position’s collateral before the debt
-    /// repayment occurs, and can also trigger a pre-liquidator callback. The pre-liquidator callback can be used to
-    /// swap the seized collateral into the asset being repaid, facilitating liquidation without the need for a
-    /// flashloan.
+    /// the provided `data`.
     function onMorphoRepay(uint256 repaidAssets, bytes calldata callbackData) external {
         require(msg.sender == address(MORPHO), ErrorsLib.NotMorpho());
         (uint256 seizedAssets, address borrower, address liquidator, bytes memory data) =
