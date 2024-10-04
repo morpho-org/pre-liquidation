@@ -106,7 +106,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         PRE_LIF_2 = _preLiquidationParams.preLIF2;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
 
-        ERC20(LOAN_TOKEN).safeApprove(morpho, type(uint256).max);
+        ERC20(_marketParams.loanToken).safeApprove(morpho, type(uint256).max);
     }
 
     /* PRE-LIQUIDATION */
