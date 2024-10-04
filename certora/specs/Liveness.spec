@@ -1,11 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-using PreLiquidation as preLiq;
-
-methods {
-    function preLiq.MORPHO() external returns address envfree;
-}
-
 // True when `preLiquidate` has been called.
 persistent ghost bool preLiquidateCalled;
 
@@ -28,7 +22,8 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
     require !onMorphoRepayCalled;
 
     // Safe require because Morpho cannot send transactions.
-    require e.msg.sender != preLiq.MORPHO();
+    require e.msg.sender != currentContract.MORPHO;
+
 
     // Capture the first method call which is not performed with a CALL opcode.
     if (f.selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
@@ -41,4 +36,21 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
 
     // Avoid failing vacuity checks, either the proposition is true or the execution reverts.
     assert !lastReverted => (preLiquidateCalled <=> onMorphoRepayCalled);
+}
+
+// Check that you can pre-liquidate non-zero tokens by passing shares.
+rule canPreLiquidateByPassingShares(env e, address borrower, uint256 repaidShares, bytes data) {
+    uint256 seizedAssets;
+    uint256 repaidAssets;
+    seizedAssets, repaidAssets = preLiquidate(e, borrower, 0, repaidShares,  data);
+
+    satisfy seizedAssets != 0 && repaidAssets != 0;
+}
+
+// Check that you can pre-liquidate non-zero tokens by passing seized assets.
+rule canPreLiquidateByPassingSeizedAssets(env e, address borrower, uint256 seizedAssets, bytes data) {
+    uint256 repaidAssets;
+    _, repaidAssets = preLiquidate(e, borrower, seizedAssets, 0,  data);
+
+    satisfy repaidAssets != 0;
 }
