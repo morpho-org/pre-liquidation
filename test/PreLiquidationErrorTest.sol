@@ -262,16 +262,16 @@ contract PreLiquidationErrorTest is BaseTest {
         uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
 
         uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
-        uint256 upperSeizedAssetBound = (repayableShares + 1).toAssetsDown(
+        uint256 upperSeizedAssetBound = (repayableShares + 1).toAssetsUp(
             market.totalBorrowAssets, market.totalBorrowShares
-        ).wMulDown(preLIF).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+        ).mulDivUp(preLIF, WAD).mulDivUp(ORACLE_PRICE_SCALE, collateralPrice);
 
         seizedAssets = bound(seizedAssets, upperSeizedAssetBound, type(uint128).max);
 
         uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
         uint256 repaidShares =
             seizedAssetsQuoted.wDivUp(preLIF).toSharesUp(market.totalBorrowAssets, market.totalBorrowShares);
-        vm.assume(repaidShares > position.borrowShares);
+        vm.assume(repaidShares > repayableShares);
 
         vm.expectRevert(
             abi.encodeWithSelector(ErrorsLib.PreLiquidationTooLarge.selector, repaidShares, repayableShares)
