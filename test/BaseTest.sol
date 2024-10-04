@@ -136,21 +136,15 @@ contract BaseTest is Test {
         view
         returns (uint256)
     {
-        return UtilsLib.min(
-            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
-                preLiquidationParams.preLCF2 - preLiquidationParams.preLCF1
-            ) + preLiquidationParams.preLCF1,
-            preLiquidationParams.preLCF2
-        );
+        return (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
+            preLiquidationParams.preLCF2 - preLiquidationParams.preLCF1
+        ) + preLiquidationParams.preLCF1;
     }
 
     function _preLIF(PreLiquidationParams memory preLiquidationParams, uint256 ltv) internal view returns (uint256) {
-        return UtilsLib.min(
-            (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
-                preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
-            ) + preLiquidationParams.preLIF1,
-            preLiquidationParams.preLIF2
-        );
+        return (ltv - preLiquidationParams.preLltv).wDivDown(marketParams.lltv - preLiquidationParams.preLltv).wMulDown(
+            preLiquidationParams.preLIF2 - preLiquidationParams.preLIF1
+        ) + preLiquidationParams.preLIF1;
     }
 
     function _getBorrowBounds(

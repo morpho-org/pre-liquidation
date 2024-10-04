@@ -36,7 +36,7 @@ contract PreLiquidationErrorTest is BaseTest {
             preLiqOracle: marketParams.oracle
         });
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLltvTooHigh.selector));
+        vm.expectRevert(ErrorsLib.PreLltvTooHigh.selector);
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
@@ -53,7 +53,7 @@ contract PreLiquidationErrorTest is BaseTest {
         });
         preLiquidationParams.preLCF2 = bound(preLiquidationParams.preLCF2, 0, preLiquidationParams.preLCF1 - 1);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLCFDecreasing.selector));
+        vm.expectRevert(ErrorsLib.PreLCFDecreasing.selector);
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
@@ -69,7 +69,7 @@ contract PreLiquidationErrorTest is BaseTest {
             preLiqOracle: marketParams.oracle
         });
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLIFTooLow.selector));
+        vm.expectRevert(ErrorsLib.PreLIFTooLow.selector);
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
@@ -87,7 +87,7 @@ contract PreLiquidationErrorTest is BaseTest {
         preLiquidationParams.preLIF2 =
             bound(preLiquidationParams.preLIF2, WAD.wDivDown(marketParams.lltv) + 1, type(uint256).max);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLIFTooHigh.selector));
+        vm.expectRevert(ErrorsLib.PreLIFTooHigh.selector);
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
@@ -105,12 +105,12 @@ contract PreLiquidationErrorTest is BaseTest {
 
         preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, WAD, preLiquidationParams.preLIF1 - 1);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLIFDecreasing.selector));
+        vm.expectRevert(ErrorsLib.PreLIFDecreasing.selector);
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
     function testNonexistentMarket(PreLiquidationParams memory preLiquidationParams) public virtual {
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonexistentMarket.selector));
+        vm.expectRevert(ErrorsLib.NonexistentMarket.selector);
         factory.createPreLiquidation(Id.wrap(bytes32(0)), preLiquidationParams);
     }
 
