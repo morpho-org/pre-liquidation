@@ -49,7 +49,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, lowerCollateralAmount, upperCollateralAmount);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
         (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
             _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
@@ -91,7 +91,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, lowerCollateralAmount, upperCollateralAmount);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
         (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
             _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
@@ -139,7 +139,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, lowerCollateralAmount, upperCollateralAmount);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
         (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
             _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
@@ -184,7 +184,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, lowerCollateralAmount, upperCollateralAmount);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
 
         (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold,) =
             _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
@@ -232,7 +232,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiqOracle: address(customOracle)
         });
 
-        collateralAmount = bound(collateralAmount, lowerCollateralAmount, upperCollateralAmount);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
 
         uint256 collateralMarketOraclePrice = IOracle(marketParams.oracle).price();
         uint256 borrowMarketOracleThreshold = uint256(collateralAmount).mulDivDown(

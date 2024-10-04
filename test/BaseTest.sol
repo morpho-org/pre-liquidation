@@ -38,8 +38,8 @@ contract BaseTest is Test {
     MarketParams internal marketParams;
     Id internal id;
 
-    uint256 internal lowerCollateralAmount = 10 ** 18;
-    uint256 internal upperCollateralAmount = 10 ** 24;
+    uint256 internal minCollateral = 10 ** 18;
+    uint256 internal maxCollateral = 10 ** 24;
 
     PreLiquidationFactory internal factory;
     IPreLiquidation internal preLiquidation;
@@ -117,18 +117,18 @@ contract BaseTest is Test {
 
         collateralToken.mint(BORROWER, collateralAmount);
         vm.startPrank(BORROWER);
+
         MORPHO.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
 
-        vm.startPrank(liquidator);
-        loanToken.mint(liquidator, type(uint128).max);
-        loanToken.approve(address(preLiquidation), type(uint256).max);
-
-        vm.startPrank(BORROWER);
         if (borrowAmount > 0) {
             MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
         }
         MORPHO.setAuthorization(address(preLiquidation), true);
         vm.stopPrank();
+
+        loanToken.mint(liquidator, type(uint128).max);
+        vm.prank(liquidator);
+        loanToken.approve(address(preLiquidation), type(uint256).max);
     }
 
     function _closeFactor(PreLiquidationParams memory preLiquidationParams, uint256 ltv)
