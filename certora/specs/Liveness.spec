@@ -46,3 +46,11 @@ rule canPreLiquidateByPassingShares(env e, address borrower, uint256 repaidShare
 
     satisfy seizedAssets != 0 && repaidAssets != 0;
 }
+
+// Check that you can pre-liquidate non-zero tokens by passing seized assets.
+rule canPreLiquidateByPassingSeizedAssets(env e, address borrower, uint256 seizedAssets, bytes data) {
+    uint256 repaidAssets;
+    _, repaidAssets = preLiquidate(e, borrower, seizedAssets, 0,  data);
+
+    satisfy repaidAssets != 0;
+}
