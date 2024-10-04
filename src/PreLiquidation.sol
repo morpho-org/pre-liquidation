@@ -161,9 +161,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
-        // Note that the pre-liquidation close factor can be greater than WAD (100%). In this case the position can be
-        // fully
-        // pre-liquidated.
+        // Note that the pre-liquidation close factor can be greater than WAD (100%).
+        // In this case the position can be fully pre-liquidated.
         uint256 preLCF = UtilsLib.min(
             (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LCF_2 - PRE_LCF_1) + PRE_LCF_1, PRE_LCF_2
         );
