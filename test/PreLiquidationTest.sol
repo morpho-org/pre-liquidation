@@ -63,7 +63,7 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1 - 1;
+        preLiquidationParams.preLCF2 = preLiquidationParams.preLCF1 - 1;
 
         vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorDecreasing.selector));
         factory.createPreLiquidation(id, preLiquidationParams);
@@ -257,8 +257,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         );
 
         uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
+            preLiquidationParams.preLCF2 - preLiquidationParams.preLCF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLCF1;
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
 
         uint256 liquidatorCollatBefore = collateralToken.balanceOf(LIQUIDATOR);
@@ -310,8 +310,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         );
 
         uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
+            preLiquidationParams.preLCF2 - preLiquidationParams.preLCF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLCF1;
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
 
         bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, hex"");
@@ -374,8 +374,8 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         vm.assume(ltv <= marketParams.lltv);
 
         uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
+            preLiquidationParams.preLCF2 - preLiquidationParams.preLCF1
+        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preLCF1;
         uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
 
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");

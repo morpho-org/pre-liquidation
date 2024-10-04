@@ -83,8 +83,8 @@ contract BaseTest is Test {
         address preLiqOracle
     ) internal pure returns (PreLiquidationParams memory) {
         preLiquidationParams.preLltv = bound(preLiquidationParams.preLltv, minPreLltv, maxPreLltv);
-        preLiquidationParams.preCF1 = bound(preLiquidationParams.preCF1, minCloseFactor, maxCloseFactor);
-        preLiquidationParams.preCF2 = bound(preLiquidationParams.preCF2, preLiquidationParams.preCF1, maxCloseFactor);
+        preLiquidationParams.preLCF1 = bound(preLiquidationParams.preLCF1, minCloseFactor, maxCloseFactor);
+        preLiquidationParams.preLCF2 = bound(preLiquidationParams.preLCF2, preLiquidationParams.preLCF1, maxCloseFactor);
         preLiquidationParams.preLIF1 = bound(preLiquidationParams.preLIF1, minPreLIF, maxPreLIF);
         preLiquidationParams.preLIF2 = bound(preLiquidationParams.preLIF2, preLiquidationParams.preLIF1, maxPreLIF);
         preLiquidationParams.preLiquidationOracle = preLiqOracle;

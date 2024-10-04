@@ -123,7 +123,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// fail). This can happen if either the LIF is bigger than 1/LLTV, or if the account is already unhealthy on
     /// Morpho.
     /// @dev The pre-liquidation close factor (preLCF) is the maximum proportion of debt that can be pre-liquidated at
-    /// once. It increases linearly from preCF1 at preLltv to preCF2 at LLTV.
+    /// once. It increases linearly from preLCF1 at preLltv to preLCF2 at LLTV.
     /// @dev The pre-liquidation incentive factor (preLIF) is the factor by which the repaid debt is multiplied to
     /// compute the seized collateral. It increases linearly from preLIF1 at preLltv to preLIF2 at LLTV.
     function preLiquidate(address borrower, uint256 seizedAssets, uint256 repaidShares, bytes calldata data)
