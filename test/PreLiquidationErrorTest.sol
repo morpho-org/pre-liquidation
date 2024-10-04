@@ -73,7 +73,25 @@ contract PreLiquidationErrorTest is BaseTest {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testpreLIFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testHighPreLIF(PreLiquidationParams memory preLiquidationParams) public virtual {
+        preLiquidationParams = boundPreLiquidationParameters({
+            preLiquidationParams: preLiquidationParams,
+            minPreLltv: WAD / 100,
+            maxPreLltv: marketParams.lltv - 1,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
+            minPreLIF: WAD,
+            maxPreLIF: type(uint256).max,
+            preLiqOracle: marketParams.oracle
+        });
+        preLiquidationParams.preLIF2 =
+            bound(preLiquidationParams.preLIF2, WAD.wDivDown(marketParams.lltv) + 1, type(uint256).max);
+
+        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLIFTooHigh.selector));
+        factory.createPreLiquidation(id, preLiquidationParams);
+    }
+
+    function testPreLIFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters({
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
