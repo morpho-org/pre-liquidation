@@ -51,7 +51,7 @@ It's possible to use the corresponding market oracle or any other oracle includi
 
 ### SoftLiquidationAddressLib
 
-SoftLiquidation contract addresses are generated using the CREATE2 opcode, allowing for softdictable address computation depending on soft-liquidation parameters.
+SoftLiquidation contract addresses are generated using the CREATE2 opcode, allowing for predictable address computation depending on soft-liquidation parameters.
 The [`SoftLiquidationAddressLib`](./src/libraries/periphery/SoftLiquidationAddressLib.sol) library provides a `computeSoftLiquidationAddress` function, simplifying the computation of a SoftLiquidation contract's address.
 
 ## Getting started
