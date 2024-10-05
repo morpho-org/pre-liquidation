@@ -39,7 +39,7 @@ The two main use-cases are:
 ### `onSoftLiquidate` callback
 
 By calling `softLiquidate` with a smart contract that implements the `ISoftLiquidationCallback` interface, the liquidator can be called back.
-More softcisely, the `onSoftLiquidate` function of the liquidator's smart contract will be called after the collateral withdrawal and before the debt repayment.
+More precisely, the `onSoftLiquidate` function of the liquidator's smart contract will be called after the collateral withdrawal and before the debt repayment.
 This mechanism eliminates the need for a flashloan.
 
 
