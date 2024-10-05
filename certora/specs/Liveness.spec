@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-// True when `preLiquidate` has been called.
-persistent ghost bool preLiquidateCalled;
+// True when `softLiquidate` has been called.
+persistent ghost bool softLiquidateCalled;
 
 // True when `onMorphoRepay` has been called.
 persistent ghost bool onMorphoRepayCalled;
 
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
-    if (selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
-       preLiquidateCalled = true;
+    if (selector == sig:softLiquidate(address, uint256, uint256, bytes).selector) {
+       softLiquidateCalled = true;
     } else if (selector == sig:onMorphoRepay(uint256, bytes).selector) {
        onMorphoRepayCalled = true;
     }
 }
 
-// Check that pre-liquidations happen if and only if `onMorphoRepay` is called.
-rule preLiquidateRepays(method f, env e, calldataarg data) {
+// Check that soft-liquidations happen if and only if `onMorphoRepay` is called.
+rule softLiquidateRepays(method f, env e, calldataarg data) {
 
     // Set up the initial state.
-    require !preLiquidateCalled;
+    require !softLiquidateCalled;
     require !onMorphoRepayCalled;
 
     // Safe require because Morpho cannot send transactions.
@@ -26,8 +26,8 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
 
 
     // Capture the first method call which is not performed with a CALL opcode.
-    if (f.selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
-       preLiquidateCalled = true;
+    if (f.selector == sig:softLiquidate(address, uint256, uint256, bytes).selector) {
+       softLiquidateCalled = true;
     } else if (f.selector == sig:onMorphoRepay(uint256, bytes).selector) {
        onMorphoRepayCalled = true;
     }
@@ -35,22 +35,22 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
     f@withrevert(e,data);
 
     // Avoid failing vacuity checks, either the proposition is true or the execution reverts.
-    assert !lastReverted => (preLiquidateCalled <=> onMorphoRepayCalled);
+    assert !lastReverted => (softLiquidateCalled <=> onMorphoRepayCalled);
 }
 
-// Check that you can pre-liquidate non-zero tokens by passing shares.
+// Check that you can soft-liquidate non-zero tokens by passing shares.
 rule canPreLiquidateByPassingShares(env e, address borrower, uint256 repaidShares, bytes data) {
     uint256 seizedAssets;
     uint256 repaidAssets;
-    seizedAssets, repaidAssets = preLiquidate(e, borrower, 0, repaidShares,  data);
+    seizedAssets, repaidAssets = softLiquidate(e, borrower, 0, repaidShares,  data);
 
     satisfy seizedAssets != 0 && repaidAssets != 0;
 }
 
-// Check that you can pre-liquidate non-zero tokens by passing seized assets.
+// Check that you can soft-liquidate non-zero tokens by passing seized assets.
 rule canPreLiquidateByPassingSeizedAssets(env e, address borrower, uint256 seizedAssets, bytes data) {
     uint256 repaidAssets;
-    _, repaidAssets = preLiquidate(e, borrower, seizedAssets, 0,  data);
+    _, repaidAssets = softLiquidate(e, borrower, seizedAssets, 0,  data);
 
     satisfy repaidAssets != 0;
 }
