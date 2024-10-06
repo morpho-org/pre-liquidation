@@ -29,7 +29,7 @@ The pre-liquidation close factor and the pre-liquidation incentive factor evolve
 
 These functions are illustrated in the following figure:
 
-<img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/dece4694-b7f5-47ef-96c3-605e98c87603">
+<img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/7d65a88e-8187-4b90-848e-9aa5ee66b971">
 
 The two main use-cases are:
 
