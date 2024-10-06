@@ -6,7 +6,7 @@ pragma solidity ^0.8.27;
 /// @custom:contact security@morpho.org
 /// @notice Library exposing errors.
 library ErrorsLib {
-    /* SOFTLIQUIDATION ERRORS */
+    /* SOFT-LIQUIDATION ERRORS */
 
     error SoftLltvTooHigh();
 
@@ -26,7 +26,7 @@ library ErrorsLib {
 
     error NonexistentMarket();
 
-    /* SOFTLIQUIDATION FACTORY ERRORS */
+    /* SOFT-LIQUIDATION FACTORY ERRORS */
 
     error ZeroAddress();
 }

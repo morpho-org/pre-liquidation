@@ -40,12 +40,12 @@ contract SoftLiquidation is ISoftLiquidation, IMorphoRepayCallback {
     uint256 internal immutable LLTV;
 
     // Soft-liquidation parameters
-    uint256 internal immutable PRE_LLTV;
-    uint256 internal immutable PRE_LCF_1;
-    uint256 internal immutable PRE_LCF_2;
-    uint256 internal immutable PRE_LIF_1;
-    uint256 internal immutable PRE_LIF_2;
-    address internal immutable PRE_LIQUIDATION_ORACLE;
+    uint256 internal immutable SOFT_LLTV;
+    uint256 internal immutable SOFT_LCF_1;
+    uint256 internal immutable SOFT_LCF_2;
+    uint256 internal immutable SOFT_LIF_1;
+    uint256 internal immutable SOFT_LIF_2;
+    address internal immutable SOFT_LIQUIDATION_ORACLE;
 
     /// @notice The Morpho market parameters specific to the SoftLiquidation contract.
     function marketParams() public view returns (MarketParams memory) {
@@ -61,12 +61,12 @@ contract SoftLiquidation is ISoftLiquidation, IMorphoRepayCallback {
     /// @notice The soft-liquidation parameters specific to the SoftLiquidation contract.
     function softLiquidationParams() external view returns (SoftLiquidationParams memory) {
         return SoftLiquidationParams({
-            softLltv: PRE_LLTV,
-            softLCF1: PRE_LCF_1,
-            softLCF2: PRE_LCF_2,
-            softLIF1: PRE_LIF_1,
-            softLIF2: PRE_LIF_2,
-            softLiquidationOracle: PRE_LIQUIDATION_ORACLE
+            softLltv: SOFT_LLTV,
+            softLCF1: SOFT_LCF_1,
+            softLCF2: SOFT_LCF_2,
+            softLIF1: SOFT_LIF_1,
+            softLIF2: SOFT_LIF_2,
+            softLiquidationOracle: SOFT_LIQUIDATION_ORACLE
         });
     }
 
@@ -98,17 +98,17 @@ contract SoftLiquidation is ISoftLiquidation, IMorphoRepayCallback {
         IRM = _marketParams.irm;
         LLTV = _marketParams.lltv;
 
-        PRE_LLTV = _softLiquidationParams.softLltv;
-        PRE_LCF_1 = _softLiquidationParams.softLCF1;
-        PRE_LCF_2 = _softLiquidationParams.softLCF2;
-        PRE_LIF_1 = _softLiquidationParams.softLIF1;
-        PRE_LIF_2 = _softLiquidationParams.softLIF2;
-        PRE_LIQUIDATION_ORACLE = _softLiquidationParams.softLiquidationOracle;
+        SOFT_LLTV = _softLiquidationParams.softLltv;
+        SOFT_LCF_1 = _softLiquidationParams.softLCF1;
+        SOFT_LCF_2 = _softLiquidationParams.softLCF2;
+        SOFT_LIF_1 = _softLiquidationParams.softLIF1;
+        SOFT_LIF_2 = _softLiquidationParams.softLIF2;
+        SOFT_LIQUIDATION_ORACLE = _softLiquidationParams.softLiquidationOracle;
 
         ERC20(_marketParams.loanToken).safeApprove(morpho, type(uint256).max);
     }
 
-    /* PRE-LIQUIDATION */
+    /* SOFT-LIQUIDATION */
 
     /// @notice Soft-liquidates the given borrower on the market of this contract and with the parameters of this
     /// contract.
@@ -137,16 +137,16 @@ contract SoftLiquidation is ISoftLiquidation, IMorphoRepayCallback {
         Market memory market = MORPHO.market(ID);
         Position memory position = MORPHO.position(ID, borrower);
 
-        uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
+        uint256 collateralPrice = IOracle(SOFT_LIQUIDATION_ORACLE).price();
         uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
         uint256 ltv = borrowed.wDivUp(collateralQuoted);
 
-        // The following require is equivalent to checking that borrowed > collateralQuoted.wMulDown(PRE_LLTV).
-        require(ltv > PRE_LLTV, ErrorsLib.NotSoftLiquidatablePosition());
+        // The following require is equivalent to checking that borrowed > collateralQuoted.wMulDown(SOFT_LLTV).
+        require(ltv > SOFT_LLTV, ErrorsLib.NotSoftLiquidatablePosition());
 
         uint256 softLIF = UtilsLib.min(
-            (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1, PRE_LIF_2
+            (ltv - SOFT_LLTV).wDivDown(LLTV - SOFT_LLTV).wMulDown(SOFT_LIF_2 - SOFT_LIF_1) + SOFT_LIF_1, SOFT_LIF_2
         );
 
         if (seizedAssets > 0) {
@@ -163,7 +163,7 @@ contract SoftLiquidation is ISoftLiquidation, IMorphoRepayCallback {
         // Note that the soft-liquidation close factor can be greater than WAD (100%). In this case the position can be
         // fully soft-liquidated.
         uint256 softLCF = UtilsLib.min(
-            (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LCF_2 - PRE_LCF_1) + PRE_LCF_1, PRE_LCF_2
+            (ltv - SOFT_LLTV).wDivDown(LLTV - SOFT_LLTV).wMulDown(SOFT_LCF_2 - SOFT_LCF_1) + SOFT_LCF_1, SOFT_LCF_2
         );
         uint256 repayableShares = uint256(position.borrowShares).wMulDown(softLCF);
         require(repaidShares <= repayableShares, ErrorsLib.SoftLiquidationTooLarge(repaidShares, repayableShares));

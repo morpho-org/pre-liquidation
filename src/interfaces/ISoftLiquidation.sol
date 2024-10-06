@@ -9,7 +9,7 @@ import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IM
 ///  - softLCF2, the soft-liquidation close factor when the position LTV is equal to LLTV.
 ///  - softLIF1, the soft-liquidation incentive factor when the position LTV is equal to softLltv.
 ///  - softLIF2, the soft-liquidation incentive factor when the position LTV is equal to LLTV.
-///  - softLiquidationOracle, the oracle used to assess whether or not a position can be softliquidated.
+///  - softLiquidationOracle, the oracle used to assess whether or not a position can be soft-liquidated.
 struct SoftLiquidationParams {
     uint256 softLltv;
     uint256 softLCF1;

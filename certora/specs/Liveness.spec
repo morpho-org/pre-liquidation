@@ -39,7 +39,7 @@ rule softLiquidateRepays(method f, env e, calldataarg data) {
 }
 
 // Check that you can soft-liquidate non-zero tokens by passing shares.
-rule canPreLiquidateByPassingShares(env e, address borrower, uint256 repaidShares, bytes data) {
+rule canSoftLiquidateByPassingShares(env e, address borrower, uint256 repaidShares, bytes data) {
     uint256 seizedAssets;
     uint256 repaidAssets;
     seizedAssets, repaidAssets = softLiquidate(e, borrower, 0, repaidShares,  data);
@@ -48,7 +48,7 @@ rule canPreLiquidateByPassingShares(env e, address borrower, uint256 repaidShare
 }
 
 // Check that you can soft-liquidate non-zero tokens by passing seized assets.
-rule canPreLiquidateByPassingSeizedAssets(env e, address borrower, uint256 seizedAssets, bytes data) {
+rule canSoftLiquidateByPassingSeizedAssets(env e, address borrower, uint256 seizedAssets, bytes data) {
     uint256 repaidAssets;
     _, repaidAssets = softLiquidate(e, borrower, seizedAssets, 0,  data);
 
