@@ -3,7 +3,6 @@
 using Morpho as MORPHO;
 
 methods {
-    function _.market(PreLiquidation.Id) external => DISPATCHER(true);
     function MORPHO.market(PreLiquidation.Id) external
       returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
     function MORPHO.position(PreLiquidation.Id, address) external
@@ -16,11 +15,15 @@ methods {
         => summaryMulDivDown(a,b,c);
     function MathLib.mulDivUp(uint256 a, uint256 b, uint256 c) internal
         returns uint256 => summaryMulDivUp(a,b,c);
+    function SharesMathLib.toSharesUp(uint256 a, uint256 b, uint256 c) internal
+        returns uint256 => tSU(a,b,c);
+    function SharesMathLib.toAssetsUp(uint256 a, uint256 b, uint256 c) internal
+        returns uint256 => tAU(a,b,c);
+
 }
 
 persistent ghost uint256 lastPrice;
 persistent ghost bool priceChanged;
-persistent  ghost bool preLiquidateReverted;
 
 function mockPrice() returns uint256 {
     uint256 updatedPrice;
@@ -41,18 +44,24 @@ function summaryMulDivDown(uint256 x,uint256 y, uint256 d) returns uint256 {
     return require_uint256((x * y)/d);
 }
 
+function tAU(uint256 shares, uint256 totalAssets, uint256 totalShares) returns uint256 {
+    return summaryMulDivUp(shares,
+                           require_uint256(totalAssets + (10^6)),
+                           require_uint256(totalShares + (10^6)));
+}
+
+function tSU(uint256 assets, uint256 totalAssets, uint256 totalShares) returns uint256 {
+    return summaryMulDivUp(assets,
+                           require_uint256(totalShares + (10^6)),
+                           require_uint256(totalAssets + (10^6)));
+}
+
 definition WAD() returns uint256 = 10^18;
 
 definition ORACLE_SCALE() returns uint256  = 10^36;
 
 definition exactlyOneZero(uint256 assets, uint256 shares) returns bool =
   (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
-
-definition tAU(uint256 shares, uint256 totalAssets, uint256 totalShares) returns uint256 =
-    summaryMulDivUp(shares, require_uint256(totalAssets + (10^6)), require_uint256(totalShares + (10^6)));
-
-definition tSU(uint256 assets, uint256 totalAssets, uint256 totalShares) returns uint256 =
-    summaryMulDivUp(assets, require_uint256(totalShares + (10^6)), require_uint256(totalAssets + (10^6)));
 
 definition wDU(uint256 x,uint256 y) returns uint256 = summaryMulDivUp(x, WAD(), y);
 
@@ -72,34 +81,46 @@ rule onMorphoRepaySenderValidation(env e, uint256 repaidAssets, bytes data) {
     assert e.msg.sender != currentContract.MORPHO => lastReverted;
 }
 
-function lastUpdateIsNotNil(PreLiquidation.Id id) returns bool {
-    mathint lastUpdate;
-    (_,_,_,_,lastUpdate,_) = MORPHO.market(id);
-    return lastUpdate != 0;
-}
-
 //Ensure constructor requirements.
 
-invariant marketExists()
-    lastUpdateIsNotNil(currentContract.ID);
+invariant lltvNotZero()
+    0 < currentContract.LLTV
+{
+    preserved {
+        requireInvariant preLIFNotZero();
+    }
+}
 
 invariant preLltvLTlltv()
-    currentContract.PRE_LLTV < currentContract.LLTV;
+    currentContract.PRE_LLTV < currentContract.LLTV
+{
+    preserved {
+        requireInvariant preLIFNotZero();
+    }
+}
 
 invariant preLCFIncreasing()
     currentContract.PRE_LCF_1 <= currentContract.PRE_LCF_2
-    && currentContract.PRE_LCF_1 <= WAD();
+    && currentContract.PRE_LCF_1 <= WAD()
+{
+    preserved {
+        requireInvariant preLIFNotZero();
+    }
+}
+
+invariant preLIFNotZero()
+    0 < currentContract.PRE_LIF_1;
 
 invariant preLIFIncreasing()
-    WAD() <= currentContract.PRE_LIF_1
+    WAD() < currentContract.PRE_LIF_1
     && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2
     && currentContract.PRE_LIF_2 <= wDD(WAD(),currentContract.LLTV)
 {
-    preserved
-        {
-            requireInvariant preLltvLTlltv ();
-        }
+    preserved {
+        requireInvariant lltvNotZero();
+    }
 }
+
 
 // Check that preLiquidate reverts when its inputs are not validated.
 rule preLiquidateInputValidation(env e, address borrower, uint256 seizedAssets, uint256 repaidShares, bytes data) {
