@@ -40,7 +40,7 @@ contract PreLiquidationErrorTest is BaseTest {
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 
-    function testCloseFactorDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
+    function testLCFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
         preLiquidationParams = boundPreLiquidationParameters({
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
@@ -54,6 +54,22 @@ contract PreLiquidationErrorTest is BaseTest {
         preLiquidationParams.preLCF2 = bound(preLiquidationParams.preLCF2, 0, preLiquidationParams.preLCF1 - 1);
 
         vm.expectRevert(ErrorsLib.PreLCFDecreasing.selector);
+        factory.createPreLiquidation(id, preLiquidationParams);
+    }
+
+    function testLCFHigh(PreLiquidationParams memory preLiquidationParams) public virtual {
+        preLiquidationParams = boundPreLiquidationParameters({
+            preLiquidationParams: preLiquidationParams,
+            minPreLltv: WAD / 100,
+            maxPreLltv: marketParams.lltv - 1,
+            minPreLCF: WAD + 1,
+            maxPreLCF: type(uint256).max,
+            minPreLIF: WAD + 1,
+            maxPreLIF: WAD.wDivDown(lltv),
+            preLiqOracle: marketParams.oracle
+        });
+
+        vm.expectRevert(ErrorsLib.PreLCFTooHigh.selector);
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 

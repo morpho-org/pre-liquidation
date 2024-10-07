@@ -12,6 +12,8 @@ library ErrorsLib {
 
     error PreLCFDecreasing();
 
+    error PreLCFTooHigh();
+
     error PreLIFTooLow();
 
     error PreLIFDecreasing();
