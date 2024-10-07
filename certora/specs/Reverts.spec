@@ -129,7 +129,7 @@ rule zeroCollateralQuotedReverts() {
 }
 
 // Check that a liquidatable position implies that ltv > PRE_LLTV holds.
-rule preLiquidatableImplLtvLTPreLltv() {
+rule preLiquidatableEquivlLtvLTPreLltv() {
     // Market values.
     uint256 mTotalBorrowAssets;
     uint256 mTotalBorrowShares;
@@ -151,7 +151,7 @@ rule preLiquidatableImplLtvLTPreLltv() {
     uint256 ltv = require_uint256(wDU(borrowed,collateralQuoted));
     uint256 lowerBound = wMD(collateralQuoted, currentContract.PRE_LLTV);
 
-    assert (lowerBound < borrowed) => ltv > currentContract.PRE_LLTV;
+    assert (lowerBound < borrowed) <=> ltv <= currentContract.PRE_LLTV;
 }
 
 // Check that pre-liqudidating a position such that ltv <= PRE_LLTV would revert.
