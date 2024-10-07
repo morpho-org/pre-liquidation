@@ -23,10 +23,6 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
     using MarketParamsLib for MarketParams;
     using SharesMathLib for uint256;
     using MathLib for uint256;
-    using MathLib for uint128;
-
-    PreLiquidationFactory internal factory;
-    IPreLiquidation internal preLiquidation;
 
     event CallbackReached();
 
@@ -36,192 +32,49 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         factory = new PreLiquidationFactory(address(MORPHO));
     }
 
-    function testHighPreLltv(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters({
-            preLiquidationParams: preLiquidationParams,
-            minPreLltv: marketParams.lltv,
-            maxPreLltv: type(uint256).max,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
-            minPreLIF: WAD,
-            maxPreLIF: WAD.wDivDown(lltv),
-            preLiqOracle: marketParams.oracle
-        });
-
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.PreLltvTooHigh.selector));
-        factory.createPreLiquidation(id, preLiquidationParams);
-    }
-
-    function testCloseFactorDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters({
-            preLiquidationParams: preLiquidationParams,
-            minPreLltv: WAD / 100,
-            maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
-            minPreLIF: WAD + 1,
-            maxPreLIF: WAD.wDivDown(lltv),
-            preLiqOracle: marketParams.oracle
-        });
-        preLiquidationParams.preCF2 = preLiquidationParams.preCF1 - 1;
-
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.CloseFactorDecreasing.selector));
-        factory.createPreLiquidation(id, preLiquidationParams);
-    }
-
-    function testLowPreLIF(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters({
-            preLiquidationParams: preLiquidationParams,
-            minPreLltv: WAD / 100,
-            maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
-            minPreLIF: 0,
-            maxPreLIF: WAD - 1,
-            preLiqOracle: marketParams.oracle
-        });
-
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFTooLow.selector));
-        factory.createPreLiquidation(id, preLiquidationParams);
-    }
-
-    function testpreLIFDecreasing(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters({
-            preLiquidationParams: preLiquidationParams,
-            minPreLltv: WAD / 100,
-            maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
-            minPreLIF: WAD + 1,
-            maxPreLIF: WAD.wDivDown(lltv),
-            preLiqOracle: marketParams.oracle
-        });
-        preLiquidationParams.preLIF2 = preLiquidationParams.preLIF1 - 1;
-
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.preLIFDecreasing.selector));
-        factory.createPreLiquidation(id, preLiquidationParams);
-    }
-
-    function testNonexistentMarket(PreLiquidationParams memory preLiquidationParams) public virtual {
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NonexistentMarket.selector));
-        factory.createPreLiquidation(Id.wrap(bytes32(0)), preLiquidationParams);
-    }
-
-    function testInconsistentInput(
-        PreLiquidationParams memory preLiquidationParams,
-        uint256 seizedAssets,
-        uint256 repaidShares
-    ) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters({
-            preLiquidationParams: preLiquidationParams,
-            minPreLltv: WAD / 100,
-            maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
-            minPreLIF: WAD,
-            maxPreLIF: WAD.wDivDown(lltv),
-            preLiqOracle: marketParams.oracle
-        });
-
-        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
-
-        seizedAssets = bound(seizedAssets, 1, type(uint256).max);
-        repaidShares = bound(repaidShares, 1, type(uint256).max);
-
-        vm.expectRevert(ErrorsLib.InconsistentInput.selector);
-        preLiquidation.preLiquidate(BORROWER, seizedAssets, repaidShares, hex"");
-    }
-
-    function testEmptyPreLiquidation(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters({
-            preLiquidationParams: preLiquidationParams,
-            minPreLltv: WAD / 100,
-            maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
-            minPreLIF: WAD,
-            maxPreLIF: WAD.wDivDown(lltv),
-            preLiqOracle: marketParams.oracle
-        });
-
-        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
-
-        vm.expectRevert(ErrorsLib.InconsistentInput.selector);
-        preLiquidation.preLiquidate(BORROWER, 0, 0, hex"");
-    }
-
-    function testNotMorpho(PreLiquidationParams memory preLiquidationParams) public virtual {
-        preLiquidationParams = boundPreLiquidationParameters({
-            preLiquidationParams: preLiquidationParams,
-            minPreLltv: WAD / 100,
-            maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
-            minPreLIF: WAD,
-            maxPreLIF: WAD.wDivDown(lltv),
-            preLiqOracle: marketParams.oracle
-        });
-
-        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
-
-        vm.expectRevert(ErrorsLib.NotMorpho.selector);
-        IMorphoRepayCallback(address(preLiquidation)).onMorphoRepay(0, hex"");
-    }
-
-    function preparePreLiquidation(
+    function testPreLiquidationLiquidatable(
         PreLiquidationParams memory preLiquidationParams,
         uint256 collateralAmount,
         uint256 borrowAmount,
-        address liquidator
-    ) public {
-        preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
-
-        loanToken.mint(SUPPLIER, borrowAmount);
-        vm.prank(SUPPLIER);
-        if (borrowAmount > 0) {
-            MORPHO.supply(marketParams, borrowAmount, 0, SUPPLIER, hex"");
-        }
-
-        collateralToken.mint(BORROWER, collateralAmount);
-        vm.startPrank(BORROWER);
-        MORPHO.supplyCollateral(marketParams, collateralAmount, BORROWER, hex"");
-
-        vm.startPrank(liquidator);
-        loanToken.mint(liquidator, type(uint128).max);
-        loanToken.approve(address(preLiquidation), type(uint256).max);
-
-        vm.startPrank(BORROWER);
-        if (borrowAmount > 0) {
-            MORPHO.borrow(marketParams, borrowAmount, 0, BORROWER, BORROWER);
-        }
-        MORPHO.setAuthorization(address(preLiquidation), true);
-        vm.stopPrank();
-    }
-
-    function testNotPreLiquidatable(PreLiquidationParams memory preLiquidationParams, uint256 collateralAmount)
-        public
-        virtual
-    {
+        uint256 newPrice
+    ) public virtual {
         preLiquidationParams = boundPreLiquidationParameters({
             preLiquidationParams: preLiquidationParams,
-            minPreLltv: WAD / 100,
+            minPreLltv: WAD / 2,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
+        (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
+            _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
+        borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
-        preparePreLiquidation(preLiquidationParams, collateralAmount, 0, LIQUIDATOR);
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
 
-        vm.expectRevert(ErrorsLib.NotPreLiquidatablePosition.selector);
-        preLiquidation.preLiquidate(BORROWER, 0, 1, hex"");
+        uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
+        uint256 prevPrice = oracle.price();
+        newPrice = bound(newPrice, prevPrice / 10, prevPrice.wDivDown(marketParams.lltv).wMulDown(ltv));
+        oracle.setPrice(newPrice);
+
+        uint256 newLtv = borrowAmount.wDivUp(collateralAmount.mulDivDown(newPrice, ORACLE_PRICE_SCALE));
+        vm.assume(newLtv > marketParams.lltv);
+
+        vm.startPrank(LIQUIDATOR);
+        Position memory position = MORPHO.position(id, BORROWER);
+
+        uint256 closeFactor = _closeFactor(preLiquidationParams, newLtv);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
+
+        vm.expectRevert(ErrorsLib.LiquidatablePosition.selector);
+        preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
     }
 
-    function testPreLiquidation(
+    function testPreLiquidationShares(
         PreLiquidationParams memory preLiquidationParams,
         uint256 collateralAmount,
         uint256 borrowAmount
@@ -230,41 +83,79 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, 10 ** 19, 10 ** 24);
-        uint256 collateralPrice = IOracle(marketParams.oracle).price();
-        uint256 borrowLiquidationThreshold = collateralAmount.mulDivDown(
-            IOracle(marketParams.oracle).price(), ORACLE_PRICE_SCALE
-        ).wMulDown(marketParams.lltv);
-        uint256 borrowPreLiquidationThreshold =
-            collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.preLltv);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
+        (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
+            _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
-        preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
 
         vm.startPrank(LIQUIDATOR);
         Position memory position = MORPHO.position(id, BORROWER);
-        Market memory m = MORPHO.market(id);
 
-        uint256 ltv = uint256(position.borrowShares).toAssetsUp(m.totalBorrowAssets, m.totalBorrowShares).wDivDown(
-            uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
-        );
-
-        uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
+        uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
 
         uint256 liquidatorCollatBefore = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanBefore = loanToken.balanceOf(LIQUIDATOR);
 
         (uint256 seizedAssets, uint256 repaidAssets) = preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
+
+        uint256 liquidatorCollatAfter = collateralToken.balanceOf(LIQUIDATOR);
+        uint256 liquidatorLoanAfter = loanToken.balanceOf(LIQUIDATOR);
+
+        assertEq(liquidatorCollatAfter - liquidatorCollatBefore, seizedAssets);
+        assertEq(liquidatorLoanBefore - liquidatorLoanAfter, repaidAssets);
+    }
+
+    function testPreLiquidationAssets(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 collateralAmount,
+        uint256 borrowAmount
+    ) public virtual {
+        preLiquidationParams = boundPreLiquidationParameters({
+            preLiquidationParams: preLiquidationParams,
+            minPreLltv: WAD / 100,
+            maxPreLltv: marketParams.lltv - 1,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
+            minPreLIF: WAD,
+            maxPreLIF: WAD.wDivDown(lltv),
+            preLiqOracle: marketParams.oracle
+        });
+
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
+        (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
+            _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
+        borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
+
+        vm.startPrank(LIQUIDATOR);
+        Position memory position = MORPHO.position(id, BORROWER);
+        Market memory m = MORPHO.market(id);
+
+        uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
+        uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
+        uint256 preLIF = _preLIF(preLiquidationParams, ltv);
+
+        uint256 collateralPrice = IOracle(preLiquidationParams.preLiquidationOracle).price();
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
+        uint256 seizabledAssets = repayableShares.toAssetsDown(m.totalBorrowAssets, m.totalBorrowShares).wMulDown(
+            preLIF
+        ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+
+        uint256 liquidatorCollatBefore = collateralToken.balanceOf(LIQUIDATOR);
+        uint256 liquidatorLoanBefore = loanToken.balanceOf(LIQUIDATOR);
+
+        (uint256 seizedAssets, uint256 repaidAssets) = preLiquidation.preLiquidate(BORROWER, seizabledAssets, 0, hex"");
 
         uint256 liquidatorCollatAfter = collateralToken.balanceOf(LIQUIDATOR);
         uint256 liquidatorLoanAfter = loanToken.balanceOf(LIQUIDATOR);
@@ -282,37 +173,25 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
-
-        uint256 collateralPrice = IOracle(marketParams.oracle).price();
-        uint256 borrowLiquidationThreshold = collateralAmount.mulDivDown(
-            IOracle(marketParams.oracle).price(), ORACLE_PRICE_SCALE
-        ).wMulDown(marketParams.lltv);
-        uint256 borrowPreLiquidationThreshold =
-            collateralAmount.mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(preLiquidationParams.preLltv);
-
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
+        (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold, uint256 borrowLiquidationThreshold) =
+            _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
         borrowAmount = bound(borrowAmount, borrowPreLiquidationThreshold + 1, borrowLiquidationThreshold);
 
-        preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, address(this));
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, address(this));
 
         Position memory position = MORPHO.position(marketParams.id(), BORROWER);
-        Market memory m = MORPHO.market(marketParams.id());
 
-        uint256 ltv = uint256(position.borrowShares).toAssetsUp(m.totalBorrowAssets, m.totalBorrowShares).wDivDown(
-            uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
-        );
-
-        uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
+        uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
 
         bytes memory data = abi.encode(this.testPreLiquidationCallback.selector, hex"");
 
@@ -339,24 +218,22 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
 
-        collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
 
-        uint256 collateralPrice = IOracle(marketParams.oracle).price();
-        uint256 borrowThreshold = uint256(collateralAmount).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(
-            preLiquidationParams.preLltv
-        ) - 1;
-        preparePreLiquidation(preLiquidationParams, collateralAmount, borrowThreshold, LIQUIDATOR);
+        (uint256 collateralQuoted, uint256 borrowPreLiquidationThreshold,) =
+            _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowPreLiquidationThreshold - 1, LIQUIDATOR);
 
         vm.startPrank(LIQUIDATOR);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NotPreLiquidatablePosition.selector));
+        vm.expectRevert(ErrorsLib.NotPreLiquidatablePosition.selector);
         preLiquidation.preLiquidate(BORROWER, 0, 1, hex"");
 
         vm.warp(block.timestamp + 12);
@@ -366,22 +243,22 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
         Position memory position = MORPHO.position(id, BORROWER);
         Market memory m = MORPHO.market(id);
 
-        uint256 ltv = uint256(position.borrowShares).toAssetsUp(m.totalBorrowAssets, m.totalBorrowShares).wDivDown(
-            uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE)
-        );
-        console.log(ltv, preLiquidationParams.preLltv, marketParams.lltv);
+        uint256 borrowAmount = uint256(position.borrowShares).toAssetsUp(m.totalBorrowAssets, m.totalBorrowShares);
+        uint256 ltv = borrowAmount.wDivUp(collateralQuoted);
         vm.assume(ltv >= preLiquidationParams.preLltv);
         vm.assume(ltv <= marketParams.lltv);
 
-        uint256 closeFactor = (ltv - preLiquidationParams.preLltv).wMulDown(
-            preLiquidationParams.preCF2 - preLiquidationParams.preCF1
-        ).wDivDown(marketParams.lltv - preLiquidationParams.preLltv) + preLiquidationParams.preCF1;
-        uint256 repayableShares = position.borrowShares.wMulDown(closeFactor);
+        uint256 closeFactor = _closeFactor(preLiquidationParams, ltv);
+        uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
 
         preLiquidation.preLiquidate(BORROWER, 0, repayableShares, hex"");
     }
 
-    function testOracle(PreLiquidationParams memory preLiquidationParams, uint256 collateralAmount) public virtual {
+    function testOracle(
+        PreLiquidationParams memory preLiquidationParams,
+        uint256 collateralAmount,
+        uint256 borrowAmount
+    ) public virtual {
         OracleMock customOracle = new OracleMock();
         customOracle.setPrice(2 * IOracle(marketParams.oracle).price());
 
@@ -389,29 +266,32 @@ contract PreLiquidationTest is BaseTest, IPreLiquidationCallback {
             preLiquidationParams: preLiquidationParams,
             minPreLltv: WAD / 100,
             maxPreLltv: marketParams.lltv - 1,
-            minCloseFactor: WAD / 100,
-            maxCloseFactor: WAD,
+            minPreLCF: WAD / 100,
+            maxPreLCF: WAD,
             minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: address(customOracle)
         });
 
-        collateralAmount = bound(collateralAmount, 10 ** 18, 10 ** 24);
+        collateralAmount = bound(collateralAmount, minCollateral, maxCollateral);
 
-        uint256 collateralPrice = IOracle(marketParams.oracle).price();
-        uint256 borrowThreshold = uint256(collateralAmount).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE).wMulDown(
-            preLiquidationParams.preLltv
-        ) - 1;
-        preparePreLiquidation(preLiquidationParams, collateralAmount, borrowThreshold, LIQUIDATOR);
+        uint256 collateralMarketOraclePrice = IOracle(marketParams.oracle).price();
+        uint256 borrowMarketOracleThreshold = uint256(collateralAmount).mulDivDown(
+            collateralMarketOraclePrice, ORACLE_PRICE_SCALE
+        ).wMulDown(preLiquidationParams.preLltv);
+        (, uint256 borrowPreLiquidationThreshold,) =
+            _getBorrowBounds(preLiquidationParams, marketParams, collateralAmount);
 
-        vm.warp(block.timestamp + 12);
-        vm.roll(block.number + 1);
+        uint256 maxBorrow = uint256(collateralAmount).mulDivDown(collateralMarketOraclePrice, ORACLE_PRICE_SCALE)
+            .wMulDown(marketParams.lltv);
+        borrowAmount = bound(borrowAmount, borrowMarketOracleThreshold, borrowPreLiquidationThreshold - 1);
+        borrowAmount = bound(borrowAmount, borrowMarketOracleThreshold, maxBorrow - 1);
 
-        MORPHO.accrueInterest(marketParams);
+        _preparePreLiquidation(preLiquidationParams, collateralAmount, borrowAmount, LIQUIDATOR);
 
         vm.startPrank(LIQUIDATOR);
 
-        vm.expectRevert(abi.encodeWithSelector(ErrorsLib.NotPreLiquidatablePosition.selector));
+        vm.expectRevert(ErrorsLib.NotPreLiquidatablePosition.selector);
         preLiquidation.preLiquidate(BORROWER, 0, 1, hex"");
     }
 }

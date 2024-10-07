@@ -4,18 +4,19 @@
 
 This repository puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower.
 We call these user-defined Morpho Blue transactions pre-liquidations.
-Borrowers can set custom pre-liquidation parameters, allowing them to specify liquidation incentive factors and close factors.
-Liquidation incentive factors determine incentives given to liquidators and close factors limit the proportion of the position that can be closed during a liquidation.
+Borrowers can set custom pre-liquidation parameters, allowing them to specify pre-liquidation incentive factors and pre-liquidation close factors.
+Pre-liquidation incentive factors determine incentives given to liquidators and pre-liquidation close factors limit the proportion of the position that can be closed during a liquidation.
 
 The [`PreLiquidation`](./src/PreLiquidation.sol) contract serves as the endpoint for pre-liquidations using parameters chosen by borrowers.
-Note that pre-liquidation must be authorized on Morpho. Liquidators may perform pre-liquidations on a position using the `preLiquidate` entry point on a deployed PreLiquidation contract.
+Note that pre-liquidation must be authorized on Morpho.
+Liquidators may perform pre-liquidations on a position using the `preLiquidate` entry point on a deployed `PreLiquidation` contract.
 The [`PreLiquidationFactory`](./src/PreLiquidationFactory.sol) factory contract simplifies the deployment and indexing of pre-liquidation contracts.
 
 The set of pre-liquidation parameters is composed of
 
 - a Morpho market (`id`);
 - a pre-liquidation loan-to-value (`preLltv`);
-- two pre-liquidation close factor parameters (`preCF1` and `preCF2`);
+- two pre-liquidation close factor parameters (`preLCF1` and `preLCF2`);
 - two pre-liquidation incentive factor parameters (`preLIF1` and `preLIF2`);
 - a pre-liquidation oracle (`preLiquidationOracle`).
 
@@ -23,24 +24,34 @@ The set of pre-liquidation parameters is composed of
 
 The pre-liquidation close factor and the pre-liquidation incentive factor evolve linearly with the user's LTV:
 
-- the close factor is `preCF1` when the position LTV is equal to `preLLTV` and `preCF2` when the LTV is equal to `LLTV`;
-- the pre-liquidation incentive factor is `preLIF1` when the position LTV equals `preLLTV` and `preLIF2` when the LTV is equal to `LLTV`.
+- the pre-liquidation close factor is `preLCF1` when the position LTV is equal to `preLltv` and `preLCF2` when the LTV is equal to `LLTV`;
+- the pre-liquidation incentive factor is `preLIF1` when the position LTV equals `preLltv` and `preLIF2` when the LTV is equal to `LLTV`.
 
 These functions are illustrated in the following figure:
 
-<img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/0c11c961-a046-4701-9063-9f6b84a6c3b2">
+<img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/7d65a88e-8187-4b90-848e-9aa5ee66b971">
 
 The two main use-cases are:
 
-1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preCF1 = preCF2`.
-2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preCF1 < preCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
+1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preLCF1 = preLCF2`.
+2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preLCF1 < preLCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
+
+
+### Pre-liquidation parameters restrictions
+
+The PreLiquidation smart-contract enforces the following properties:
+- preLltv < LLTV;
+- preLCF1 <= preLCF2;
+- preLFC1 <= 1;
+- 1 <= preLIF1 <= preLIF2 <= 1 / LLTV.
+Note: Using `preLCF2 > 1`, you can select at which LTV between preLltv and LLTV the entire position will be pre-liquidated.
+A pre-liquidation close factor higher than 100% means that the whole position is pre-liquidatable.
 
 ### `onPreLiquidate` callback
 
 By calling `preLiquidate` with a smart contract that implements the `IPreLiquidationCallback` interface, the liquidator can be called back.
 More precisely, the `onPreLiquidate` function of the liquidator's smart contract will be called after the collateral withdrawal and before the debt repayment.
 This mechanism eliminates the need for a flashloan.
-
 
 ### PreLiquidation Oracle
 

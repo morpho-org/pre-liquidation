@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.27;
 
-import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
-
 /// @title ErrorsLib
 /// @author Morpho Labs
 /// @custom:contact security@morpho.org
@@ -12,15 +10,21 @@ library ErrorsLib {
 
     error PreLltvTooHigh();
 
-    error CloseFactorDecreasing();
+    error PreLCFDecreasing();
 
-    error preLIFTooLow();
+    error PreLCFTooHigh();
 
-    error preLIFDecreasing();
+    error PreLIFTooLow();
+
+    error PreLIFDecreasing();
+
+    error PreLIFTooHigh();
 
     error InconsistentInput();
 
     error NotPreLiquidatablePosition();
+
+    error LiquidatablePosition();
 
     error PreLiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
