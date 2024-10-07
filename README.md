@@ -42,6 +42,7 @@ The two main use-cases are:
 The PreLiquidation smart-contract enforces the following properties:
 - preLltv < LLTV;
 - preLCF1 <= preLCF2;
+- preLFC1 <= 1;
 - 1 <= preLIF1 <= preLIF2 <= 1 / LLTV.
 Note: it is not mandatory that `preLCF1 <= 1` and `preLCF1 <= 1` hold.
 Indeed without this, the pre-liquidation close factor can reach 100% before the position is liquidatable allowing additionnal pre-liquidation close factor configurations.

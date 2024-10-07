@@ -79,12 +79,14 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// @dev The following requirements should be met:
     /// - preLltv < LLTV;
     /// - preLCF1 <= preLCF2;
+    /// - preLCF1 <= 1
     /// - 1 <= preLIF1 <= preLIF2 <= 1 / LLTV.
     constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
         require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
         MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
         require(_preLiquidationParams.preLCF1 <= _preLiquidationParams.preLCF2, ErrorsLib.PreLCFDecreasing());
+        require(_preLiquidationParams.preLCF1 <= WAD, ErrorsLib.PreLCFTooHigh());
         require(WAD <= _preLiquidationParams.preLIF1, ErrorsLib.PreLIFTooLow());
         require(_preLiquidationParams.preLIF1 <= _preLiquidationParams.preLIF2, ErrorsLib.PreLIFDecreasing());
         require(_preLiquidationParams.preLIF2 <= WAD.wDivDown(_marketParams.lltv), ErrorsLib.PreLIFTooHigh());
