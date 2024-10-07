@@ -29,7 +29,7 @@ The pre-liquidation close factor and the pre-liquidation incentive factor evolve
 
 These functions are illustrated in the following figure:
 
-<img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/0c11c961-a046-4701-9063-9f6b84a6c3b2">
+<img width="1061" alt="pre-liquidation-cf-and-lif" src="https://github.com/user-attachments/assets/7d65a88e-8187-4b90-848e-9aa5ee66b971">
 
 The two main use-cases are:
 
@@ -41,7 +41,6 @@ The two main use-cases are:
 By calling `preLiquidate` with a smart contract that implements the `IPreLiquidationCallback` interface, the liquidator can be called back.
 More precisely, the `onPreLiquidate` function of the liquidator's smart contract will be called after the collateral withdrawal and before the debt repayment.
 This mechanism eliminates the need for a flashloan.
-
 
 ### PreLiquidation Oracle
 

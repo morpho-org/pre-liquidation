@@ -16,9 +16,13 @@ library ErrorsLib {
 
     error PreLIFDecreasing();
 
+    error PreLIFTooHigh();
+
     error InconsistentInput();
 
     error NotPreLiquidatablePosition();
+
+    error LiquidatablePosition();
 
     error PreLiquidationTooLarge(uint256 repaidShares, uint256 repayableShares);
 
