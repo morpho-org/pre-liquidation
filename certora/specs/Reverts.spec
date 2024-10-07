@@ -11,6 +11,11 @@ methods {
     function MORPHO.idToMarketParams(PreLiquidation.Id) external
       returns (address, address, address, address, uint256) envfree;
     function _.price() external => mockPrice() expect uint256;
+    function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal
+        returns uint256
+        => summaryMulDivDown(a,b,c);
+    function MathLib.mulDivUp(uint256 a, uint256 b, uint256 c) internal
+        returns uint256 => summaryMulDivUp(a,b,c);
 }
 
 persistent ghost uint256 lastPrice;
