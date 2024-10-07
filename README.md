@@ -36,6 +36,17 @@ The two main use-cases are:
 1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preLCF1 = preLCF2`.
 2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preLCF1 < preLCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
 
+
+### Pre-liquidation parameters restrictions
+
+The PreLiquidation smart-contract enforces the following properties:
+- preLltv < LLTV;
+- preLCF1 <= preLCF2;
+- 1 <= preLIF1 <= preLIF2 <= 1 / LLTV.
+Note: it is not mandatory that `preLCF1 <= 1` and `preLCF1 <= 1` hold.
+Indeed without this, the pre-liquidation close factor can reach 100% before the position is liquidatable allowing additionnal pre-liquidation close factor configurations.
+A pre-liquidation close factor higher than 100% means that the whole position is pre-liquidatable.
+
 ### `onPreLiquidate` callback
 
 By calling `preLiquidate` with a smart contract that implements the `IPreLiquidationCallback` interface, the liquidator can be called back.
