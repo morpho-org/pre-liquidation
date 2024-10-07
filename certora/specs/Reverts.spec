@@ -151,7 +151,7 @@ rule preLiquidatableEquivlLtvLTPreLltv() {
     uint256 ltv = require_uint256(wDU(borrowed,collateralQuoted));
     uint256 lowerBound = wMD(collateralQuoted, currentContract.PRE_LLTV);
 
-    assert (lowerBound < borrowed) <=> ltv <= currentContract.PRE_LLTV;
+    assert (lowerBound < borrowed) <=> ltv > currentContract.PRE_LLTV;
 }
 
 // Check that pre-liqudidating a position such that ltv <= PRE_LLTV would revert.
