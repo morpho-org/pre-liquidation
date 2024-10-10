@@ -16,6 +16,7 @@ jobs:
 
       matrix:
         conf:
+          - ConsistentInstantiation
           - Immutability
           - MarketExists
           - Liveness
