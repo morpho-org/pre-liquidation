@@ -26,6 +26,14 @@ This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
 
 This is checked in [`Immutability.spec`](specs/Immutability.spec).
 
+## Reverts
+
+This is checked in [`Reverts.spec`](specs/Reverts.spec) and [`MarketExists.spec`](specs/MarketExists.spec)
+
+# Consitent Instantiation
+
+This is checked in [`ConsistentInstantiation.spec`](specs/ConsistentInstantiation.spec).
+
 ### Liveness properties
 
 This is checked in [`Liveness.spec`](specs/Liveness.spec).
@@ -41,6 +49,9 @@ The [`certora/specs`](specs) folder contains the following files:
 - [`Liveness.spec`](specs/Liveness.spec) ensure that expected computations will always be performed.
   For instance, pre-liquidations will always trigger a repay operation.
   We also check that pre-liquidation can successfully be performed by passing shares to be repaid instead of the collateral ammount to be seized.
+- [`Reverts.spec`](specs/Reverts.spec) checks the conditions for reverts and that inputs are correctly validated.
+- [`ConsistentInstantiation.spec`](specs/ConsistentInstantiation.spec) checks the conditions for reverts are met in PreLiquidation constructor.
+- [`MarketExists.spec`](specs/MarketExists.spec) checks that PreLiquidations can be instanciated only if the target market exists.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
