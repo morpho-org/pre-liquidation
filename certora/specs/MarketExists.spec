@@ -6,7 +6,7 @@ methods {
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
     function MORPHO.market(PreLiquidation.Id) external
       returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
-    function _.price() external => mockPrice() expect uint256;
+    function _.price() external => NONDET;
 }
 
 persistent ghost uint256 lastTimestamp;
@@ -19,18 +19,13 @@ hook TIMESTAMP uint newTimestamp {
     lastTimestamp = newTimestamp;
 }
 
-function mockPrice() returns uint256 {
-    uint256 price;
-    return price;
-}
-
 function lastUpdateIsNotNil(PreLiquidation.Id id) returns bool {
     mathint lastUpdate;
     (_,_,_,_,lastUpdate,_) = MORPHO.market(id);
     return lastUpdate != 0;
 }
 
-//Ensure constructor requirement.
+// Ensure that the pre-liquidation contract interacts with a created market.
 
 invariant marketExists()
     lastUpdateIsNotNil(currentContract.ID);
