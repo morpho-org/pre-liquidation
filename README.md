@@ -64,6 +64,11 @@ It's possible to use the corresponding market oracle or any other oracle includi
 PreLiquidation contract addresses are generated using the CREATE2 opcode, allowing for predictable address computation depending on pre-liquidation parameters.
 The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides a `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
 
+### Potential preLCF manipulation
+
+A pre-liquidation cannot pre-liquidate more than `preLCF` proportion of the position debt, however it's possible to pre-liquidate a small part of the position while keeping it pre-liquidatable before performing another pre-liquidation. This manipulation can lead to repaying more than `preLCF` of the debt. This has been studied in the part 5.2 of [An Empirical Study of DeFi Liquidations:
+Incentives, Risks, and Instabilities](https://arxiv.org/pdf/2106.06389). Implementing a `preLCF` linear with the health factor mitigates this.
+
 ## Getting started
 
 ### Package installation
