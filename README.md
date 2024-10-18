@@ -38,7 +38,7 @@ The two main use-cases are:
 
 ### Pre-liquidation parameters restrictions
 
-The PreLiquidation smart-contract enforces the following properties:
+The PreLiquidation smart-contract enforces the properties:
 
 - preLltv < LLTV;
 - preLCF1 <= preLCF2;
