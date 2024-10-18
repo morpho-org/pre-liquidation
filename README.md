@@ -66,9 +66,8 @@ The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddress
 
 ### Potential preLCF manipulation
 
-A pre-liquidation cannot pre-liquidate more than `preLCF` of the position debt.
-However it's possible to pre-liquidate a small part of the position while keeping it pre-liquidatable before performing another pre-liquidation.
-This manipulation can lead to repaying more than `preLCF` of the debt and it has been studied in the part 5.2 of [An Empirical Study of DeFi Liquidations:Incentives, Risks, and Instabilities](https://arxiv.org/pdf/2106.06389).
+A pre-liquidation cannot pre-liquidate a proportion of the position's debt greater than `preLCF`, however it's possible to pre-liquidate a fraction of the position while keeping it pre-liquidatable before performing another pre-liquidation.
+This manipulation can lead to repaying a proportion of the position's debt higher than `preLCF` and it has been studied in the part 5.2 of [An Empirical Study of DeFi Liquidations:Incentives, Risks, and Instabilities](https://arxiv.org/pdf/2106.06389).
 Implementing a `preLCF` linear with the health factor mitigates this.
 
 ## Getting started
