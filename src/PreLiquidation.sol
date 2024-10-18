@@ -150,7 +150,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(borrowed > collateralQuoted.wMulDown(PRE_LLTV), ErrorsLib.NotPreLiquidatablePosition());
 
         uint256 ltv = borrowed.wDivUp(collateralQuoted);
-        uint256 preLIF = (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1;
+        uint256 quotient = (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV);
+        uint256 preLIF = quotient.wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1;
 
         if (seizedAssets > 0) {
             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
@@ -165,7 +166,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
         // Note that the pre-liquidation close factor can be greater than WAD (100%).
         // In this case the position can be fully pre-liquidated.
-        uint256 preLCF = (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LCF_2 - PRE_LCF_1) + PRE_LCF_1;
+        uint256 preLCF = quotient.wMulDown(PRE_LCF_2 - PRE_LCF_1) + PRE_LCF_1;
 
         uint256 repayableShares = uint256(position.borrowShares).wMulDown(preLCF);
         require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, repayableShares));
