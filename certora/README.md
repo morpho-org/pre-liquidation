@@ -38,6 +38,10 @@ This is checked in [`ConsistentInstantiation.spec`](specs/ConsistentInstantiatio
 
 This is checked in [`Liveness.spec`](specs/Liveness.spec).
 
+### Position health properties
+
+This is checked in [`Health.spec`](specs/Health.spec).
+
 ## Verification architecture
 
 ### Folders and file structure
@@ -52,8 +56,11 @@ The [`certora/specs`](specs) folder contains the following files:
 - [`Reverts.spec`](specs/Reverts.spec) checks the conditions for reverts and that inputs are correctly validated.
 - [`ConsistentInstantiation.spec`](specs/ConsistentInstantiation.spec) checks the conditions for reverts are met in PreLiquidation constructor.
 - [`MarketExists.spec`](specs/MarketExists.spec) checks that PreLiquidations can be instanciated only if the target market exists.
+- [`Health.spec`](specs/Health.spec) checks that after a pre-liquidations can't worsen.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
+
+The_[`certora/Makefile`](Makefile)_file is used to perform munging on the original sources.
 
 ## TODO
 

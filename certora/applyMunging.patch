@@ -1,0 +1,140 @@
+diff -ruN PreLiquidation.sol PreLiquidation.sol
+--- PreLiquidation.sol	2024-10-07 11:26:46.000000000 +0200
++++ PreLiquidation.sol	2024-10-21 20:49:12.000000000 +0200
+@@ -1,20 +1,21 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity 0.8.27;
+ 
+-import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
+-import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
++import {Id, MarketParams, IMorpho, Position, Market} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
++import {IMorphoRepayCallback} from "../../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
+ import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+ import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
+-import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
++import {IOracle} from "../../lib/morpho-blue/src/interfaces/IOracle.sol";
+ 
+-import {ORACLE_PRICE_SCALE} from "../lib/morpho-blue/src/libraries/ConstantsLib.sol";
+-import {SharesMathLib} from "../lib/morpho-blue/src/libraries/SharesMathLib.sol";
+-import {SafeTransferLib} from "../lib/solmate/src/utils/SafeTransferLib.sol";
+-import {WAD, MathLib} from "../lib/morpho-blue/src/libraries/MathLib.sol";
+-import {UtilsLib} from "../lib/morpho-blue/src/libraries/UtilsLib.sol";
+-import {ERC20} from "../lib/solmate/src/tokens/ERC20.sol";
++import {ORACLE_PRICE_SCALE} from "../../lib/morpho-blue/src/libraries/ConstantsLib.sol";
++import {SharesMathLib} from "../../lib/morpho-blue/src/libraries/SharesMathLib.sol";
++import {SafeTransferLib} from "../../lib/solmate/src/utils/SafeTransferLib.sol";
++import {WAD, MathLib} from "../../lib/morpho-blue/src/libraries/MathLib.sol";
++import {UtilsLib} from "../../lib/morpho-blue/src/libraries/UtilsLib.sol";
++import {ERC20} from "../../lib/solmate/src/tokens/ERC20.sol";
+ import {EventsLib} from "./libraries/EventsLib.sol";
+ import {ErrorsLib} from "./libraries/ErrorsLib.sol";
++import "../../lib/morpho-blue/src/libraries/MarketParamsLib.sol";
+ 
+ /// @title PreLiquidation
+ /// @author Morpho Labs
+@@ -25,6 +26,12 @@
+     using MathLib for uint256;
+     using SafeTransferLib for ERC20;
+ 
++    using MarketParamsLib for MarketParams;
++
++    function libId(MarketParams memory marketParams) external pure returns (Id) {
++        return marketParams.id();
++    }
++
+     /* IMMUTABLE */
+ 
+     /// @notice The address of the Morpho contract.
+@@ -47,6 +54,9 @@
+     uint256 internal immutable PRE_LIF_2;
+     address internal immutable PRE_LIQUIDATION_ORACLE;
+ 
++    uint256 public lastLtv;
++    uint256 public lastLtvAfter;
++
+     /// @notice The Morpho market parameters specific to the PreLiquidation contract.
+     function marketParams() public view returns (MarketParams memory) {
+         return MarketParams({
+@@ -142,6 +152,7 @@
+ 
+         uint256 collateralPrice = IOracle(PRE_LIQUIDATION_ORACLE).price();
+         uint256 collateralQuoted = uint256(position.collateral).mulDivDown(collateralPrice, ORACLE_PRICE_SCALE);
++
+         uint256 borrowed = uint256(position.borrowShares).toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares);
+ 
+         // The two following require-statements ensure that collateralQuoted is different from zero.
+@@ -150,11 +161,11 @@
+         require(borrowed > collateralQuoted.wMulDown(PRE_LLTV), ErrorsLib.NotPreLiquidatablePosition());
+ 
+         uint256 ltv = borrowed.wDivUp(collateralQuoted);
++        lastLtv = ltv;
+         uint256 preLIF = (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LIF_2 - PRE_LIF_1) + PRE_LIF_1;
+ 
+         if (seizedAssets > 0) {
+             uint256 seizedAssetsQuoted = seizedAssets.mulDivUp(collateralPrice, ORACLE_PRICE_SCALE);
+-
+             repaidShares =
+                 seizedAssetsQuoted.wDivUp(preLIF).toSharesUp(market.totalBorrowAssets, market.totalBorrowShares);
+         } else {
+@@ -173,8 +184,13 @@
+         bytes memory callbackData = abi.encode(seizedAssets, borrower, msg.sender, data);
+         (uint256 repaidAssets,) = MORPHO.repay(marketParams(), 0, repaidShares, borrower, callbackData);
+ 
+-        emit EventsLib.PreLiquidate(ID, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
++        uint256 collateralQuotedAfter =
++            MathLib.mulDivDown(position.collateral - seizedAssets, collateralPrice, ORACLE_PRICE_SCALE);
++        require(collateralQuotedAfter > 0, "division by zero");
++        uint256 borrowedAfter = borrowed - repaidAssets;
++        lastLtvAfter = borrowedAfter.wDivDown(collateralQuotedAfter);
+ 
++        emit EventsLib.PreLiquidate(ID, msg.sender, borrower, repaidAssets, repaidShares, seizedAssets);
+         return (seizedAssets, repaidAssets);
+     }
+ 
+diff -ruN interfaces/IPreLiquidation.sol interfaces/IPreLiquidation.sol
+--- interfaces/IPreLiquidation.sol	2024-10-07 11:26:46.000000000 +0200
++++ interfaces/IPreLiquidation.sol	2024-10-14 21:45:26.000000000 +0200
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity >= 0.5.0;
+ 
+-import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
++import {Id, IMorpho, MarketParams} from "../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+ 
+ /// @notice The pre-liquidation parameters are:
+ ///  - preLltv, the maximum LTV of a position before allowing pre-liquidation.
+@@ -20,8 +20,9 @@
+ }
+ 
+ interface IPreLiquidation {
+-    function MORPHO() external view returns (IMorpho);
++    function libId(MarketParams memory) external returns (Id);
+ 
++    function MORPHO() external view returns (IMorpho);
+     function ID() external view returns (Id);
+ 
+     function marketParams() external returns (MarketParams memory);
+diff -ruN libraries/EventsLib.sol libraries/EventsLib.sol
+--- libraries/EventsLib.sol	2024-10-07 11:26:46.000000000 +0200
++++ libraries/EventsLib.sol	2024-10-11 14:02:26.000000000 +0200
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ pragma solidity ^0.8.0;
+ 
+-import {Id} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
++import {Id} from "../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+ import {PreLiquidationParams} from "../interfaces/IPreLiquidation.sol";
+ 
+ /// @title EventsLib
+diff -ruN libraries/periphery/PreLiquidationAddressLib.sol libraries/periphery/PreLiquidationAddressLib.sol
+--- libraries/periphery/PreLiquidationAddressLib.sol	2024-10-07 11:26:46.000000000 +0200
++++ libraries/periphery/PreLiquidationAddressLib.sol	2024-10-11 13:55:21.000000000 +0200
+@@ -3,7 +3,7 @@
+ 
+ import {PreLiquidation} from "../../PreLiquidation.sol";
+ import {PreLiquidationParams} from "../../interfaces/IPreLiquidation.sol";
+-import {Id} from "../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
++import {Id} from "../../../../lib/morpho-blue/src/interfaces/IMorpho.sol";
+ 
+ library PreLiquidationAddressLib {
+     /// @notice Computes the CREATE2 address of the pre-liquidation contract generated by the `factory`
