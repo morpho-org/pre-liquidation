@@ -82,6 +82,11 @@ Install [Foundry](https://book.getfoundry.sh/getting-started/installation).
 
 Run `forge test`.
 
+## Solidity version
+
+The main contracts (`PreLiquidation` and `PreLiquidationFactory`) are written in Solidity 0.8.27.
+The bytecode of these contracts could contain new opcodes (e.g., `PUSH0`, `MCOPY`, `TSTORE`, `TLOAD`) so one should make sure that the contract bytecode can be handled by the chain used for deployment.
+
 ## Audits
 
 All audits are stored in the [`audits`](./audits) folder.
