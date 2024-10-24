@@ -4,11 +4,11 @@ pragma solidity >= 0.5.0;
 import {Id, IMorpho, MarketParams} from "../../lib/morpho-blue/src/interfaces/IMorpho.sol";
 
 /// @notice The pre-liquidation parameters are:
-///  - preLltv, the maximum LTV of a position before allowing pre-liquidation.
-///  - preLCF1, the pre-liquidation close factor when the position LTV is equal to preLltv.
-///  - preLCF2, the pre-liquidation close factor when the position LTV is equal to LLTV.
-///  - preLIF1, the pre-liquidation incentive factor when the position LTV is equal to preLltv.
-///  - preLIF2, the pre-liquidation incentive factor when the position LTV is equal to LLTV.
+///  - preLltv, the maximum LTV of a position before allowing pre-liquidation, scaled by WAD.
+///  - preLCF1, the pre-liquidation close factor when the position LTV is equal to preLltv, scaled by WAD.
+///  - preLCF2, the pre-liquidation close factor when the position LTV is equal to LLTV, scaled by WAD.
+///  - preLIF1, the pre-liquidation incentive factor when the position LTV is equal to preLltv, scaled by WAD.
+///  - preLIF2, the pre-liquidation incentive factor when the position LTV is equal to LLTV, scaled by WAD.
 ///  - preLiquidationOracle, the oracle used to assess whether or not a position can be preliquidated.
 struct PreLiquidationParams {
     uint256 preLltv;
