@@ -67,7 +67,7 @@ The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddress
 ### Potential preLCF manipulation
 
 A pre-liquidation cannot repay a proportion of the position's debt greater than `preLCF`.
-However it's possible to pre-liquidate a proportion of the position while keeping it pre-liquidatable before performing another pre-liquidation.
+However, it's possible to pre-liquidate a proportion of the position while keeping it pre-liquidatable before performing another pre-liquidation.
 This manipulation can lead to repaying a proportion of the position's debt higher than `preLCF`.
 It has been studied in the part 5.2 of [An Empirical Study of DeFi Liquidations:Incentives, Risks, and Instabilities](https://arxiv.org/pdf/2106.06389), in the case of a constant liquidation close factor.
 Implementing a `preLCF` linear in the health factor can help mitigating this manipulation when choosing the right slope.
@@ -84,8 +84,7 @@ Run `forge test`.
 
 ## Solidity version
 
-The main contracts (`PreLiquidation` and `PreLiquidationFactory`) are written in Solidity 0.8.27.
-The bytecode of these contracts could contain new opcodes (e.g., `PUSH0`, `MCOPY`, `TSTORE`, `TLOAD`) so one should make sure that the contract bytecode can be handled by the chain used for deployment.
+As a consequence of using Solidity 0.8.27, the bytecode of the contracts could contain new opcodes (e.g., `PUSH0`, `MCOPY`, `TSTORE`, `TLOAD`) so one should make sure that the contract bytecode can be handled by the target chain for deployment.
 
 ## Audits
 
