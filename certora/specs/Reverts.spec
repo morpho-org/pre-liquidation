@@ -48,7 +48,7 @@ rule zeroCollateralQuotedReverts(env e, address borrower, uint256 seizedAssets, 
 
 // Check that pre-liquidating a position such that LTV <= PRE_LLTV reverts.
 // This also implies that LTV > PRE_LLTV when borrowed > collateralQuoted.summaryWMulDown(PRE_LLTV).
-rule nonLiquidatablePositionReverts(env e,address borrower, uint256 seizedAssets, bytes data) {
+rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, bytes data) {
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
