@@ -1,4 +1,4 @@
-//Ensure constructor requirements.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 import "SummaryLib.spec";
 
@@ -6,7 +6,7 @@ methods {
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
 }
 
-definition wDivDown(uint256 x,uint256 y) returns uint256 = summaryMulDivDown(x, WAD(), y);
+//Ensure constructor requirements.
 
 // Base case for mutually dependent invariants.
 // Ensure that in a successfully deployed contract the preLLTV value is not zero.
@@ -46,7 +46,7 @@ invariant preLIFNotZero()
 invariant preLIFConsistent()
     WAD() < currentContract.PRE_LIF_1
     && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2
-    && currentContract.PRE_LIF_2 <= wDivDown(WAD(),currentContract.LLTV)
+    && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(),currentContract.LLTV)
 {
     preserved {
         requireInvariant lltvNotZero();

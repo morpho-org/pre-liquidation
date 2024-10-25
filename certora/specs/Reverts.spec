@@ -2,15 +2,8 @@
 
 import "ConsistentInstantiation.spec";
 
-using Morpho as MORPHO;
-
 methods {
     function _.price() external => mockPrice() expect uint256;
-
-    function MORPHO.market(PreLiquidation.Id) external
-        returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
-    function MORPHO.position(PreLiquidation.Id, address) external
-        returns (uint256, uint128, uint128) envfree;
 
     function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal
         returns uint256 => summaryMulDivDown(a,b,c);

@@ -1,3 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+using Morpho as MORPHO;
+
+methods {
+    function MORPHO.market(PreLiquidation.Id) external
+        returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
+    function MORPHO.position(PreLiquidation.Id, address) external
+        returns (uint256, uint128, uint128) envfree;
+}
+
 definition WAD() returns uint256 = 10^18;
 
 definition ORACLE_PRICE_SCALE() returns uint256 = 10^36;
@@ -26,6 +37,7 @@ function summaryWDivUp(uint256 x,uint256 y) returns uint256 {
 function summaryMulDivUp(uint256 x,uint256 y, uint256 d) returns uint256 {
     // Safe require because the reference implementation would revert.
     return require_uint256((x * y + (d-1)) / d);
+
 }
 
 
