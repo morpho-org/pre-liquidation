@@ -2,8 +2,13 @@
 
 import "SummaryLib.spec";
 
+using Util as Util;
+
 methods {
-    function _.market(PreLiquidation.Id) external => DISPATCHER(true);
+    function _.market(PreLiquidationHarness.Id) external => DISPATCHER(true);
+
+    function Util.libId(PreLiquidationHarness.MarketParams) external
+        returns PreLiquidationHarness.Id envfree;
 }
 
 //Ensure constructor requirements.
@@ -50,5 +55,14 @@ invariant preLIFConsistent()
 {
     preserved {
         requireInvariant lltvNotZero();
+    }
+}
+
+// Ensure that ID equals idToMarketParams(marketParams()).
+invariant hashOfMarketParamsOf()
+    Util.libId(summaryMarketParams()) == currentContract.ID
+{
+    preserved {
+        requireInvariant preLIFNotZero();
     }
 }

@@ -4,6 +4,8 @@ import "ConsistentInstantiation.spec";
 
 methods {
     function _.price() external => mockPrice() expect uint256;
+    function market_(PreLiquidationHarness.Id) external
+        returns (PreLiquidationHarness.Market memory) envfree;
 
     function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal
         returns uint256 => summaryMulDivDown(a,b,c);
@@ -52,12 +54,12 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
+    requireInvariant hashOfMarketParamsOf();
 
-    uint256 mLastUpdate;
-    (_, _, _, _, mLastUpdate, _) = MORPHO.market(currentContract.ID);
+    PreLiquidationHarness.Market m = market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
-    require mLastUpdate == e.block.timestamp;
+    require m.lastUpdate == e.block.timestamp;
 
     mathint ltv = getLtv(borrower);
 
@@ -75,11 +77,10 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    uint256 mLastUpdate;
-    (_, _, _, _, mLastUpdate, _) = MORPHO.market(currentContract.ID);
+    PreLiquidationHarness.Market m = market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
-    require mLastUpdate == e.block.timestamp;
+    require m.lastUpdate == e.block.timestamp;
 
     mathint ltv = getLtv(borrower);
 
@@ -93,11 +94,6 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
 
 // Check that a pre-liquidation that repays more shares than available or allowed by the preLCF reverts.
 rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 seizedAssets, bytes data) {
-    // Market values.
-    uint256 mTotalBorrowAssets;
-    uint256 mTotalBorrowShares;
-    uint256 mLastUpdate;
-
     // Position values.
     uint256 pBorrowShares;
 
@@ -105,10 +101,10 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    (_, _, mTotalBorrowAssets, mTotalBorrowShares, mLastUpdate, _) = MORPHO.market(currentContract.ID);
+    PreLiquidationHarness.Market m = market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
-    require mLastUpdate == e.block.timestamp;
+    require m.lastUpdate == e.block.timestamp;
 
     (_, pBorrowShares, _) = MORPHO.position(currentContract.ID, borrower);
 
@@ -126,8 +122,8 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     mathint seizedAssetsQuoted = require_uint256(summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE()));
 
     mathint repaidShares = summaryToSharesUp(summaryWDivUp(require_uint256(seizedAssetsQuoted), require_uint256(preLIF)),
-                               mTotalBorrowAssets,
-                               mTotalBorrowShares);
+                                             m.totalBorrowAssets,
+                                             m.totalBorrowShares);
 
     mathint closeFactor = computeLinearCombination(ltv,
                                                    currentContract.LLTV,
@@ -148,17 +144,18 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
 
 // Check that repaying more shares than available or allowed by the preLCF would revert.
 rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 repaidShares, bytes data) {
+    // Position values.
+    uint256 pBorrowShares;
+
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    uint256 mLastUpdate;
-    (_, _, _, _, mLastUpdate, _) = MORPHO.market(currentContract.ID);
+    PreLiquidationHarness.Market m = market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
-    require mLastUpdate == e.block.timestamp;
+    require m.lastUpdate == e.block.timestamp;
 
-    uint256 pBorrowShares;
     (_, pBorrowShares, _) = MORPHO.position(currentContract.ID, borrower);
 
     mathint ltv = getLtv(borrower);
