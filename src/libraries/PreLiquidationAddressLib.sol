@@ -19,13 +19,16 @@ library PreLiquidationAddressLib {
         Id id,
         PreLiquidationParams memory preLiquidationParams
     ) internal pure returns (address) {
-        bytes32 initCodeHash =
-            keccak256(abi.encodePacked(type(PreLiquidation).creationCode));
+        bytes32 initCodeHash = keccak256(abi.encodePacked(type(PreLiquidation).creationCode));
         bytes32 salt = hashPreLiquidationConstructorParams(morpho, id, preLiquidationParams);
         return address(uint160(uint256(keccak256(abi.encodePacked(uint8(0xff), factory, salt, initCodeHash)))));
     }
 
-    function hashPreLiquidationConstructorParams(IMorpho morpho, Id id, PreLiquidationParams memory preLiquidationParams) internal pure returns(bytes32) {
+    function hashPreLiquidationConstructorParams(
+        IMorpho morpho,
+        Id id,
+        PreLiquidationParams memory preLiquidationParams
+    ) internal pure returns (bytes32) {
         return keccak256(abi.encode(morpho, id, preLiquidationParams));
     }
 }

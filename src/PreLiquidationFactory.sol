@@ -23,9 +23,6 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
     /* STORAGE */
 
-    /// @notice Mapping which returns true if the address is a PreLiquidation contract created by this factory.
-    mapping(address => bool) public isPreLiquidation;
-
     // Temporary contract creation variables.
     // Not optimized yet: make those transient.
     Id public id;
@@ -77,13 +74,18 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
         bytes32 salt = PreLiquidationAddressLib.hashPreLiquidationConstructorParams(MORPHO, id, _preLiquidationParams);
 
-        IPreLiquidation preLiquidation =
-            IPreLiquidation(address(new PreLiquidation{salt: salt}()));
+        IPreLiquidation preLiquidation = IPreLiquidation(address(new PreLiquidation{salt: salt}()));
 
         emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, _preLiquidationParams);
 
-        isPreLiquidation[address(preLiquidation)] = true;
-
         return preLiquidation;
+    }
+
+    function isPreLiquidation(address preLiq) external view returns (bool) {
+        // Could be optimized: no need to make 2 calls.
+        PreLiquidationParams memory _preLiquidationParams = IPreLiquidation(preLiq).preLiquidationParams();
+        Id _id = IPreLiquidation(preLiq).ID();
+        return preLiq
+            == PreLiquidationAddressLib.computePreLiquidationAddress(MORPHO, address(this), _id, _preLiquidationParams);
     }
 }
