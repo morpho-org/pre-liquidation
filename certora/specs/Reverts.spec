@@ -61,6 +61,7 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
     PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
+    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
     require m.lastUpdate == e.block.timestamp;
 
     mathint ltv = getLtv(borrower);
@@ -82,6 +83,7 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
     PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
+    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
     require m.lastUpdate == e.block.timestamp;
 
     mathint ltv = getLtv(borrower);
@@ -103,6 +105,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
+    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
     require m.lastUpdate == e.block.timestamp;
 
     PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
@@ -150,6 +153,7 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
     PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
+    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
     require m.lastUpdate == e.block.timestamp;
 
     PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
