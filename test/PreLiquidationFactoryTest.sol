@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./BaseTest.sol";
 
+import {PreLiquidation} from "../src/PreLiquidation.sol";
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
 import {PreLiquidationAddressLib} from "../src/libraries/PreLiquidationAddressLib.sol";
 
@@ -55,6 +56,11 @@ contract PreLiquidationFactoryTest is BaseTest {
         assert(preLiqMarketParams.lltv == marketParams.lltv);
 
         assert(factory.isPreLiquidation(address(preLiquidation)));
+    }
+
+    function testInitCodeHash() public pure {
+        bytes32 expectedInitCodeHash = keccak256(abi.encodePacked(type(PreLiquidation).creationCode));
+        assertEq(PreLiquidationAddressLib.INIT_CODE_HASH, expectedInitCodeHash, "Unexpected init code hash");
     }
 
     function testCreate2Deployment(PreLiquidationParams memory preLiquidationParams) public {
