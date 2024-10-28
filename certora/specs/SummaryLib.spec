@@ -5,6 +5,9 @@ using Morpho as MORPHO;
 methods {
     function MORPHO.position(PreLiquidationHarness.Id, address) external
         returns (uint256, uint128, uint128) envfree;
+
+    function market_(PreLiquidationHarness.Id) external
+        returns (PreLiquidationHarness.Market memory) envfree;
 }
 
 definition WAD() returns uint256 = 10^18;
