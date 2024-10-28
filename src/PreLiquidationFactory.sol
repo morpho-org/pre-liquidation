@@ -86,7 +86,7 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
     }
 
     function isPreLiquidation(address preLiq) external view returns (bool) {
-        // Could be optimized: no need to make 2 calls.
+        // Not optimized yet: no need to make 2 calls.
         PreLiquidationParams memory _preLiquidationParams = IPreLiquidation(preLiq).preLiquidationParams();
         Id _id = IPreLiquidation(preLiq).ID();
         return preLiq

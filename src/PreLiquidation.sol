@@ -81,7 +81,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /// - preLCF1 <= 1;
     /// - 1 <= preLIF1 <= preLIF2 <= 1 / LLTV.
     constructor() {
-        // Could be optimized: no need to make 3 calls.
+        // Not optimized yet: no need to make 3 calls.
         IMorpho morpho = IPreLiquidationFactory(msg.sender).MORPHO();
         Id id = IPreLiquidationFactory(msg.sender).id();
         PreLiquidationParams memory _preLiquidationParams = IPreLiquidationFactory(msg.sender).preLiquidationParams();
