@@ -4,6 +4,7 @@ pragma solidity 0.8.27;
 import {Id, MarketParams, IMorpho, Position, Market} from "../lib/morpho-blue/src/interfaces/IMorpho.sol";
 import {IMorphoRepayCallback} from "../lib/morpho-blue/src/interfaces/IMorphoCallbacks.sol";
 import {IPreLiquidation, PreLiquidationParams} from "./interfaces/IPreLiquidation.sol";
+import {IPreLiquidationFactory} from "./interfaces/IPreLiquidationFactory.sol";
 import {IPreLiquidationCallback} from "./interfaces/IPreLiquidationCallback.sol";
 import {IOracle} from "../lib/morpho-blue/src/interfaces/IOracle.sol";
 
@@ -73,17 +74,20 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
     /* CONSTRUCTOR */
 
     /// @dev Initializes the PreLiquidation contract.
-    /// @param morpho The address of the Morpho contract.
-    /// @param id The id of the Morpho market on which pre-liquidations will occur.
-    /// @param _preLiquidationParams The pre-liquidation parameters.
+    /// @dev Meant to be called by the factory only.
     /// @dev The following requirements should be met:
     /// - preLltv < LLTV;
     /// - preLCF1 <= preLCF2;
     /// - preLCF1 <= 1;
     /// - 1 <= preLIF1 <= preLIF2 <= 1 / LLTV.
-    constructor(address morpho, Id id, PreLiquidationParams memory _preLiquidationParams) {
-        require(IMorpho(morpho).market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
-        MarketParams memory _marketParams = IMorpho(morpho).idToMarketParams(id);
+    constructor() {
+        // Not optimized yet: no need to make 3 calls.
+        IMorpho morpho = IPreLiquidationFactory(msg.sender).MORPHO();
+        Id id = IPreLiquidationFactory(msg.sender).id();
+        PreLiquidationParams memory _preLiquidationParams = IPreLiquidationFactory(msg.sender).preLiquidationParams();
+
+        require(morpho.market(id).lastUpdate != 0, ErrorsLib.NonexistentMarket());
+        MarketParams memory _marketParams = morpho.idToMarketParams(id);
         require(_preLiquidationParams.preLltv < _marketParams.lltv, ErrorsLib.PreLltvTooHigh());
         require(_preLiquidationParams.preLCF1 <= _preLiquidationParams.preLCF2, ErrorsLib.PreLCFDecreasing());
         require(_preLiquidationParams.preLCF1 <= WAD, ErrorsLib.PreLCFTooHigh());
@@ -91,7 +95,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         require(_preLiquidationParams.preLIF1 <= _preLiquidationParams.preLIF2, ErrorsLib.PreLIFDecreasing());
         require(_preLiquidationParams.preLIF2 <= WAD.wDivDown(_marketParams.lltv), ErrorsLib.PreLIFTooHigh());
 
-        MORPHO = IMorpho(morpho);
+        MORPHO = morpho;
 
         ID = id;
 
@@ -108,7 +112,7 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
         PRE_LIF_2 = _preLiquidationParams.preLIF2;
         PRE_LIQUIDATION_ORACLE = _preLiquidationParams.preLiquidationOracle;
 
-        ERC20(_marketParams.loanToken).safeApprove(morpho, type(uint256).max);
+        ERC20(_marketParams.loanToken).safeApprove(address(morpho), type(uint256).max);
     }
 
     /* PRE-LIQUIDATION */

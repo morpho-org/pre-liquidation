@@ -12,4 +12,8 @@ interface IPreLiquidationFactory {
     function createPreLiquidation(Id id, PreLiquidationParams calldata preLiquidationParams)
         external
         returns (IPreLiquidation preLiquidation);
+
+    function id() external view returns (Id);
+
+    function preLiquidationParams() external view returns (PreLiquidationParams memory);
 }

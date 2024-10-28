@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "./BaseTest.sol";
 
 import {ErrorsLib} from "../src/libraries/ErrorsLib.sol";
-import {PreLiquidationAddressLib} from "../src/libraries/periphery/PreLiquidationAddressLib.sol";
+import {PreLiquidationAddressLib} from "../src/libraries/PreLiquidationAddressLib.sol";
 
 contract PreLiquidationFactoryTest is BaseTest {
     using MarketParamsLib for MarketParams;
@@ -75,7 +75,7 @@ contract PreLiquidationFactoryTest is BaseTest {
         IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
         address preLiquidationAddress = PreLiquidationAddressLib.computePreLiquidationAddress(
-            address(MORPHO), address(factory), id, preLiquidationParams
+            MORPHO, address(factory), id, preLiquidationParams
         );
         assert(address(preLiquidation) == preLiquidationAddress);
     }
