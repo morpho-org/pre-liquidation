@@ -105,7 +105,7 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         vm.expectRevert(
             abi.encodeWithSelector(ErrorsLib.AlreadyDeployedPreLiquidation.selector, address(preLiquidation))
-);
+        );
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 }

@@ -26,12 +26,9 @@ library PreLiquidationAddressLib {
         return computePreLiquidationAddressFromSalt(factory, salt);
     }
 
-    function computePreLiquidationAddressFromSalt(
-        address factory,
-        bytes32 salt)
-        internal pure returns(address) {
+    function computePreLiquidationAddressFromSalt(address factory, bytes32 salt) internal pure returns (address) {
         return address(uint160(uint256(keccak256(abi.encodePacked(uint8(0xff), factory, salt, INIT_CODE_HASH)))));
-        }
+    }
 
     function hashPreLiquidationConstructorParams(
         IMorpho morpho,
