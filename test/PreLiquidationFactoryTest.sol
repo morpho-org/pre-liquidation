@@ -101,9 +101,11 @@ contract PreLiquidationFactoryTest is BaseTest {
 
         factory = new PreLiquidationFactory(address(MORPHO));
 
-        factory.createPreLiquidation(id, preLiquidationParams);
+        IPreLiquidation preLiquidation = factory.createPreLiquidation(id, preLiquidationParams);
 
-        vm.expectRevert(bytes(""));
+        vm.expectRevert(
+            abi.encodeWithSelector(ErrorsLib.AlreadyDeployedPreLiquidation.selector, address(preLiquidation))
+);
         factory.createPreLiquidation(id, preLiquidationParams);
     }
 }

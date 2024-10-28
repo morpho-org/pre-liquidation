@@ -74,11 +74,15 @@ contract PreLiquidationFactory is IPreLiquidationFactory {
 
         bytes32 salt = PreLiquidationAddressLib.hashPreLiquidationConstructorParams(MORPHO, id, _preLiquidationParams);
 
-        IPreLiquidation preLiquidation = IPreLiquidation(address(new PreLiquidation{salt: salt}()));
+        address preLiquidation = PreLiquidationAddressLib.computePreLiquidationAddressFromSalt(address(this), salt);
 
-        emit EventsLib.CreatePreLiquidation(address(preLiquidation), id, _preLiquidationParams);
+        require(preLiquidation.code.length == 0, ErrorsLib.AlreadyDeployedPreLiquidation(preLiquidation));
 
-        return preLiquidation;
+        new PreLiquidation{salt: salt}();
+
+        emit EventsLib.CreatePreLiquidation(preLiquidation, id, _preLiquidationParams);
+
+        return IPreLiquidation(preLiquidation);
     }
 
     function isPreLiquidation(address preLiq) external view returns (bool) {

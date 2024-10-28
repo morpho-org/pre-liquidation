@@ -35,4 +35,6 @@ library ErrorsLib {
     /* PRELIQUIDATION FACTORY ERRORS */
 
     error ZeroAddress();
+
+    error AlreadyDeployedPreLiquidation(address preLiquidation);
 }
