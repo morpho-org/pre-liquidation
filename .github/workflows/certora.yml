@@ -16,9 +16,12 @@ jobs:
 
       matrix:
         conf:
+          - ConsistentInstantiation
           - Immutability
+          - MarketExists
           - Liveness
           - Reentrancy
+          - Reverts
 
     steps:
       - uses: actions/checkout@v4
