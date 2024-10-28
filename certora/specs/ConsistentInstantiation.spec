@@ -2,13 +2,11 @@
 
 import "SummaryLib.spec";
 
-using Util as Util;
-
 methods {
-    function _.market(PreLiquidationHarness.Id) external => DISPATCHER(true);
+    function _.market(PreLiquidation.Id) external => DISPATCHER(true);
 
-    function Util.libId(PreLiquidationHarness.MarketParams) external
-        returns PreLiquidationHarness.Id envfree;
+    function Util.libId(PreLiquidation.MarketParams) external
+        returns PreLiquidation.Id envfree;
 }
 
 //Ensure constructor requirements.

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-using Morpho as MORPHO;
+using MorphoHarness as MORPHO;
+using Util as Util;
 
 methods {
-    function MORPHO.position(PreLiquidationHarness.Id, address) external
-        returns (uint256, uint128, uint128) envfree;
-
-    function market_(PreLiquidationHarness.Id) external
-        returns (PreLiquidationHarness.Market memory) envfree;
+    function MORPHO.market_(PreLiquidation.Id) external
+        returns (PreLiquidation.Market memory) envfree;
+    function MORPHO.position_(PreLiquidation.Id, address) external
+        returns (PreLiquidation.Position memory) envfree;
 }
 
 definition WAD() returns uint256 = 10^18;
@@ -59,8 +59,8 @@ function summaryToAssetsUp(uint256 shares, uint256 totalAssets, uint256 totalSha
                            require_uint256(totalShares + VIRTUAL_SHARES()));
 }
 
-function summaryMarketParams() returns PreLiquidationHarness.MarketParams {
-    PreLiquidationHarness.MarketParams x;
+function summaryMarketParams() returns PreLiquidation.MarketParams {
+    PreLiquidation.MarketParams x;
     require
         x.loanToken == currentContract.LOAN_TOKEN
         && x.collateralToken == currentContract.COLLATERAL_TOKEN
@@ -87,22 +87,17 @@ function mockPrice() returns uint256 {
 }
 
 
-// Ensure this function is only used when no interest is accrued,
-// or enforce that the last update matches the current timestamp.
+// Ensure this function is only used when no interest is accrued, or enforce that the last update matches the current timestamp.
 function positionAsAssets (address borrower) returns (uint256, uint256) {
-    uint256 pBorrowShares;
-    uint256 pCollateral;
+    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
+    PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
 
-    PreLiquidationHarness.Market m = market_(currentContract.ID);
-
-    (_, pBorrowShares, pCollateral) = MORPHO.position(currentContract.ID, borrower);
-
-    uint256 collateralQuoted = require_uint256(summaryMulDivDown(pCollateral, mockPrice(), ORACLE_PRICE_SCALE()));
+    uint256 collateralQuoted = require_uint256(summaryMulDivDown(p.collateral, mockPrice(), ORACLE_PRICE_SCALE()));
 
     // Safe require because the implementation would revert, see rule zeroCollateralQuotedReverts.
     require collateralQuoted > 0;
 
-    uint256 borrowed = require_uint256(summaryToAssetsUp(pBorrowShares, m.totalBorrowAssets, m.totalBorrowShares));
+    uint256 borrowed = require_uint256(summaryToAssetsUp(p.borrowShares, m.totalBorrowAssets, m.totalBorrowShares));
 
     return (borrowed, collateralQuoted);
 }

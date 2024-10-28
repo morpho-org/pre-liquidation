@@ -4,8 +4,11 @@ import "ConsistentInstantiation.spec";
 
 methods {
     function _.price() external => mockPrice() expect uint256;
-    function market_(PreLiquidationHarness.Id) external
-        returns (PreLiquidationHarness.Market memory) envfree;
+
+    function MORPHO.market_(PreLiquidation.Id) external
+        returns (PreLiquidation.Market memory) envfree;
+    function MORPHO.position_(PreLiquidation.Id, address) external
+        returns (PreLiquidation.Position memory) envfree;
 
     function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal
         returns uint256 => summaryMulDivDown(a,b,c);
@@ -54,9 +57,8 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
-    requireInvariant hashOfMarketParamsOf();
 
-    PreLiquidationHarness.Market m = market_(currentContract.ID);
+    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
     require m.lastUpdate == e.block.timestamp;
@@ -77,7 +79,7 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    PreLiquidationHarness.Market m = market_(currentContract.ID);
+    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
     require m.lastUpdate == e.block.timestamp;
@@ -94,19 +96,16 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
 
 // Check that a pre-liquidation that repays more shares than available or allowed by the preLCF reverts.
 rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 seizedAssets, bytes data) {
-    // Position values.
-    uint256 pBorrowShares;
-
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    PreLiquidationHarness.Market m = market_(currentContract.ID);
+    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
     require m.lastUpdate == e.block.timestamp;
 
-    (_, pBorrowShares, _) = MORPHO.position(currentContract.ID, borrower);
+    PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
 
     mathint ltv = getLtv(borrower);
 
@@ -131,7 +130,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
                                                    currentContract.PRE_LCF_1,
                                                    currentContract.PRE_LCF_2) ;
 
-    mathint repayableShares = summaryWMulDown(pBorrowShares, require_uint256(closeFactor));
+    mathint repayableShares = summaryWMulDown(p.borrowShares, require_uint256(closeFactor));
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
@@ -144,19 +143,16 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
 
 // Check that repaying more shares than available or allowed by the preLCF would revert.
 rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 repaidShares, bytes data) {
-    // Position values.
-    uint256 pBorrowShares;
-
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    PreLiquidationHarness.Market m = market_(currentContract.ID);
+    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
 
     // Ensure that no interest is accumulated.
     require m.lastUpdate == e.block.timestamp;
 
-    (_, pBorrowShares, _) = MORPHO.position(currentContract.ID, borrower);
+    PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
 
     mathint ltv = getLtv(borrower);
 
@@ -169,7 +165,7 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
                                                    currentContract.PRE_LCF_1,
                                                    currentContract.PRE_LCF_2) ;
 
-    mathint repayableShares = summaryWMulDown(pBorrowShares, require_uint256(closeFactor));
+    mathint repayableShares = summaryWMulDown(p.borrowShares, require_uint256(closeFactor));
 
     preLiquidate@withrevert(e, borrower, 0, repaidShares, data);
 
