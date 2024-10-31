@@ -38,7 +38,7 @@ The two main use-cases are:
 
 ### Pre-liquidation parameters restrictions
 
-The PreLiquidation smart-contract enforces the following properties:
+The PreLiquidation smart-contract enforces the properties:
 
 - preLltv < LLTV;
 - preLCF1 <= preLCF2;
@@ -64,6 +64,14 @@ It's possible to use the corresponding market oracle or any other oracle includi
 PreLiquidation contract addresses are generated using the CREATE2 opcode, allowing for predictable address computation depending on pre-liquidation parameters.
 The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides a `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
 
+### Potential preLCF manipulation
+
+A pre-liquidation cannot repay a proportion of the position's debt greater than `preLCF`.
+However, it's possible to pre-liquidate a proportion of the position while keeping it pre-liquidatable before performing another pre-liquidation.
+This manipulation can lead to repaying a proportion of the position's debt higher than `preLCF`.
+It has been studied in the part 5.2 of [An Empirical Study of DeFi Liquidations:Incentives, Risks, and Instabilities](https://arxiv.org/pdf/2106.06389), in the case of a constant liquidation close factor.
+Implementing a `preLCF` linear in the health factor can help mitigating this manipulation when choosing the right slope.
+
 ## Getting started
 
 ### Package installation
@@ -73,6 +81,10 @@ Install [Foundry](https://book.getfoundry.sh/getting-started/installation).
 ### Run tests
 
 Run `forge test`.
+
+## Solidity version
+
+As a consequence of using Solidity 0.8.27, the bytecode of the contracts could contain new opcodes (e.g., `PUSH0`, `MCOPY`, `TSTORE`, `TLOAD`) so one should make sure that the contract bytecode can be handled by the target chain for deployment.
 
 ## Audits
 
