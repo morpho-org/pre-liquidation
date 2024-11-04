@@ -22,7 +22,7 @@ rule ltvAgainstLltvEquivalentCheck {
 
     mathint ltv = summaryWDivUp(borrowed, collateralQuoted);
 
-    assert ltv <= lltv <=> borrowed <= summaryWMulDown(collateralQuoted, lltv) ;
+    assert ltv <= lltv => borrowed <= summaryWMulDown(collateralQuoted, lltv) ;
 }
 
 // Check that substracting the PRE_LLTV to LTV wont underflow.
