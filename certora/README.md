@@ -56,6 +56,6 @@ The [`certora/specs`](specs) folder contains the following files:
 - [`Reverts.spec`](specs/Reverts.spec) checks the conditions for reverts and that inputs are correctly validated.
 - [`ConsistentInstantiation.spec`](specs/ConsistentInstantiation.spec) checks the conditions for reverts are met in PreLiquidation constructor.
 - [`MarketExists.spec`](specs/MarketExists.spec) checks that PreLiquidations can be instantiated only if the target market exists;
-- [`SafeMath.spec`](specs/SafeMath.spec) checks that PreLiquidations mathematical operation are safe.
+- [`SafeMath.spec`](specs/SafeMath.spec) checks that PreLiquidations mathematical operations are safe.
 
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.

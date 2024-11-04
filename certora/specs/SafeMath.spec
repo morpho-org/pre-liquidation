@@ -1,33 +1,32 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-definition WAD() returns uint256 = 10^18;
+definition WAD() returns mathint = 10^18;
 
-function summaryWMulDown(uint256 x,uint256 y) returns uint256 {
-    // Safe require because the reference implementation would revert.
-    return require_uint256((x * y)/WAD());
+function summaryWMulDown(mathint x,mathint y) returns mathint {
+    return (x * y) / WAD();
 }
 
-function summaryWDivUp(uint256 x,uint256 y) returns uint256 {
-    // Safe require because the reference implementation would revert.
-    return require_uint256((x * WAD() + (y-1)) / y);
+function summaryWDivUp(mathint x,mathint y) returns mathint {
+    return x * WAD() + (y-1) / y;
 }
 
 
 // Check that LTV <= LLTV is equivalent to borrowed <= (collateralQuoted * LLTV) / WAD.
-rule borrowedLECollatQuotedTimesLLTVEqLtvLTEqLLTV {
+rule ltvAgainstLltvEquivalentCheck {
     uint256 borrowed;
     uint256 collateralQuoted;
+    uint256 lltv;
 
     // Safe require because the implementation would revert, see rule zeroCollateralQuotedReverts.
     require collateralQuoted > 0;
 
     mathint ltv = summaryWDivUp(borrowed, collateralQuoted);
 
-    assert (ltv <= currentContract.LLTV) <=> borrowed <= summaryWMulDown(collateralQuoted, currentContract.LLTV);
+    assert ltv <= lltv <=> borrowed <= summaryWMulDown(collateralQuoted, lltv) ;
 }
 
 // Check that substracting the PRE_LLTV to LTV wont underflow.
-rule ltvMinusPreLltvWontUnderflow {
+rule ltvAgainstPreLltvEquivalentCheck {
     uint256 borrowed;
     uint256 collateralQuoted;
     uint256 preLltv;
@@ -36,9 +35,9 @@ rule ltvMinusPreLltvWontUnderflow {
     require (collateralQuoted > 0);
 
     // Safe require because the implementation would revert if borrowed threshold is not ensured.
-    uint256 borrowThreshold = summaryWMulDown(collateralQuoted, preLltv);
+    mathint borrowThreshold = summaryWMulDown(collateralQuoted, preLltv);
     require (borrowed > borrowThreshold);
 
-    uint256 ltv = summaryWDivUp(borrowed, collateralQuoted);
-    assert ltv >= preLltv;
+    mathint ltv = summaryWDivUp(borrowed, collateralQuoted);
+    assert ltv > preLltv;
 }
