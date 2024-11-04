@@ -1,8 +1,8 @@
-# Pre-liquidation Contract Formal Verification
+# Pre-liquidation contract formal verification
 
 This folder contains the [CVL](https://docs.certora.com/en/latest/docs/cvl/index.html) specification and verification setup for the [PreLiquidation](../src/PreLiquidation.sol) contract.
 
-## Getting Started
+## Getting started
 
 This project depends on two different versions of [Solidity](https://soliditylang.org/) which are required for running the verification.
 The compiler binaries should be available in the paths:
@@ -30,7 +30,7 @@ This is checked in [`Immutability.spec`](specs/Immutability.spec).
 
 This is checked in [`Reverts.spec`](specs/Reverts.spec) and [`MarketExists.spec`](specs/MarketExists.spec)
 
-### Consitent Instantiation
+### Consistent instantiation
 
 This is checked in [`ConsistentInstantiation.spec`](specs/ConsistentInstantiation.spec).
 
@@ -38,7 +38,7 @@ This is checked in [`ConsistentInstantiation.spec`](specs/ConsistentInstantiatio
 
 This is checked in [`Liveness.spec`](specs/Liveness.spec).
 
-### Safe Math
+### Safe math
 
 This is checked in [`SafeMath.spec`](specs/SafeMath.spec).
 
