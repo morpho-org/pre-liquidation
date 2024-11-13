@@ -32,7 +32,7 @@ rule ltvAgainstPreLltvEquivalentCheck {
     uint256 preLltv;
 
     // Safe require because the implementation would revert, see rule zeroCollateralQuotedReverts.
-    require (collateralQuoted > 0);
+    require collateralQuoted > 0;
 
     mathint ltv = summaryWDivUp(borrowed, collateralQuoted);
 
