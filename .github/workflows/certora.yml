@@ -22,6 +22,7 @@ jobs:
           - Liveness
           - Reentrancy
           - Reverts
+          - SafeMath
 
     steps:
       - uses: actions/checkout@v4
