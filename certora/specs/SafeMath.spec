@@ -22,7 +22,7 @@ rule ltvAgainstLltvEquivalentCheck {
 
     mathint ltv = summaryWDivUp(borrowed, collateralQuoted);
 
-    assert ltv <= lltv <=> borrowed <= summaryWMulDown(collateralQuoted, lltv) ;
+    assert ltv <= lltv <=> borrowed <= summaryWMulDown(collateralQuoted, lltv);
 }
 
 // Check that substracting the PRE_LLTV to LTV wont underflow.
@@ -34,8 +34,7 @@ rule ltvAgainstPreLltvEquivalentCheck {
     // Safe require because the implementation would revert, see rule zeroCollateralQuotedReverts.
     require (collateralQuoted > 0);
 
-    mathint borrowThreshold = summaryWMulDown(collateralQuoted, preLltv);
     mathint ltv = summaryWDivUp(borrowed, collateralQuoted);
 
-    assert  (borrowed > borrowThreshold) <=> ltv > preLltv;
+    assert ltv > preLltv <=> borrowed > summaryWMulDown(collateralQuoted, preLltv);
 }
