@@ -5,8 +5,7 @@ import "SummaryLib.spec";
 methods {
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
 
-    function Util.libId(PreLiquidation.MarketParams) external
-        returns PreLiquidation.Id envfree;
+    function Util.libId(PreLiquidation.MarketParams) external returns PreLiquidation.Id envfree;
 }
 
 //Ensure constructor requirements.

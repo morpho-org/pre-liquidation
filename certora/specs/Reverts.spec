@@ -5,10 +5,8 @@ import "ConsistentInstantiation.spec";
 methods {
     function _.price() external => mockPrice() expect uint256;
 
-    function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryMulDivDown(a,b,c);
-    function MathLib.mulDivUp(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryMulDivUp(a,b,c);
+    function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal returns uint256 => summaryMulDivDown(a,b,c);
+    function MathLib.mulDivUp(uint256 a, uint256 b, uint256 c) internal returns uint256 => summaryMulDivUp(a,b,c);
 }
 
 // Checks that onMorphoRepay is only triggered by Morpho.
