@@ -92,18 +92,20 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
 
     mathint ltv = getLtv(borrower);
 
-    mathint preLIF = computeLinearCombination(ltv,
+    uint256 preLIF = require_uint256(computeLinearCombination(ltv,
                                               currentContract.LLTV,
                                               currentContract.PRE_LLTV,
                                               currentContract.PRE_LIF_1,
-                                              currentContract.PRE_LIF_2) ;
+                                              currentContract.PRE_LIF_2));
 
     // Safe require as implementation would revert with InconsistentInput.
     require seizedAssets > 0;
 
-    mathint seizedAssetsQuoted = require_uint256(summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE()));
+    uint256 seizedAssetsQuoted = require_uint256(summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE()));
 
-    mathint repaidShares = summaryToSharesUp(summaryWDivUp(require_uint256(seizedAssetsQuoted), require_uint256(preLIF)));
+    uint256 totalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
+    uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
+    mathint repaidShares = summaryMulDivUp(summaryWDivUp(seizedAssetsQuoted, preLIF), totalAssets, totalShares);
 
     mathint closeFactor = computeLinearCombination(ltv,
                                                    currentContract.LLTV,
