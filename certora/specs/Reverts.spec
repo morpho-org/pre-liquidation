@@ -89,13 +89,13 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
 
     mathint ltv = getLtv(borrower);
 
-    uint256 preLIF = computeLinearCombination(ltv,
+    mathint preLIF = computeLinearCombination(ltv,
                                               currentContract.LLTV,
                                               currentContract.PRE_LLTV,
                                               currentContract.PRE_LIF_1,
                                               currentContract.PRE_LIF_2);
 
-    uint256 seizedAssetsQuoted = require_uint256(summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE()));
+    uint256 seizedAssetsQuoted = summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE());
 
     uint256 totalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);

@@ -70,14 +70,14 @@ function positionAsAssets (address borrower) returns (uint256, uint256) {
     uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
     uint256 borrowerCollateral = MORPHO.collateral(currentContract.ID, borrower);
 
-    uint256 collateralQuoted = require_uint256(summaryMulDivDown(borrowerCollateral, mockPrice(), ORACLE_PRICE_SCALE()));
+    uint256 collateralQuoted = summaryMulDivDown(borrowerCollateral, mockPrice(), ORACLE_PRICE_SCALE());
 
     // Safe require because the implementation would revert, see rule zeroCollateralQuotedReverts.
     require collateralQuoted > 0;
 
     uint256 totalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
-    uint256 borrowed = require_uint256(summaryMulDivUp(borrowerShares, totalAssets, totalShares));
+    uint256 borrowed = summaryMulDivUp(borrowerShares, totalAssets, totalShares);
 
     return (borrowed, collateralQuoted);
 }
