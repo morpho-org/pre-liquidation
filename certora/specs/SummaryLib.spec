@@ -64,7 +64,6 @@ function mockPrice() returns uint256 {
     return updatedPrice;
 }
 
-
 // Ensure this function is only used when no interest is accrued, or enforce that the last update matches the current timestamp.
 function positionAsAssets (address borrower) returns (uint256, uint256) {
     uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
@@ -91,7 +90,8 @@ function getLtv(address borrower) returns uint256 {
     return summaryWDivUp(borrowed, collateralQuoted);
 }
 
-definition computeLinearCombination(mathint ltv, mathint lltv, mathint preLltv, mathint yAtPreLltv, mathint yAtLltv)
-    returns mathint = summaryWMulDown(summaryWDivDown(require_uint256(ltv - preLltv),
-                                                      require_uint256(lltv - preLltv)),
-                                      require_uint256(yAtLltv - yAtPreLltv)) + yAtPreLltv;
+// Safe requires because the implementation would revert.
+definition computeLinearCombination(uint256 ltv, uint256 lltv, uint256 preLltv, uint256 yAtPreLltv, uint256 yAtLltv) returns uint256 =
+    require_uint256(summaryWMulDown(summaryWDivDown(require_uint256(ltv - preLltv),
+                                                    require_uint256(lltv - preLltv)),
+                                    require_uint256(yAtLltv - yAtPreLltv)) + yAtPreLltv);
