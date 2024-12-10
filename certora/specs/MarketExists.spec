@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 
-using Morpho as MORPHO;
+using MorphoHarness as MORPHO;
 
 methods {
     function MORPHO.lastUpdate(PreLiquidation.Id) external returns (uint256) envfree;
