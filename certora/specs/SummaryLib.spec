@@ -8,6 +8,12 @@ methods {
         returns (PreLiquidation.Market memory) envfree;
     function MORPHO.position_(PreLiquidation.Id, address) external
         returns (PreLiquidation.Position memory) envfree;
+    function MORPHO.virtualTotalSupplyAssets(PreLiquidation.Id) external returns(uint256) envfree;
+    function MORPHO.virtualTotalSupplyShares(PreLiquidation.Id) external returns(uint256) envfree;
+    function MORPHO.borrowShares(PreLiquidation.Id, address) external returns (uint256) envfree;
+    function MORPHO.lastUpdate(PreLiquidation.Id) external returns (uint256) envfree;
+
+    function Util.libMulDivUp(uint256, uint256, uint256) external returns(uint256) envfree;
 }
 
 definition WAD() returns uint256 = 10^18;
@@ -41,16 +47,10 @@ function summaryMulDivUp(uint256 x,uint256 y, uint256 d) returns uint256 {
 
 }
 
-function summaryToAssetsDown(uint256 shares, uint256 totalAssets, uint256 totalShares) returns uint256 {
-    return summaryMulDivDown(shares,
-                             require_uint256(totalAssets + VIRTUAL_ASSETS()),
-                             require_uint256(totalShares + VIRTUAL_SHARES()));
-}
-
-function summaryToSharesUp(uint256 assets, uint256 totalAssets, uint256 totalShares) returns uint256 {
-    return summaryMulDivUp(assets,
-                           require_uint256(totalShares + VIRTUAL_SHARES()),
-                           require_uint256(totalAssets + VIRTUAL_ASSETS()));
+function summaryToSharesUp(uint256 assets) returns uint256 {
+    uint256 totalAssets = MORPHO.virtualTotalSupplyAssets(currentContract.ID);
+    uint256 totalShares = MORPHO.virtualTotalSupplyShares(currentContract.ID);
+    return Util.libMulDivUp(assets, totalAssets, totalShares);
 }
 
 function summaryToAssetsUp(uint256 shares, uint256 totalAssets, uint256 totalShares) returns uint256 {
