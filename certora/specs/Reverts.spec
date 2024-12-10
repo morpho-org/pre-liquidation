@@ -33,7 +33,7 @@ rule zeroCollateralQuotedReverts(env e, address borrower, uint256 seizedAssets, 
     uint256 higherBound = summaryWMulDown(collateralQuoted, currentContract.LLTV);
     uint256 lowerBound = summaryWMulDown(collateralQuoted, currentContract.PRE_LLTV);
 
-    assert  collateralQuoted == 0 => (lowerBound >= borrowed || borrowed > higherBound);
+    assert collateralQuoted == 0 => (lowerBound >= borrowed || borrowed > higherBound);
 }
 
 // Check that pre-liquidating a position such that LTV <= PRE_LLTV reverts.
@@ -101,13 +101,13 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
     mathint repaidShares = summaryMulDivUp(summaryWDivUp(seizedAssetsQuoted, require_uint256(preLIF)), totalShares, totalAssets);
 
-    mathint closeFactor = computeLinearCombination(ltv,
+    mathint preLCF = computeLinearCombination(ltv,
                                                    currentContract.LLTV,
                                                    currentContract.PRE_LLTV,
                                                    currentContract.PRE_LCF_1,
                                                    currentContract.PRE_LCF_2) ;
 
-    mathint repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), require_uint256(closeFactor));
+    mathint repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), require_uint256(preLCF));
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
@@ -132,13 +132,13 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
 
     mathint ltv = getLtv(borrower);
 
-    mathint closeFactor = computeLinearCombination(ltv,
+    mathint preLCF = computeLinearCombination(ltv,
                                                    currentContract.LLTV,
                                                    currentContract.PRE_LLTV,
                                                    currentContract.PRE_LCF_1,
                                                    currentContract.PRE_LCF_2);
 
-    mathint repayableShares = summaryWMulDown(borrowerShares, require_uint256(closeFactor));
+    mathint repayableShares = summaryWMulDown(borrowerShares, require_uint256(preLCF));
 
     preLiquidate@withrevert(e, borrower, 0, repaidShares, data);
 

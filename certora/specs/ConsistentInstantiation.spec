@@ -48,7 +48,7 @@ invariant preLIFNotZero()
 invariant preLIFConsistent()
     WAD() < currentContract.PRE_LIF_1
     && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2
-    && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(),currentContract.LLTV)
+    && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(), currentContract.LLTV)
 {
     preserved {
         requireInvariant lltvNotZero();
