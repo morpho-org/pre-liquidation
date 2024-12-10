@@ -22,4 +22,4 @@ hook TIMESTAMP uint newTimestamp {
 // Ensure that the pre-liquidation contract interacts with a created market.
 
 invariant marketExists()
-    MORPHO.lastUpdate(currentContract.ID) != 0
+    MORPHO.lastUpdate(currentContract.ID) != 0;
