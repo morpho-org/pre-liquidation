@@ -9,6 +9,8 @@ methods {
     function MORPHO.borrowShares(PreLiquidation.Id, address) external returns (uint256) envfree;
     function MORPHO.collateral(PreLiquidation.Id, address) external returns (uint256) envfree;
     function MORPHO.lastUpdate(PreLiquidation.Id) external returns (uint256) envfree;
+
+    function Util.libId(PreLiquidation.MarketParams) external returns (PreLiquidation.Id) envfree;
 }
 
 definition WAD() returns uint256 = 10^18;

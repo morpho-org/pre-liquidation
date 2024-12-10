@@ -4,9 +4,8 @@ using MorphoHarness as MORPHO;
 
 methods {
     function MORPHO.lastUpdate(PreLiquidation.Id) external returns (uint256) envfree;
-    function MORPHO.market(PreLiquidation.Id) external returns (uint128, uint128, uint128, uint128, uint128, uint128) envfree;
+    // To fix an issue where immutable variables are not linked in the constructor.
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
-    function _.price() external => NONDET;
 }
 
 persistent ghost uint256 lastTimestamp;

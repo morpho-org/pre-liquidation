@@ -3,9 +3,8 @@
 import "SummaryLib.spec";
 
 methods {
+    // To fix an issue where immutable variables are not linked in the constructor.
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
-
-    function Util.libId(PreLiquidation.MarketParams) external returns (PreLiquidation.Id) envfree;
 }
 
 // Ensure constructor requirements.
