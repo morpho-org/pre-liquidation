@@ -24,7 +24,6 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
     // Safe require because Morpho cannot send transactions.
     require e.msg.sender != currentContract.MORPHO;
 
-
     // Capture the first method call which is not performed with a CALL opcode.
     if (f.selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
        preLiquidateCalled = true;

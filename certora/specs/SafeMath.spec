@@ -2,11 +2,11 @@
 
 definition WAD() returns mathint = 10^18;
 
-function summaryWMulDown(mathint x,mathint y) returns mathint {
+function summaryWMulDown(mathint x, mathint y) returns mathint {
     return (x * y) / WAD();
 }
 
-function summaryWDivUp(mathint x,mathint y) returns mathint {
+function summaryWDivUp(mathint x, mathint y) returns mathint {
     return (x * WAD() + (y-1)) / y;
 }
 
