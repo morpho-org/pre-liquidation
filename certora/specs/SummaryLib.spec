@@ -4,8 +4,8 @@ using MorphoHarness as MORPHO;
 using Util as Util;
 
 methods {
-    function MORPHO.virtualTotalBorrowAssets(PreLiquidation.Id) external returns(uint256) envfree;
-    function MORPHO.virtualTotalBorrowShares(PreLiquidation.Id) external returns(uint256) envfree;
+    function MORPHO.virtualTotalBorrowAssets(PreLiquidation.Id) external returns (uint256) envfree;
+    function MORPHO.virtualTotalBorrowShares(PreLiquidation.Id) external returns (uint256) envfree;
     function MORPHO.borrowShares(PreLiquidation.Id, address) external returns (uint256) envfree;
     function MORPHO.collateral(PreLiquidation.Id, address) external returns (uint256) envfree;
     function MORPHO.lastUpdate(PreLiquidation.Id) external returns (uint256) envfree;

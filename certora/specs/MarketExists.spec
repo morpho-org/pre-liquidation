@@ -4,7 +4,7 @@ using Morpho as MORPHO;
 
 methods {
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
-    function MORPHO.market(PreLiquidation.Id) external returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
+    function MORPHO.market(PreLiquidation.Id) external returns (uint128, uint128, uint128, uint128, uint128, uint128) envfree;
     function _.price() external => NONDET;
 }
 
