@@ -8,7 +8,7 @@ methods {
     function Util.libId(PreLiquidation.MarketParams) external returns PreLiquidation.Id envfree;
 }
 
-//Ensure constructor requirements.
+// Ensure constructor requirements.
 
 // Base case for mutually dependent invariants.
 // Ensure that in a successfully deployed contract the preLLTV value is not zero.

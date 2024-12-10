@@ -25,7 +25,7 @@ function summaryWDivDown(uint256 x,uint256 y) returns uint256 {
 
 function summaryMulDivDown(uint256 x,uint256 y, uint256 d) returns uint256 {
     // Safe require because the reference implementation would revert.
-    return require_uint256((x * y)/d);
+    return require_uint256((x * y) / d);
 }
 
 function summaryWDivUp(uint256 x,uint256 y) returns uint256 {
@@ -34,7 +34,7 @@ function summaryWDivUp(uint256 x,uint256 y) returns uint256 {
 
 function summaryMulDivUp(uint256 x,uint256 y, uint256 d) returns uint256 {
     // Safe require because the reference implementation would revert.
-    return require_uint256((x * y + (d-1)) / d);
+    return require_uint256((x * y + (d - 1)) / d);
 }
 
 function summaryMarketParams() returns PreLiquidation.MarketParams {

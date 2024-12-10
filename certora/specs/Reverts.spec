@@ -4,9 +4,6 @@ import "ConsistentInstantiation.spec";
 
 methods {
     function _.price() external => mockPrice() expect uint256;
-
-    function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal returns uint256 => summaryMulDivDown(a,b,c);
-    function MathLib.mulDivUp(uint256 a, uint256 b, uint256 c) internal returns uint256 => summaryMulDivUp(a,b,c);
 }
 
 // Checks that onMorphoRepay is only triggered by Morpho.
@@ -97,9 +94,6 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
                                               currentContract.PRE_LLTV,
                                               currentContract.PRE_LIF_1,
                                               currentContract.PRE_LIF_2);
-
-    // Safe require as implementation would revert with InconsistentInput.
-    require seizedAssets > 0;
 
     uint256 seizedAssetsQuoted = require_uint256(summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE()));
 
