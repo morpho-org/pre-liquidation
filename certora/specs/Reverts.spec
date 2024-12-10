@@ -107,7 +107,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
                                               currentContract.PRE_LCF_1,
                                               currentContract.PRE_LCF_2) ;
 
-    mathint repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), preLCF);
+    uint256 repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), preLCF);
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
@@ -138,7 +138,7 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
                                               currentContract.PRE_LCF_1,
                                               currentContract.PRE_LCF_2);
 
-    mathint repayableShares = summaryWMulDown(borrowerShares, preLCF);
+    uint256 repayableShares = summaryWMulDown(borrowerShares, preLCF);
 
     preLiquidate@withrevert(e, borrower, 0, repaidShares, data);
 
