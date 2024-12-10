@@ -105,7 +105,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
 
     uint256 totalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
-    mathint repaidShares = summaryMulDivUp(summaryWDivUp(seizedAssetsQuoted, require_uint256(preLIF)), totalAssets, totalShares);
+    mathint repaidShares = summaryMulDivUp(summaryWDivUp(seizedAssetsQuoted, require_uint256(preLIF)), totalShares, totalAssets);
 
     mathint closeFactor = computeLinearCombination(ltv,
                                                    currentContract.LLTV,
