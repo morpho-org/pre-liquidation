@@ -4,21 +4,6 @@ import "ConsistentInstantiation.spec";
 
 methods {
     function _.price() external => mockPrice() expect uint256;
-
-    function MORPHO.market_(PreLiquidation.Id) external
-        returns (PreLiquidation.Market memory) envfree;
-    function MORPHO.position_(PreLiquidation.Id, address) external
-        returns (PreLiquidation.Position memory) envfree;
-
-    function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryMulDivDown(a,b,c);
-    function MathLib.mulDivUp(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryMulDivUp(a,b,c);
-
-    function SharesMathLib.toSharesUp(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryToSharesUp(a,b,c);
-    function SharesMathLib.toAssetsUp(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryToAssetsUp(a,b,c);
 }
 
 // Checks that onMorphoRepay is only triggered by Morpho.
@@ -48,7 +33,7 @@ rule zeroCollateralQuotedReverts(env e, address borrower, uint256 seizedAssets, 
     uint256 higherBound = summaryWMulDown(collateralQuoted, currentContract.LLTV);
     uint256 lowerBound = summaryWMulDown(collateralQuoted, currentContract.PRE_LLTV);
 
-    assert  collateralQuoted == 0 => (lowerBound >= borrowed || borrowed > higherBound);
+    assert collateralQuoted == 0 => (lowerBound >= borrowed || borrowed > higherBound);
 }
 
 // Check that pre-liquidating a position such that LTV <= PRE_LLTV reverts.
@@ -58,13 +43,11 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
-
     // Ensure that no interest is accumulated.
     // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
-    require m.lastUpdate == e.block.timestamp;
+    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
-    mathint ltv = getLtv(borrower);
+    uint256 ltv = getLtv(borrower);
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
@@ -80,13 +63,11 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
-
     // Ensure that no interest is accumulated.
     // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
-    require m.lastUpdate == e.block.timestamp;
+    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
-    mathint ltv = getLtv(borrower);
+    uint256 ltv = getLtv(borrower);
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
@@ -102,38 +83,31 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
-
     // Ensure that no interest is accumulated.
     // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
-    require m.lastUpdate == e.block.timestamp;
+    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
-    PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
+    uint256 ltv = getLtv(borrower);
 
-    mathint ltv = getLtv(borrower);
-
-    mathint preLIF = computeLinearCombination(ltv,
+    uint256 preLIF = computeLinearCombination(ltv,
                                               currentContract.LLTV,
                                               currentContract.PRE_LLTV,
                                               currentContract.PRE_LIF_1,
-                                              currentContract.PRE_LIF_2) ;
+                                              currentContract.PRE_LIF_2);
 
-    // Safe require as implementation would revert with InconsistentInput.
-    require seizedAssets > 0;
+    uint256 seizedAssetsQuoted = summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE());
 
-    mathint seizedAssetsQuoted = require_uint256(summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE()));
+    uint256 totalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
+    uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
+    uint256 repaidShares = summaryMulDivUp(summaryWDivUp(seizedAssetsQuoted, preLIF), totalShares, totalAssets);
 
-    mathint repaidShares = summaryToSharesUp(summaryWDivUp(require_uint256(seizedAssetsQuoted), require_uint256(preLIF)),
-                                             m.totalBorrowAssets,
-                                             m.totalBorrowShares);
+    uint256 preLCF = computeLinearCombination(ltv,
+                                              currentContract.LLTV,
+                                              currentContract.PRE_LLTV,
+                                              currentContract.PRE_LCF_1,
+                                              currentContract.PRE_LCF_2) ;
 
-    mathint closeFactor = computeLinearCombination(ltv,
-                                                   currentContract.LLTV,
-                                                   currentContract.PRE_LLTV,
-                                                   currentContract.PRE_LCF_1,
-                                                   currentContract.PRE_LCF_2) ;
-
-    mathint repayableShares = summaryWMulDown(p.borrowShares, require_uint256(closeFactor));
+    uint256 repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), preLCF);
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
@@ -150,26 +124,21 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
 
-    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
-
     // Ensure that no interest is accumulated.
     // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
-    require m.lastUpdate == e.block.timestamp;
+    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
-    PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
+    uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
 
-    mathint ltv = getLtv(borrower);
+    uint256 ltv = getLtv(borrower);
 
-    // Safe require as implementation would revert with InconsistentInput.
-    require repaidShares > 0;
+    uint256 preLCF = computeLinearCombination(ltv,
+                                              currentContract.LLTV,
+                                              currentContract.PRE_LLTV,
+                                              currentContract.PRE_LCF_1,
+                                              currentContract.PRE_LCF_2);
 
-    mathint closeFactor = computeLinearCombination(ltv,
-                                                   currentContract.LLTV,
-                                                   currentContract.PRE_LLTV,
-                                                   currentContract.PRE_LCF_1,
-                                                   currentContract.PRE_LCF_2) ;
-
-    mathint repayableShares = summaryWMulDown(p.borrowShares, require_uint256(closeFactor));
+    uint256 repayableShares = summaryWMulDown(borrowerShares, preLCF);
 
     preLiquidate@withrevert(e, borrower, 0, repaidShares, data);
 

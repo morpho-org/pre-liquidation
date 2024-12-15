@@ -3,13 +3,11 @@
 import "SummaryLib.spec";
 
 methods {
+    // To fix an issue where immutable variables are not linked in the constructor.
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
-
-    function Util.libId(PreLiquidation.MarketParams) external
-        returns PreLiquidation.Id envfree;
 }
 
-//Ensure constructor requirements.
+// Ensure constructor requirements.
 
 // Base case for mutually dependent invariants.
 // Ensure that in a successfully deployed contract the preLLTV value is not zero.
@@ -49,7 +47,7 @@ invariant preLIFNotZero()
 invariant preLIFConsistent()
     WAD() < currentContract.PRE_LIF_1
     && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2
-    && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(),currentContract.LLTV)
+    && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(), currentContract.LLTV)
 {
     preserved {
         requireInvariant lltvNotZero();

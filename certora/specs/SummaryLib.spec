@@ -4,19 +4,18 @@ using MorphoHarness as MORPHO;
 using Util as Util;
 
 methods {
-    function MORPHO.market_(PreLiquidation.Id) external
-        returns (PreLiquidation.Market memory) envfree;
-    function MORPHO.position_(PreLiquidation.Id, address) external
-        returns (PreLiquidation.Position memory) envfree;
+    function MORPHO.virtualTotalBorrowAssets(PreLiquidation.Id) external returns (uint256) envfree;
+    function MORPHO.virtualTotalBorrowShares(PreLiquidation.Id) external returns (uint256) envfree;
+    function MORPHO.borrowShares(PreLiquidation.Id, address) external returns (uint256) envfree;
+    function MORPHO.collateral(PreLiquidation.Id, address) external returns (uint256) envfree;
+    function MORPHO.lastUpdate(PreLiquidation.Id) external returns (uint256) envfree;
+
+    function Util.libId(PreLiquidation.MarketParams) external returns (PreLiquidation.Id) envfree;
 }
 
 definition WAD() returns uint256 = 10^18;
 
 definition ORACLE_PRICE_SCALE() returns uint256 = 10^36;
-
-definition VIRTUAL_SHARES() returns uint256 = 10^6;
-
-definition VIRTUAL_ASSETS() returns uint256 = 1;
 
 function summaryWMulDown(uint256 x,uint256 y) returns uint256 {
     return summaryMulDivDown(x, y, WAD());
@@ -28,7 +27,7 @@ function summaryWDivDown(uint256 x,uint256 y) returns uint256 {
 
 function summaryMulDivDown(uint256 x,uint256 y, uint256 d) returns uint256 {
     // Safe require because the reference implementation would revert.
-    return require_uint256((x * y)/d);
+    return require_uint256((x * y) / d);
 }
 
 function summaryWDivUp(uint256 x,uint256 y) returns uint256 {
@@ -37,26 +36,7 @@ function summaryWDivUp(uint256 x,uint256 y) returns uint256 {
 
 function summaryMulDivUp(uint256 x,uint256 y, uint256 d) returns uint256 {
     // Safe require because the reference implementation would revert.
-    return require_uint256((x * y + (d-1)) / d);
-
-}
-
-function summaryToAssetsDown(uint256 shares, uint256 totalAssets, uint256 totalShares) returns uint256 {
-    return summaryMulDivDown(shares,
-                             require_uint256(totalAssets + VIRTUAL_ASSETS()),
-                             require_uint256(totalShares + VIRTUAL_SHARES()));
-}
-
-function summaryToSharesUp(uint256 assets, uint256 totalAssets, uint256 totalShares) returns uint256 {
-    return summaryMulDivUp(assets,
-                           require_uint256(totalShares + VIRTUAL_SHARES()),
-                           require_uint256(totalAssets + VIRTUAL_ASSETS()));
-}
-
-function summaryToAssetsUp(uint256 shares, uint256 totalAssets, uint256 totalShares) returns uint256 {
-    return summaryMulDivUp(shares,
-                           require_uint256(totalAssets + VIRTUAL_ASSETS()),
-                           require_uint256(totalShares + VIRTUAL_SHARES()));
+    return require_uint256((x * y + (d - 1)) / d);
 }
 
 function summaryMarketParams() returns PreLiquidation.MarketParams {
@@ -86,18 +66,19 @@ function mockPrice() returns uint256 {
     return updatedPrice;
 }
 
-
 // Ensure this function is only used when no interest is accrued, or enforce that the last update matches the current timestamp.
 function positionAsAssets (address borrower) returns (uint256, uint256) {
-    PreLiquidation.Market m = MORPHO.market_(currentContract.ID);
-    PreLiquidation.Position p = MORPHO.position_(currentContract.ID, borrower);
+    uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
+    uint256 borrowerCollateral = MORPHO.collateral(currentContract.ID, borrower);
 
-    uint256 collateralQuoted = require_uint256(summaryMulDivDown(p.collateral, mockPrice(), ORACLE_PRICE_SCALE()));
+    uint256 collateralQuoted = summaryMulDivDown(borrowerCollateral, mockPrice(), ORACLE_PRICE_SCALE());
 
     // Safe require because the implementation would revert, see rule zeroCollateralQuotedReverts.
     require collateralQuoted > 0;
 
-    uint256 borrowed = require_uint256(summaryToAssetsUp(p.borrowShares, m.totalBorrowAssets, m.totalBorrowShares));
+    uint256 totalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
+    uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
+    uint256 borrowed = summaryMulDivUp(borrowerShares, totalAssets, totalShares);
 
     return (borrowed, collateralQuoted);
 }
@@ -111,7 +92,8 @@ function getLtv(address borrower) returns uint256 {
     return summaryWDivUp(borrowed, collateralQuoted);
 }
 
-definition computeLinearCombination(mathint ltv, mathint lltv, mathint preLltv, mathint yAtPreLltv, mathint yAtLltv)
-    returns mathint = summaryWMulDown(summaryWDivDown(require_uint256(ltv - preLltv),
-                                                      require_uint256(lltv - preLltv)),
-                                      require_uint256(yAtLltv - yAtPreLltv)) + yAtPreLltv;
+// Safe requires because the implementation would revert.
+definition computeLinearCombination(uint256 ltv, uint256 lltv, uint256 preLltv, uint256 yAtPreLltv, uint256 yAtLltv) returns uint256 =
+    require_uint256(summaryWMulDown(summaryWDivDown(require_uint256(ltv - preLltv),
+                                                    require_uint256(lltv - preLltv)),
+                                    require_uint256(yAtLltv - yAtPreLltv)) + yAtPreLltv);
