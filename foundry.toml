@@ -6,6 +6,7 @@ via_ir = true
 optimizer = true
 optimizer_runs = 999999
 bytecode_hash = "none"
+evm_version = "cancun"
 
 [profile.default.fmt]
 wrap_comments = true
