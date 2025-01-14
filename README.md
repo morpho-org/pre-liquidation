@@ -72,7 +72,10 @@ This manipulation can lead to repaying a proportion of the position's debt highe
 It has been studied in the part 5.2 of [An Empirical Study of DeFi Liquidations:Incentives, Risks, and Instabilities](https://arxiv.org/pdf/2106.06389), in the case of a constant liquidation close factor.
 Implementing a `preLCF` linear in the health factor can help mitigating this manipulation when choosing the right slope.
 
-## Getting started
+## Developers
+
+> [!NOTE]
+> `PreLiquidationFactory` has been deployed on Ethereum and Base with the [metadata hash](https://docs.soliditylang.org/en/latest/metadata.html) included, which appear at two places in the bytecode as it is a factory.
 
 ### Package installation
 
