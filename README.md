@@ -36,16 +36,18 @@ The two main use-cases are:
 1. Using normal fixed parameters when `preLIF1 = preLIF2` and `preLCF1 = preLCF2`.
 2. Using health dependent liquidation when either `preLIF1 < preLIF2` or `preLCF1 < preLCF2`, similar to a Quasi Dutch Auction (as in [Euler liquidations](https://docs-v1.euler.finance/getting-started/white-paper#liquidations)).
 
-
 ### Pre-liquidation parameters restrictions
 
-The PreLiquidation smart-contract enforces the following properties:
-- preLltv < LLTV;
-- preLCF1 <= preLCF2;
-- preLFC1 <= 1;
-- 1 <= preLIF1 <= preLIF2 <= 1 / LLTV.
-Note: Using `preLCF2 > 1`, you can select at which LTV between preLltv and LLTV the entire position will be pre-liquidated.
-A pre-liquidation close factor higher than 100% means that the whole position is pre-liquidatable.
+The PreLiquidation smart-contract enforces the properties:
+
+- `preLltv < LLTV`;
+- `preLCF1 <= preLCF2`;
+- `preLFC1 <= 1`;
+- `1 <= preLIF1 <= preLIF2 <= 1 / LLTV`.
+
+Note: A pre-liquidation close factor higher than 100% means that the whole position is pre-liquidatable, so using `preLCF2 > 1` allows to make the position entirely pre-liquidatable at a LTV between preLltv and LLTV.
+
+The property `preLIF2 <= 1 / LLTV` and the fact that pre-liquidations are only allowed for `LTV <= LLTV` ensure that pre-liquidations can't worsen the health of the position.
 
 ### `onPreLiquidate` callback
 
@@ -64,7 +66,18 @@ It's possible to use the corresponding market oracle or any other oracle includi
 PreLiquidation contract addresses are generated using the CREATE2 opcode, allowing for predictable address computation depending on pre-liquidation parameters.
 The [`PreLiquidationAddressLib`](./src/libraries/periphery/PreLiquidationAddressLib.sol) library provides a `computePreLiquidationAddress` function, simplifying the computation of a PreLiquidation contract's address.
 
-## Getting started
+### Potential preLCF manipulation
+
+A pre-liquidation cannot repay a proportion of the position's debt greater than `preLCF`.
+However, it's possible to pre-liquidate a proportion of the position while keeping it pre-liquidatable before performing another pre-liquidation.
+This manipulation can lead to repaying a proportion of the position's debt higher than `preLCF`.
+It has been studied in the part 5.2 of [An Empirical Study of DeFi Liquidations:Incentives, Risks, and Instabilities](https://arxiv.org/pdf/2106.06389), in the case of a constant liquidation close factor.
+Implementing a `preLCF` linear in the health factor can help mitigating this manipulation when choosing the right slope.
+
+## Developers
+
+> [!NOTE]
+> `PreLiquidationFactory` has been deployed on Ethereum and Base with the [metadata hash](https://docs.soliditylang.org/en/latest/metadata.html) included, which appear at two places in the bytecode as it is a factory.
 
 ### Package installation
 
@@ -73,6 +86,10 @@ Install [Foundry](https://book.getfoundry.sh/getting-started/installation).
 ### Run tests
 
 Run `forge test`.
+
+## Solidity version
+
+As a consequence of using Solidity 0.8.27, the bytecode of the contracts could contain new opcodes (e.g., `PUSH0`, `MCOPY`, `TSTORE`, `TLOAD`) so one should make sure that the contract bytecode can be handled by the target chain for deployment.
 
 ## Audits
 

@@ -47,7 +47,7 @@ contract PreLiquidationErrorTest is BaseTest {
             maxPreLltv: marketParams.lltv - 1,
             minPreLCF: WAD / 100,
             maxPreLCF: WAD,
-            minPreLIF: WAD + 1,
+            minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
@@ -64,7 +64,7 @@ contract PreLiquidationErrorTest is BaseTest {
             maxPreLltv: marketParams.lltv - 1,
             minPreLCF: WAD + 1,
             maxPreLCF: type(uint256).max,
-            minPreLIF: WAD + 1,
+            minPreLIF: WAD,
             maxPreLIF: WAD.wDivDown(lltv),
             preLiqOracle: marketParams.oracle
         });
