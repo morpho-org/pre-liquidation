@@ -54,16 +54,12 @@ function summaryExactlyOneZero(uint256 assets, uint256 shares) returns bool {
     return (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
 }
 
+persistent ghost uint256 constantPrice;
 persistent ghost uint256 lastPrice;
 persistent ghost bool priceChanged;
 
 function mockPrice() returns uint256 {
-    uint256 updatedPrice;
-    if (updatedPrice != lastPrice) {
-        priceChanged = true;
-        lastPrice = updatedPrice;
-    }
-    return updatedPrice;
+    return constantPrice;
 }
 
 // Ensure this function is only used when no interest is accrued, or enforce that the last update matches the current timestamp.

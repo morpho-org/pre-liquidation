@@ -3,116 +3,83 @@
 import "ConsistentInstantiation.spec";
 import "SummaryLib.spec";
 
-using Morpho as MORPHO;
-
 methods {
-    function _.onMorphoRepay(uint256,bytes) external => DISPATCHER(true);
-    function _.price() external => mockPrice() expect uint256;
+    function _.onMorphoRepay(uint256, bytes) external => DISPATCHER(true);
+
+    // Disregard some unresolved calls altogether.
+    function _.onPreLiquidate(uint256, bytes) external => NONDET DELETE;
+    function _.transfer(address, uint256) external => NONDET DELETE;
+    function _.transferFrom(address, address, uint256) external => NONDET DELETE;
+
+    function _.price() external => constantPrice expect uint256;
 
     function marketParams() internal returns (PreLiquidation.MarketParams memory)
         => summaryMarketParams();
-    function lastLtv() external returns uint256 envfree;
-    function lastLtvAfter() external returns uint256 envfree;
 
+    function MORPHO.extSloads(bytes32[]) external returns bytes32[] => NONDET DELETE;
     function MORPHO.market(PreLiquidation.Id) external
       returns (uint128, uint128, uint128,uint128, uint128, uint128) envfree;
     function MORPHO.position(PreLiquidation.Id, address) external
       returns (uint256, uint128, uint128) envfree;
-    function MORPHO.repay(PreLiquidation.MarketParams marketParams,
-                           uint256 assets,
-                           uint256 shares,
-                           address onBehalf,
-                           bytes data
-                          ) external returns (uint256, uint256)
-        => summaryMorphoRepay(marketParams, assets, shares, onBehalf,data);
-    function MORPHO.extSloads(bytes32[]) external
-        returns bytes32[] => NONDET DELETE;
-    function MORPHO.accrueInterest(PreLiquidation.MarketParams) external =>
-        CONSTANT;
+    function MORPHO.totalBorrowShares(PreLiquidation.Id) external returns (uint256) envfree;
+    function MORPHO.totalBorrowAssets(PreLiquidation.Id) external returns (uint256) envfree;
 
     function UtilsLib.exactlyOneZero(uint256 a, uint256 b) internal
         returns bool => summaryExactlyOneZero(a,b);
+    function Util.oraclePriceScale() external returns (uint256) envfree;
+    function Util.wad() external returns (uint256) envfree;
 
-    function MathLib.mulDivDown(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryMulDivDown(a,b,c) ALL;
-    function MathLib.wMulDown(uint256 a, uint256 b) internal
-        returns uint256 => summaryWMulDown(a,b) ALL;
-    function MathLib.wDivUp(uint256 a, uint256 b) internal
-        returns uint256 => summaryWDivUp(a,b) ALL;
-    function MathLib.wDivDown(uint256 a, uint256 b) internal
-        returns uint256 => summaryWDivDown(a,b) ALL;
-    function MathLib.mulDivUp(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryMulDivUp(a,b,c) ALL;
-
-    function SharesMathLib.toSharesUp(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryToSharesUp(a,b,c);
-    function SharesMathLib.toAssetsUp(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryToAssetsUp(a,b,c);
-    function SharesMathLib.toAssetsDown(uint256 a, uint256 b, uint256 c) internal
-        returns uint256 => summaryToAssetsDown(a,b,c);
-
-    function libId(PreLiquidation.MarketParams) external returns PreLiquidation.Id envfree;
-}
-
-function summaryMorphoRepay(
-                            PreLiquidation.MarketParams marketParams,
-                            uint256 assets,
-                            uint256 shares,
-                            address onBehalf,
-                            bytes data
-) returns (uint256, uint256)
-{
-    uint256 mTotalBorrowAssets;
-    uint256 mTotalBorrowShares;
-    uint256 mLastUpdate;
-
-    uint256 repaidAssets;
-
-    assert libId(marketParams) == currentContract.ID;
-    assert assets == 0;
-    assert shares != 0;
-    assert data.length != 0;
-    require onBehalf != 0;
-
-    (_, _, mTotalBorrowAssets, mTotalBorrowShares, mLastUpdate, _) = MORPHO.market(currentContract.ID);
-    // assert mLastUpdate > 0;
-
-    repaidAssets = summaryToAssetsUp(shares, mTotalBorrowAssets, mTotalBorrowShares);
-
-    return (repaidAssets, shares);
-}
-
-// Check correctness of applying idToMarketParams() to an identifier.
-invariant hashOfMarketParamsOf()
-    libId(summaryMarketParams()) == currentContract.ID
-{
-    preserved {
-        requireInvariant preLIFNotZero();
-    }
+    function MORPHO.accrueInterest(PreLiquidation.MarketParams) external => NONDET;
+    function Morpho._isHealthy(MorphoHarness.MarketParams memory, MorphoHarness.Id,address) internal returns (bool) => NONDET;
+    function Morpho._accrueInterest(MorphoHarness.MarketParams memory, MorphoHarness.Id) internal => NONDET;
 }
 
 rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssets, bytes data) {
-    // Market value.
-    uint256 mLastUpdate;
-
     // Avoid division by zero.
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
-
-    // Ensure consisitent positions.
     requireInvariant hashOfMarketParamsOf();
+    PreLiquidation.Id id = Util.libId(summaryMarketParams());
 
-    // Ensure no callback is performed.
-    require data.lenght == 0;
+    // We place ourselves at the last block for getting the following variables.
+    require MORPHO.lastUpdate(id) == e.block.timestamp;
 
-    (_, _, _, _, mLastUpdate, _) = MORPHO.market(currentContract.ID);
+    // Assume no callback.
+    require data.length == 0;
 
-    // Ensure that no interest is accumulated.
-    require mLastUpdate == e.block.timestamp;
+    uint256 borrowerShares = MORPHO.borrowShares(id, borrower);
+    // Safe require because of the sumBorrowSharesCorrect invariant.
+    require borrowerShares <= MORPHO.totalBorrowShares(id);
 
-    preLiquidate(e, borrower, seizedAssets, 0, data);
+    uint256 borrowerCollateral = MORPHO.collateral(id, borrower);
 
-    require !priceChanged;
-    assert lastLtvAfter() <= lastLtv();
+    uint256 lif;
+    require currentContract.PRE_LIF_1 <= lif && lif <= currentContract.PRE_LIF_2;
+
+    uint256 lcf;
+    require lcf == Util.wad();
+
+    uint256 virtualTotalAssets = MORPHO.virtualTotalBorrowAssets(id);
+    uint256 virtualTotalShares = MORPHO.virtualTotalBorrowShares(id);
+    require borrowerCollateral * constantPrice * virtualTotalShares * Util.wad() > borrowerShares * Util.oraclePriceScale() * virtualTotalAssets * currentContract.PRE_LIF_2;
+
+
+    preLiquidate(e, borrower, seizedAssets, 0, lif, lcf, data);
+
+    uint256 newBorrowerShares = MORPHO.borrowShares(id, borrower);
+    uint256 newBorrowerCollateral = MORPHO.collateral(id, borrower);
+    uint256 repaidShares = assert_uint256(borrowerShares - newBorrowerShares);
+    uint256 newVirtualTotalAssets = MORPHO.virtualTotalBorrowAssets(id);
+    uint256 newVirtualTotalShares = MORPHO.virtualTotalBorrowShares(id);
+
+    // Hint for the prover to show that there is no bad debt realization.
+    assert newBorrowerCollateral != 0;
+    // Hint for the prover about the ratio used to close the position.
+    assert repaidShares * borrowerCollateral >= seizedAssets * borrowerShares;
+    // Prove that the ratio of shares of debt over collateral is smaller after the liquidation or that it has been completely liquidated.
+    assert borrowerShares * newBorrowerCollateral >= newBorrowerShares * borrowerCollateral;
+    // Prove that the value of borrow shares is smaller after the liquidation.
+    // Note that this is only shown for the case where there are still borrow positions on the markets.
+    assert assert_uint256(newVirtualTotalAssets - 1) > 0 => newVirtualTotalShares * virtualTotalAssets >= newVirtualTotalAssets * virtualTotalShares;
 }
