@@ -71,29 +71,28 @@ rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssets, bytes d
     requireInvariant preLIFConsistent();
     requireInvariant hashOfMarketParamsOf();
 
-    // We place ourselves at the last block for getting the following variables.
-    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
-
     // Assume no callback.
     require data.length == 0;
 
+    // We place ourselves at the last block for getting the following variables.
+    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
+
     uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
-    // Safe require because of the sumBorrowSharesCorrect invariant.
+    // Safe require because of the sumBorrowSharesCorrect invariant proven in the morpho-blue repository.
     require borrowerShares <= MORPHO.totalBorrowShares(currentContract.ID);
 
     uint256 borrowerCollateral = MORPHO.collateral(currentContract.ID, borrower);
 
     uint256 lif;
-    //Safe require as it proven in rule preLIFBounded.
+    // Safe require as it proven in rule preLIFBounded.
     require currentContract.PRE_LIF_1 <= lif && lif <= currentContract.PRE_LIF_2;
 
     uint256 lcf;
-    //Safe require as it proven in rule preLCFBounded.
+    // Safe require as it proven in rule preLCFBounded.
     require currentContract.PRE_LCF_1 <= lcf && lcf <= currentContract.PRE_LCF_2;
 
     uint256 virtualTotalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 virtualTotalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
-
 
     preLiquidate(e, borrower, seizedAssets, 0, lif, lcf, data);
 
