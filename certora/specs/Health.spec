@@ -72,7 +72,7 @@ rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssets, bytes d
     requireInvariant hashOfMarketParamsOf();
 
     // We place ourselves at the last block for getting the following variables.
-    require MORPHO.lastUpdate(id) == e.block.timestamp;
+    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     // Assume no callback.
     require data.length == 0;
