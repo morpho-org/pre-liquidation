@@ -7,10 +7,6 @@ methods {
     // In this specs, it is assumed are no callbacks after a pre-liquidation.
     function _.onPreLiquidate(uint256, bytes) external => NONDET;
 
-    // It is assumed that ERC20 transfers are safe.
-    function _.transfer(address, uint256) external => HAVOC_ECF;
-    function _.transferFrom(address, address, uint256) external => HAVOC_ECF;
-
     function _.price() external => constantPrice expect uint256;
 
     function MORPHO.extSloads(bytes32[]) external returns bytes32[] => NONDET DELETE;
@@ -43,7 +39,6 @@ rule preLIFBounded(env e, address borrower){
     requireInvariant preLIFConsistent();
     requireInvariant hashOfMarketParamsOf();
 
-    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
     require borrower != 0;
 
     assert currentContract.PRE_LIF_1 <= preLIF(borrower);
@@ -56,7 +51,6 @@ rule preLCFBounded(env e, address borrower){
     requireInvariant preLIFConsistent();
     requireInvariant hashOfMarketParamsOf();
 
-    require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
     require borrower != 0;
 
     assert currentContract.PRE_LCF_1 <= preLCF(borrower);
