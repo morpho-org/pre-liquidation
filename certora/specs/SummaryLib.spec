@@ -54,14 +54,25 @@ function summaryExactlyOneZero(uint256 assets, uint256 shares) returns bool {
     return (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
 }
 
-persistent ghost uint256 constantPrice;
+persistent ghost uint256 lastPrice;
+
+persistent ghost bool priceChanged;
+
+function mockPrice() returns uint256 {
+    uint256 updatedPrice;
+    if (updatedPrice != lastPrice) {
+        priceChanged = true;
+        lastPrice = updatedPrice;
+    }
+    return updatedPrice;
+}
 
 // Ensure this function is only used when no interest is accrued, or enforce that the last update matches the current timestamp.
 function positionAsAssets (address borrower) returns (uint256, uint256) {
     uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
     uint256 borrowerCollateral = MORPHO.collateral(currentContract.ID, borrower);
 
-    uint256 collateralQuoted = summaryMulDivDown(borrowerCollateral, constantPrice, ORACLE_PRICE_SCALE());
+    uint256 collateralQuoted = summaryMulDivDown(borrowerCollateral, mockPrice(), ORACLE_PRICE_SCALE());
 
     // Safe require because the implementation would revert, see rule zeroCollateralQuotedReverts.
     require collateralQuoted > 0;

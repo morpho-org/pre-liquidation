@@ -4,17 +4,14 @@ import "ConsistentInstantiation.spec";
 import "SummaryLib.spec";
 
 methods {
-    function _.onMorphoRepay(uint256, bytes) external => DISPATCHER(true);
+    // In this specs, it is assumed are no callbacks after a pre-liquidation.
+    function _.onPreLiquidate(uint256, bytes) external => NONDET;
 
-    // Disregard some unresolved calls altogether.
-    function _.onPreLiquidate(uint256, bytes) external => NONDET DELETE;
-    function _.transfer(address, uint256) external => NONDET DELETE;
-    function _.transferFrom(address, address, uint256) external => NONDET DELETE;
+    // It is assumed that ERC20 transfers are safe.
+    function _.transfer(address, uint256) external => HAVOC_ECF;
+    function _.transferFrom(address, address, uint256) external => HAVOC_ECF;
 
     function _.price() external => constantPrice expect uint256;
-
-    function marketParams() internal returns (PreLiquidation.MarketParams memory)
-        => summaryMarketParams();
 
     function MORPHO.extSloads(bytes32[]) external returns bytes32[] => NONDET DELETE;
     function MORPHO.market(PreLiquidation.Id) external
@@ -37,6 +34,8 @@ methods {
     function preLCF(address) external returns uint256 envfree;
 }
 
+persistent ghost uint256 constantPrice;
+
 rule preLIFBounded(env e, address borrower){
     // Avoid division by zero.
     requireInvariant preLltvConsistent();
@@ -44,7 +43,6 @@ rule preLIFBounded(env e, address borrower){
     requireInvariant preLIFConsistent();
     requireInvariant hashOfMarketParamsOf();
 
-    // We place ourselves at the last block for getting the following variables.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
     require borrower != 0;
 
@@ -57,6 +55,7 @@ rule preLCFBounded(env e, address borrower){
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
     requireInvariant hashOfMarketParamsOf();
+
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
     require borrower != 0;
 
@@ -64,7 +63,7 @@ rule preLCFBounded(env e, address borrower){
     assert preLCF(borrower) <= currentContract.PRE_LCF_2;
 }
 
-rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssets, bytes data) {
+rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssetsInput, uint256 repaidSharesInput, bytes data) {
     // Avoid division by zero.
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
@@ -94,11 +93,12 @@ rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssets, bytes d
     uint256 virtualTotalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 virtualTotalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
 
-    preLiquidate(e, borrower, seizedAssets, 0, lif, lcf, data);
+    preLiquidate(e, borrower, seizedAssetsInput, repaidSharesInput, lif, lcf, data);
 
     uint256 newBorrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
     uint256 newBorrowerCollateral = MORPHO.collateral(currentContract.ID, borrower);
     uint256 repaidShares = assert_uint256(borrowerShares - newBorrowerShares);
+    uint256 seizedAssets = assert_uint256(borrowerCollateral - newBorrowerCollateral);
     uint256 newVirtualTotalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 newVirtualTotalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
 

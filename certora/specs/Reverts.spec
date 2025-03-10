@@ -3,7 +3,7 @@
 import "ConsistentInstantiation.spec";
 
 methods {
-    function _.price() external => constantPrice expect uint256;
+    function _.price() external => mockPrice() expect uint256;
 }
 
 // Checks that onMorphoRepay is only triggered by Morpho.
@@ -51,6 +51,9 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
 
+    // Ensure the price is unchanged in the preLiquidate call.
+    require !priceChanged;
+
     assert ltv <= currentContract.PRE_LLTV => lastReverted;
 }
 
@@ -67,6 +70,9 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
     uint256 ltv = getLtv(borrower);
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
+
+    // Ensure the price is unchanged in the preLiquidate call.
+    require !priceChanged;
 
     assert ltv > currentContract.LLTV => lastReverted;
 }
@@ -89,7 +95,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
                                               currentContract.PRE_LIF_1,
                                               currentContract.PRE_LIF_2);
 
-    uint256 seizedAssetsQuoted = summaryMulDivUp(seizedAssets, constantPrice, ORACLE_PRICE_SCALE());
+    uint256 seizedAssetsQuoted = summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE());
 
     uint256 totalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
@@ -104,6 +110,9 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     uint256 repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), preLCF);
 
     preLiquidate@withrevert(e, borrower, seizedAssets, 0, data);
+
+    // Ensure the price is unchanged in the preLiquidate call.
+    require !priceChanged;
 
     assert repaidShares > repayableShares => lastReverted;
 
@@ -132,6 +141,9 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
     uint256 repayableShares = summaryWMulDown(borrowerShares, preLCF);
 
     preLiquidate@withrevert(e, borrower, 0, repaidShares, data);
+
+    // Ensure the price is unchanged in the preLiquidate call.
+    require !priceChanged;
 
     assert repaidShares > repayableShares => lastReverted;
 }

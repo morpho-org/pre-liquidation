@@ -59,7 +59,7 @@ The [`certora/specs`](specs) folder contains the following files:
   We also check that pre-liquidation can successfully be performed by passing shares to be repaid instead of the collateral amount to be seized.
 - [`Reverts.spec`](specs/Reverts.spec) checks the conditions for reverts and that inputs are correctly validated.
 - [`ConsistentInstantiation.spec`](specs/ConsistentInstantiation.spec) checks the conditions for reverts are met in PreLiquidation constructor.
-- [`MarketExists.spec`](specs/MarketExists.spec) checks that PreLiquidations can be instanciated only if the target market exists.
+- [`MarketExists.spec`](specs/MarketExists.spec) checks that PreLiquidations can be instantiated only if the target market exists.
 - [`SafeMath.spec`](specs/SafeMath.spec) checks that PreLiquidations mathematical operations are safe.
 - [`Health.spec`](specs/Health.spec) checks that after a pre-liquidations can't worsen.
 
