@@ -66,8 +66,3 @@ The [`certora/specs`](specs) folder contains the following files:
 The [`certora/confs`](confs) folder contains a configuration file for each corresponding specification file.
 
 The_[`certora/Makefile`](Makefile)_file is used to perform munging on the original sources.
-
-## TODO
-
-- [ ] Provide an overview of the specification.
-- [ ] Update the verification architecture.
