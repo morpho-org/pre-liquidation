@@ -109,10 +109,10 @@ function preLiquidationDoesntDegrade(env e, address borrower, uint256 repaidShar
     assert assert_uint256(newVirtualTotalAssets) > 1 => newVirtualTotalShares * virtualTotalAssets >= newVirtualTotalAssets * virtualTotalShares;
 }
 
-rule preLiquidateDoesntDegradeWithSeizedAssetsInput(env e,address borrower, uint256 seizedAssetsInput, bytes data) {
-    preLiquidationDoesntDegrade(e,borrower, seizedAssetsInput, 0, data);
+rule preLiquidateDoesntDegradeWithSeizedAssetsInput(env e, address borrower, uint256 seizedAssetsInput, bytes data) {
+    preLiquidationDoesntDegrade(e, borrower, seizedAssetsInput, 0, data);
 }
 
-rule preLiquidateDoesntDegradeWithSharesInput(env e,address borrower, uint256 repaidSharesInput, bytes data) {
+rule preLiquidateDoesntDegradeWithSharesInput(env e, address borrower, uint256 repaidSharesInput, bytes data) {
     preLiquidationDoesntDegrade(e, borrower, 0, repaidSharesInput, data);
 }
