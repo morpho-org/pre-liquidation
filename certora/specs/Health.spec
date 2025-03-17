@@ -4,8 +4,9 @@ import "ConsistentInstantiation.spec";
 import "SummaryLib.spec";
 
 methods {
-    // In this specs, it is assumed are no callbacks after a pre-liquidation.
-    function _.onPreLiquidate(uint256, bytes) external => NONDET;
+    //function _.onMorphoRepay(uint256, bytes) external => DISPATCHER(true);
+    function _.transfer(address, uint256) external => DISPATCHER(true);
+    function _.transferFrom(address, address, uint256) external => DISPATCHER(true);
 
     function _.price() external => constantPrice expect uint256;
 
@@ -23,7 +24,7 @@ methods {
     function Util.wad() external returns (uint256) envfree;
 
     function MORPHO.accrueInterest(PreLiquidation.MarketParams) external => NONDET;
-    function Morpho._isHealthy(MorphoHarness.MarketParams memory, MorphoHarness.Id,address) internal returns (bool) => NONDET;
+    function Morpho._isHealthy(MorphoHarness.MarketParams memory, MorphoHarness.Id, address) internal returns (bool) => NONDET;
     function Morpho._accrueInterest(MorphoHarness.MarketParams memory, MorphoHarness.Id) internal => NONDET;
 
     function preLIF(address) external returns uint256 envfree;
@@ -57,7 +58,7 @@ rule preLCFBounded(env e, address borrower){
     assert preLCF(borrower) <= currentContract.PRE_LCF_2;
 }
 
-rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssetsInput, uint256 repaidSharesInput, bytes data) {
+function preLiquidationDoesntDegrade(env e, address borrower, uint256 repaidSharesInput, uint256 seizedAssetsInput, bytes data) {
     // Avoid division by zero.
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
@@ -87,12 +88,13 @@ rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssetsInput, ui
     uint256 virtualTotalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 virtualTotalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
 
-    preLiquidate(e, borrower, seizedAssetsInput, repaidSharesInput, lif, lcf, data);
+    uint256 seizedAssets;
+
+    (seizedAssets, _) = preLiquidate(e, borrower, seizedAssetsInput, repaidSharesInput, lif, lcf, data);
 
     uint256 newBorrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
     uint256 newBorrowerCollateral = MORPHO.collateral(currentContract.ID, borrower);
     uint256 repaidShares = assert_uint256(borrowerShares - newBorrowerShares);
-    uint256 seizedAssets = assert_uint256(borrowerCollateral - newBorrowerCollateral);
     uint256 newVirtualTotalAssets = MORPHO.virtualTotalBorrowAssets(currentContract.ID);
     uint256 newVirtualTotalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
 
@@ -100,9 +102,17 @@ rule positionDoesntDegrade(env e,address borrower, uint256 seizedAssetsInput, ui
     assert newBorrowerCollateral != 0 || newBorrowerShares == 0;
     // Hint for the prover about the ratio used to close the position.
     assert repaidShares * borrowerCollateral >= seizedAssets * borrowerShares;
-    // Prove that the ratio of shares of debt over collateral is smaller after the liquidation or that it has been completely liquidated.
+    // Prove that the ratio of shares of debt over collateral is smaller after the pre-liquidation or that it has been completely liquidated.
     assert borrowerShares * newBorrowerCollateral >= newBorrowerShares * borrowerCollateral;
     // Prove that the value of borrow shares is smaller after the liquidation.
     // Note that this is only shown for the case where there are still borrow positions on the markets.
     assert assert_uint256(newVirtualTotalAssets) > 1 => newVirtualTotalShares * virtualTotalAssets >= newVirtualTotalAssets * virtualTotalShares;
+}
+
+rule preLiquidateDoesntDegradeWithSeizedAssetsInput(env e,address borrower, uint256 seizedAssetsInput, bytes data) {
+    preLiquidationDoesntDegrade(e,borrower, seizedAssetsInput, 0, data);
+}
+
+rule preLiquidateDoesntDegradeWithSharesInput(env e,address borrower, uint256 repaidSharesInput, bytes data) {
+    preLiquidationDoesntDegrade(e, borrower, 0, repaidSharesInput, data);
 }
