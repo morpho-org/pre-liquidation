@@ -11,6 +11,15 @@ evm_version = "cancun"
 [profile.default.fmt]
 wrap_comments = true
 
+[lint]
+exclude_lints = [
+    "unused-import",
+    "unaliased-plain-import",
+    "mixed-case-variable",
+    "mixed-case-function",
+    "asm-keccak256",
+]
+
 [fuzz]
 runs = 10_000
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
