@@ -14,7 +14,7 @@ rule onMorphoRepaySenderValidation(env e, uint256 repaidAssets, bytes data) {
 
 // Check that preLiquidate reverts when its inputs are not validated.
 rule preLiquidateInputValidation(env e, address borrower, uint256 seizedAssets, uint256 repaidShares, bytes data) {
-    // Avoid absurd divisions by zero.
+    requireInvariant lltvNotZero();
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
@@ -39,6 +39,7 @@ rule zeroCollateralQuotedReverts(env e, address borrower, uint256 seizedAssets, 
 // Check that pre-liquidating a position such that LTV <= PRE_LLTV reverts.
 // This also implies that LTV > PRE_LLTV when borrowed > collateralQuoted.summaryWMulDown(PRE_LLTV).
 rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, bytes data) {
+    requireInvariant lltvNotZero();
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
@@ -59,6 +60,7 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
 
 // Check that pre-liquidating a position such that LTV > LLTV would revert.
 rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, bytes data) {
+    requireInvariant lltvNotZero();
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
@@ -79,6 +81,7 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
 
 // Check that a pre-liquidation that repays more shares than available or allowed by the preLCF reverts.
 rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 seizedAssets, bytes data) {
+    requireInvariant lltvNotZero();
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
@@ -120,6 +123,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
 
 // Check that repaying more shares than available or allowed by the preLCF would revert.
 rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 repaidShares, bytes data) {
+    requireInvariant lltvNotZero();
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
