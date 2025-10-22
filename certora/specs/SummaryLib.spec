@@ -50,9 +50,8 @@ function summaryMarketParams() returns PreLiquidation.MarketParams {
     return x;
 }
 
-function summaryExactlyOneZero(uint256 assets, uint256 shares) returns bool {
-    return (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
-}
+definition summaryExactlyOneZero(uint256 assets, uint256 shares) returns bool =
+    (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
 
 persistent ghost uint256 lastPrice;
 persistent ghost bool priceChanged;
