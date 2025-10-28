@@ -1,0 +1,11 @@
+{
+  "lib/forge-std": {
+    "rev": "1ce7535a517406b9aec7ea1ea27c1b41376f712c"
+  },
+  "lib/morpho-blue": {
+    "rev": "3de2df4eb94c3f6118963039d4f177839a228e2a"
+  },
+  "lib/solmate": {
+    "rev": "97bdb2003b70382996a79a406813f76417b1cf90"
+  }
+}
