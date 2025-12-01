@@ -39,17 +39,6 @@ function summaryMulDivUp(uint256 x,uint256 y, uint256 d) returns uint256 {
     return require_uint256((x * y + (d - 1)) / d);
 }
 
-function summaryMarketParams() returns PreLiquidation.MarketParams {
-    PreLiquidation.MarketParams x;
-    require
-        x.loanToken == currentContract.LOAN_TOKEN
-        && x.collateralToken == currentContract.COLLATERAL_TOKEN
-        && x.oracle == currentContract.ORACLE
-        && x.irm == currentContract.IRM
-        && x.lltv == currentContract.LLTV;
-    return x;
-}
-
 definition summaryExactlyOneZero(uint256 assets, uint256 shares) returns bool =
     (assets == 0 && shares != 0) || (assets != 0 && shares == 0);
 

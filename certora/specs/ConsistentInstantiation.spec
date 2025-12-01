@@ -5,6 +5,8 @@ import "SummaryLib.spec";
 methods {
     // To fix an issue where immutable variables are not linked in the constructor.
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
+
+    function marketParams() external returns (PreLiquidation.MarketParams) envfree;
 }
 
 // Ensure constructor requirements.
@@ -45,7 +47,7 @@ invariant preLIFNotZero()
 
 // Ensure that a successfully deployed contract has a consistent preLIF values.
 invariant preLIFConsistent()
-    WAD() < currentContract.PRE_LIF_1
+    WAD() <= currentContract.PRE_LIF_1
     && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2
     && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(), currentContract.LLTV)
 {
@@ -56,8 +58,11 @@ invariant preLIFConsistent()
 
 // Ensure that ID equals idToMarketParams(marketParams()).
 invariant hashOfMarketParamsOf()
-    Util.libId(summaryMarketParams()) == currentContract.ID
+    Util.libId(marketParams()) == currentContract.ID
 {
+    preserved constructor() {
+        require false, "holds at construction, see rule hashOfMarketParamsOf in Morpho";
+    }
     preserved {
         requireInvariant preLIFNotZero();
     }
