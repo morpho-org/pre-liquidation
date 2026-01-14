@@ -3,7 +3,7 @@
 import "ConsistentInstantiation.spec";
 
 methods {
-    function _.price() external => mockPrice() expect uint256;
+    function _.price() external => mockPrice() expect(uint256);
 }
 
 // Checks that onMorphoRepay is only triggered by Morpho.
@@ -88,11 +88,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
 
     uint256 ltv = getLtv(borrower);
 
-    uint256 preLIF = computeLinearCombination(ltv,
-                                              currentContract.LLTV,
-                                              currentContract.PRE_LLTV,
-                                              currentContract.PRE_LIF_1,
-                                              currentContract.PRE_LIF_2);
+    uint256 preLIF = computeLinearCombination(ltv, currentContract.LLTV, currentContract.PRE_LLTV, currentContract.PRE_LIF_1, currentContract.PRE_LIF_2);
 
     uint256 seizedAssetsQuoted = summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE());
 
@@ -100,11 +96,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
     uint256 repaidShares = summaryMulDivUp(summaryWDivUp(seizedAssetsQuoted, preLIF), totalShares, totalAssets);
 
-    uint256 preLCF = computeLinearCombination(ltv,
-                                              currentContract.LLTV,
-                                              currentContract.PRE_LLTV,
-                                              currentContract.PRE_LCF_1,
-                                              currentContract.PRE_LCF_2) ;
+    uint256 preLCF = computeLinearCombination(ltv, currentContract.LLTV, currentContract.PRE_LLTV, currentContract.PRE_LCF_1, currentContract.PRE_LCF_2);
 
     uint256 repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), preLCF);
 
@@ -114,7 +106,6 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     require !priceChanged;
 
     assert repaidShares > repayableShares => lastReverted;
-
 }
 
 // Check that repaying more shares than available or allowed by the preLCF would revert.
@@ -131,11 +122,7 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
 
     uint256 ltv = getLtv(borrower);
 
-    uint256 preLCF = computeLinearCombination(ltv,
-                                              currentContract.LLTV,
-                                              currentContract.PRE_LLTV,
-                                              currentContract.PRE_LCF_1,
-                                              currentContract.PRE_LCF_2);
+    uint256 preLCF = computeLinearCombination(ltv, currentContract.LLTV, currentContract.PRE_LLTV, currentContract.PRE_LCF_1, currentContract.PRE_LCF_2);
 
     uint256 repayableShares = summaryWMulDown(borrowerShares, preLCF);
 
