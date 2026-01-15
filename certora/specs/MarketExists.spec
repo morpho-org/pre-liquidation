@@ -5,6 +5,9 @@ using MorphoHarness as MORPHO;
 methods {
     function MORPHO.lastUpdate(PreLiquidation.Id) external returns (uint256) envfree;
 
+    // To fix an issue where the approve call is unresolved in the constructor.
+    function _.safeApprove(address, address, uint256) internal => NONDET;
+
     // To fix an issue where immutable variables are not linked in the constructor.
     function _.market(PreLiquidation.Id) external => DISPATCHER(true);
 }
