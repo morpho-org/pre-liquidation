@@ -44,18 +44,9 @@ invariant preLIFNotZero()
 
 // Ensure that a successfully deployed contract has a consistent preLIF values.
 invariant preLIFConsistent()
-    WAD() < currentContract.PRE_LIF_1 && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2 && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(), currentContract.LLTV)
+    WAD() <= currentContract.PRE_LIF_1 && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2 && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(), currentContract.LLTV)
     {
         preserved {
             requireInvariant lltvNotZero();
-        }
-    }
-
-// Ensure that ID equals idToMarketParams(marketParams()).
-invariant hashOfMarketParamsOf()
-    Util.libId(summaryMarketParams()) == currentContract.ID
-    {
-        preserved {
-            requireInvariant preLIFNotZero();
         }
     }

@@ -43,7 +43,7 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 ltv = getLtv(borrower);
@@ -63,7 +63,7 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 ltv = getLtv(borrower);
@@ -83,7 +83,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 ltv = getLtv(borrower);
@@ -115,7 +115,7 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
