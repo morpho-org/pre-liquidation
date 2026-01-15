@@ -10,6 +10,6 @@ hook DELEGATECALL(uint g, address addr, uint argsOffset, uint argsLength, uint r
 rule noDelegateCalls(method f, env e, calldataarg data) {
     // Set up the initial state.
     require !delegateCall;
-    f(e,data);
+    f(e, data);
     assert !delegateCall;
 }
