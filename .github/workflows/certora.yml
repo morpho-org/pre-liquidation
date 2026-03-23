@@ -18,8 +18,8 @@ jobs:
         conf:
           - ConsistentInstantiation
           - Immutability
-          - MarketExists
           - Liveness
+          - MarketExists
           - Reentrancy
           - Reverts
           - SafeMath
