@@ -49,13 +49,10 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
 
     /// @notice The Morpho market parameters specific to the PreLiquidation contract.
     function marketParams() public view returns (MarketParams memory) {
-        return MarketParams({
-            loanToken: LOAN_TOKEN,
-            collateralToken: COLLATERAL_TOKEN,
-            oracle: ORACLE,
-            irm: IRM,
-            lltv: LLTV
-        });
+        return
+            MarketParams({
+                loanToken: LOAN_TOKEN, collateralToken: COLLATERAL_TOKEN, oracle: ORACLE, irm: IRM, lltv: LLTV
+            });
     }
 
     /// @notice The pre-liquidation parameters specific to the PreLiquidation contract.
@@ -159,9 +156,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
             repaidShares =
                 seizedAssetsQuoted.wDivUp(preLIF).toSharesUp(market.totalBorrowAssets, market.totalBorrowShares);
         } else {
-            seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares).wMulDown(
-                preLIF
-            ).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+            seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares)
+                .wMulDown(preLIF).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
         // Note that the pre-liquidation close factor can be greater than WAD (100%).

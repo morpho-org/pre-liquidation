@@ -8,9 +8,9 @@ persistent ghost bool onMorphoRepayCalled;
 
 hook CALL(uint g, address addr, uint value, uint argsOffset, uint argsLength, uint retOffset, uint retLength) uint rc {
     if (selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
-       preLiquidateCalled = true;
+        preLiquidateCalled = true;
     } else if (selector == sig:onMorphoRepay(uint256, bytes).selector) {
-       onMorphoRepayCalled = true;
+        onMorphoRepayCalled = true;
     }
 }
 
@@ -26,12 +26,12 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
 
     // Capture the first method call which is not performed with a CALL opcode.
     if (f.selector == sig:preLiquidate(address, uint256, uint256, bytes).selector) {
-       preLiquidateCalled = true;
+        preLiquidateCalled = true;
     } else if (f.selector == sig:onMorphoRepay(uint256, bytes).selector) {
-       onMorphoRepayCalled = true;
+        onMorphoRepayCalled = true;
     }
 
-    f@withrevert(e,data);
+    f@withrevert(e, data);
 
     // Avoid failing vacuity checks, either the proposition is true or the execution reverts.
     assert !lastReverted => (preLiquidateCalled <=> onMorphoRepayCalled);
@@ -41,7 +41,7 @@ rule preLiquidateRepays(method f, env e, calldataarg data) {
 rule canPreLiquidateByPassingShares(env e, address borrower, uint256 repaidShares, bytes data) {
     uint256 seizedAssets;
     uint256 repaidAssets;
-    seizedAssets, repaidAssets = preLiquidate(e, borrower, 0, repaidShares,  data);
+    seizedAssets, repaidAssets = preLiquidate(e, borrower, 0, repaidShares, data);
 
     satisfy seizedAssets != 0 && repaidAssets != 0;
 }
@@ -49,7 +49,7 @@ rule canPreLiquidateByPassingShares(env e, address borrower, uint256 repaidShare
 // Check that you can pre-liquidate non-zero tokens by passing seized assets.
 rule canPreLiquidateByPassingSeizedAssets(env e, address borrower, uint256 seizedAssets, bytes data) {
     uint256 repaidAssets;
-    _, repaidAssets = preLiquidate(e, borrower, seizedAssets, 0,  data);
+    _, repaidAssets = preLiquidate(e, borrower, seizedAssets, 0, data);
 
     satisfy repaidAssets != 0;
 }

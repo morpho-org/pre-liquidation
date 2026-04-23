@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity >= 0.5.0;
+pragma solidity >=0.5.0;
 
 /// @title IPreLiquidationCallback
 /// @notice Interface that "pre-liquidators" willing to use the pre-liquidation callback must implement.

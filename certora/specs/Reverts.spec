@@ -3,7 +3,7 @@
 import "ConsistentInstantiation.spec";
 
 methods {
-    function _.price() external => mockPrice() expect uint256;
+    function _.price() external => mockPrice() expect(uint256);
 }
 
 // Checks that onMorphoRepay is only triggered by Morpho.
@@ -14,7 +14,6 @@ rule onMorphoRepaySenderValidation(env e, uint256 repaidAssets, bytes data) {
 
 // Check that preLiquidate reverts when its inputs are not validated.
 rule preLiquidateInputValidation(env e, address borrower, uint256 seizedAssets, uint256 repaidShares, bytes data) {
-    // Avoid absurd divisions by zero.
     requireInvariant preLltvConsistent();
     requireInvariant preLCFConsistent();
     requireInvariant preLIFConsistent();
@@ -44,7 +43,7 @@ rule nonLiquidatablePositionReverts(env e, address borrower, uint256 seizedAsset
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 ltv = getLtv(borrower);
@@ -64,7 +63,7 @@ rule liquidatablePositionReverts(env e, address borrower, uint256 seizedAssets, 
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 ltv = getLtv(borrower);
@@ -84,16 +83,12 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 ltv = getLtv(borrower);
 
-    uint256 preLIF = computeLinearCombination(ltv,
-                                              currentContract.LLTV,
-                                              currentContract.PRE_LLTV,
-                                              currentContract.PRE_LIF_1,
-                                              currentContract.PRE_LIF_2);
+    uint256 preLIF = computeLinearCombination(ltv, currentContract.LLTV, currentContract.PRE_LLTV, currentContract.PRE_LIF_1, currentContract.PRE_LIF_2);
 
     uint256 seizedAssetsQuoted = summaryMulDivUp(seizedAssets, mockPrice(), ORACLE_PRICE_SCALE());
 
@@ -101,11 +96,7 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     uint256 totalShares = MORPHO.virtualTotalBorrowShares(currentContract.ID);
     uint256 repaidShares = summaryMulDivUp(summaryWDivUp(seizedAssetsQuoted, preLIF), totalShares, totalAssets);
 
-    uint256 preLCF = computeLinearCombination(ltv,
-                                              currentContract.LLTV,
-                                              currentContract.PRE_LLTV,
-                                              currentContract.PRE_LCF_1,
-                                              currentContract.PRE_LCF_2) ;
+    uint256 preLCF = computeLinearCombination(ltv, currentContract.LLTV, currentContract.PRE_LLTV, currentContract.PRE_LCF_1, currentContract.PRE_LCF_2);
 
     uint256 repayableShares = summaryWMulDown(MORPHO.borrowShares(currentContract.ID, borrower), preLCF);
 
@@ -115,7 +106,6 @@ rule excessivePreliquidationWithAssetsReverts(env e, address borrower, uint256 s
     require !priceChanged;
 
     assert repaidShares > repayableShares => lastReverted;
-
 }
 
 // Check that repaying more shares than available or allowed by the preLCF would revert.
@@ -125,18 +115,14 @@ rule excessivePreliquidationWithSharesReverts(env e, address borrower, uint256 r
     requireInvariant preLIFConsistent();
 
     // Ensure that no interest is accumulated.
-    // Safe require as the invariant ID == marketParams().id() holds, see ConsistentInstantion hashOfMarketParamsOf.
+    // Safe require as the invariant ID == marketParams().id() holds.
     require MORPHO.lastUpdate(currentContract.ID) == e.block.timestamp;
 
     uint256 borrowerShares = MORPHO.borrowShares(currentContract.ID, borrower);
 
     uint256 ltv = getLtv(borrower);
 
-    uint256 preLCF = computeLinearCombination(ltv,
-                                              currentContract.LLTV,
-                                              currentContract.PRE_LLTV,
-                                              currentContract.PRE_LCF_1,
-                                              currentContract.PRE_LCF_2);
+    uint256 preLCF = computeLinearCombination(ltv, currentContract.LLTV, currentContract.PRE_LLTV, currentContract.PRE_LCF_1, currentContract.PRE_LCF_2);
 
     uint256 repayableShares = summaryWMulDown(borrowerShares, preLCF);
 

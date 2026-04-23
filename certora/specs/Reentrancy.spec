@@ -15,6 +15,6 @@ hook ALL_SLOAD(uint loc) uint v {
 rule reentrancySafe(method f, env e, calldataarg data) {
     // Set up the initial state.
     require !hasAccessedStorage;
-    f(e,data);
+    f(e, data);
     assert !hasAccessedStorage;
 }

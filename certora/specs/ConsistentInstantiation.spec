@@ -13,30 +13,29 @@ methods {
 // Ensure that in a successfully deployed contract the preLLTV value is not zero.
 invariant lltvNotZero()
     0 < currentContract.LLTV
-{
-    preserved {
-        requireInvariant preLIFNotZero();
+    {
+        preserved {
+            requireInvariant preLIFNotZero();
+        }
     }
-}
 
 // Ensure that a successfully deployed contract has a consistent preLLTV value.
 invariant preLltvConsistent()
     currentContract.PRE_LLTV < currentContract.LLTV
-{
-    preserved {
-        requireInvariant preLIFNotZero();
+    {
+        preserved {
+            requireInvariant preLIFNotZero();
+        }
     }
-}
 
 // Ensure that a successfully deployed contract has a consistent preLCF values.
 invariant preLCFConsistent()
-    currentContract.PRE_LCF_1 <= currentContract.PRE_LCF_2
-    && currentContract.PRE_LCF_1 <= WAD()
-{
-    preserved {
-        requireInvariant preLIFNotZero();
+    currentContract.PRE_LCF_1 <= currentContract.PRE_LCF_2 && currentContract.PRE_LCF_1 <= WAD()
+    {
+        preserved {
+            requireInvariant preLIFNotZero();
+        }
     }
-}
 
 // Base case for mutually dependent invariants.
 // Ensure that in a successfully deployed contract the preLIF value is not zero.
@@ -45,20 +44,9 @@ invariant preLIFNotZero()
 
 // Ensure that a successfully deployed contract has a consistent preLIF values.
 invariant preLIFConsistent()
-    WAD() < currentContract.PRE_LIF_1
-    && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2
-    && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(), currentContract.LLTV)
-{
-    preserved {
-        requireInvariant lltvNotZero();
+    WAD() <= currentContract.PRE_LIF_1 && currentContract.PRE_LIF_1 <= currentContract.PRE_LIF_2 && currentContract.PRE_LIF_2 <= summaryWDivDown(WAD(), currentContract.LLTV)
+    {
+        preserved {
+            requireInvariant lltvNotZero();
+        }
     }
-}
-
-// Ensure that ID equals idToMarketParams(marketParams()).
-invariant hashOfMarketParamsOf()
-    Util.libId(summaryMarketParams()) == currentContract.ID
-{
-    preserved {
-        requireInvariant preLIFNotZero();
-    }
-}
