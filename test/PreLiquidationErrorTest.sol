@@ -297,7 +297,8 @@ contract PreLiquidationErrorTest is BaseTest {
 
         uint256 repayableShares = uint256(position.borrowShares).wMulDown(closeFactor);
         uint256 upperSeizedAssetBound = (repayableShares + 1)
-            .toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares).mulDivUp(preLIF, WAD)
+            .toAssetsUp(market.totalBorrowAssets, market.totalBorrowShares)
+            .mulDivUp(preLIF, WAD)
             .mulDivUp(ORACLE_PRICE_SCALE, collateralPrice);
 
         seizedAssets = bound(seizedAssets, upperSeizedAssetBound, type(uint128).max);

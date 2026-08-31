@@ -157,7 +157,8 @@ contract PreLiquidation is IPreLiquidation, IMorphoRepayCallback {
                 seizedAssetsQuoted.wDivUp(preLIF).toSharesUp(market.totalBorrowAssets, market.totalBorrowShares);
         } else {
             seizedAssets = repaidShares.toAssetsDown(market.totalBorrowAssets, market.totalBorrowShares)
-                .wMulDown(preLIF).mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
+                .wMulDown(preLIF)
+                .mulDivDown(ORACLE_PRICE_SCALE, collateralPrice);
         }
 
         // Note that the pre-liquidation close factor can be greater than WAD (100%).
