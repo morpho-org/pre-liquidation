@@ -27,5 +27,8 @@ jobs:
       - name: Run forge build
         run: forge build --sizes
 
+      - name: Check foundry.lock matches submodule pins
+        run: forge build --locked
+
       - name: Run forge tests
         run: forge test -vvv
