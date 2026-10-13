@@ -17,7 +17,7 @@ jobs:
       matrix:
         conf:
           - ConsistentInstantiation
-          - Immutability
+          - NoExternalDelegateCall
           - Liveness
           - MarketExists
           - Reentrancy

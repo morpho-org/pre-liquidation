@@ -22,9 +22,9 @@ The PreLiquidation contract enables Morpho borrowers to set up a safer liquidati
 
 This is checked in [`Reentrancy.spec`](specs/Reentrancy.spec).
 
-### Immutability
+### No external delegate call
 
-This is checked in [`Immutability.spec`](specs/Immutability.spec).
+This is checked in [`NoExternalDelegateCall.spec`](specs/NoExternalDelegateCall.spec).
 
 ### Reverts
 
@@ -49,7 +49,7 @@ This is checked in [`SafeMath.spec`](specs/SafeMath.spec).
 The [`certora/specs`](specs) folder contains the following files:
 
 - [`Reentrancy.spec`](specs/Reentrancy.spec) checks that PreLiquidation is reentrancy safe by checking that the storage is never used;
-- [`Immutability.spec`](specs/Immutability.spec) checks that PreLiquidation contract is immutable because it doesn't perform any delegate call;
+- [`NoExternalDelegateCall.spec`](specs/NoExternalDelegateCall.spec) checks that PreLiquidation makes no delegate call;
 - [`Liveness.spec`](specs/Liveness.spec) ensure that expected computations will always be performed.
   For instance, pre-liquidations will always trigger a repay operation.
   We also check that pre-liquidation can successfully be performed by passing shares to be repaid instead of the collateral amount to be seized.
