@@ -1,5 +1,9 @@
 # PreLiquidation
 
+> [!WARNING]
+> This repository is no longer maintained: pre-liquidation now lives in Morpho Blue, under [`src/periphery/pre-liquidation`](https://github.com/morpho-org/morpho-blue/tree/main/src/periphery/pre-liquidation).
+> Already deployed `PreLiquidationFactory` and `PreLiquidation` contracts are unaffected.
+
 ## Overview
 
 This repository puts together different contracts to carry out liquidations on Morpho with specific parameters chosen by the borrower.
